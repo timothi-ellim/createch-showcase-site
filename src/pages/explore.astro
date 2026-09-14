@@ -8,7 +8,12 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
   <div class="wrap section">
     <p class="eyebrow">The showcase</p>
     <h1>Follow your curiosity.</h1>
-    <p class="lead">Explore by idea or by how you’d like to take part.</p>
+    <p class="lead">
+      Find a project, follow an idea, or save something for your visit.
+    </p>
+    <a class="text-link explore-skip" href="#result-count">
+      Browse all {projects.length} projects ↓
+    </a>
     {isSynthetic && (
       <p class="muted">
         All entries and encounter labels below are synthetic examples, not a
@@ -22,15 +27,22 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
       role="search"
       aria-label="Filter projects"
     >
-      <label class="search-label" for="search">
-        {isSynthetic ? 'Search the sample projects' : 'Search projects'}
-        <input
-          id="search"
-          type="search"
-          enterkeyhint="search"
-          placeholder="Project, contributor or keyword"
-        />
-      </label>
+      <div class="search-label">
+        <label for="search">
+          {isSynthetic ? 'Search the sample projects' : 'Search projects'}
+        </label>
+        <div class="search-control">
+          <input
+            id="search"
+            type="search"
+            enterkeyhint="search"
+            placeholder="Project, contributor or keyword"
+          />
+          <button type="button" class="text-button" data-clear-search hidden>
+            Clear search
+          </button>
+        </div>
+      </div>
       <fieldset>
         <legend>Theme</legend>
         <div class="filter-options">

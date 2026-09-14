@@ -29,14 +29,42 @@ const organiserSurface = ['queue', 'review', 'releases', 'people'].includes(
       hidden
       data-private-nav
     >
-      <a href="/participant/">My projects</a>
-      <a href="/organiser/" hidden data-organiser-link>
+      <a
+        href="/participant/"
+        aria-current={
+          surface === 'dashboard' ||
+          surface === 'editor' ||
+          surface === 'preview'
+            ? 'page'
+            : undefined
+        }
+      >
+        My projects
+      </a>
+      <a
+        href="/organiser/"
+        hidden
+        data-organiser-link
+        aria-current={
+          surface === 'queue' || surface === 'review' ? 'page' : undefined
+        }
+      >
         Review queue
       </a>
-      <a href="/organiser/releases/" hidden data-organiser-link>
+      <a
+        href="/organiser/releases/"
+        hidden
+        data-organiser-link
+        aria-current={surface === 'releases' ? 'page' : undefined}
+      >
         Releases
       </a>
-      <a href="/organiser/people/" hidden data-organiser-link>
+      <a
+        href="/organiser/people/"
+        hidden
+        data-organiser-link
+        aria-current={surface === 'people' ? 'page' : undefined}
+      >
         People
       </a>
       <button class="text-button" data-signout>
@@ -54,8 +82,12 @@ const organiserSurface = ['queue', 'review', 'releases', 'people'].includes(
     <noscript>
       <p class="reading-panel">
         The participant editor needs JavaScript to sign in and save.
-        {standalone ? <a href="/participants/">Read participant help</a> : <a href="/explore/">Browse the public showcase</a>}.
-        For help, use your existing organiser contact.
+        {standalone ? (
+          <a href="/participants/">Read participant help</a>
+        ) : (
+          <a href="/explore/">Browse the public showcase</a>
+        )}
+        . For help, use your existing organiser contact.
       </p>
     </noscript>
     <section

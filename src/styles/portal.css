@@ -1,8 +1,10 @@
 .portal {
   max-width: 1120px;
+  padding-block: 32px 56px;
 }
 .portal > h1 {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  font-size: clamp(2rem, 4vw, 3rem);
 }
 .portal-intro {
   color: var(--ct-white);
@@ -16,7 +18,17 @@
   margin-block: 24px;
 }
 .portal-nav a {
-  padding-block: 14px;
+  padding: 12px;
+  text-decoration: none;
+  border-radius: 6px;
+}
+.portal-nav a[aria-current='page'] {
+  background: var(--ct-lemon);
+  color: var(--ct-ink);
+  font-weight: 700;
+}
+.portal-nav .text-button {
+  margin-left: auto;
 }
 .portal-status {
   padding: 16px 20px;
@@ -24,6 +36,7 @@
   color: var(--ct-ink);
   border: 1px solid currentColor;
   overflow-wrap: anywhere;
+  border-radius: 6px;
 }
 .portal-status:empty {
   display: none;
@@ -34,9 +47,84 @@
 }
 .portal .reading-panel {
   margin-block: 24px;
+  border-radius: 12px;
 }
 .portal-login {
   max-width: 600px;
+}
+.portal-login [data-code-form] {
+  border-top: 1px solid #b7afc3;
+  margin-top: 28px;
+  padding-top: 24px;
+}
+.portal .field-required {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--ct-muted);
+}
+.editor-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding-block: 8px 20px;
+}
+.editor-sections a {
+  padding-block: 12px;
+  color: var(--ct-blue);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.portal [data-editor-form] {
+  max-width: 780px;
+  margin-inline: auto;
+}
+.portal [data-editor-form] :is(fieldset, #permission-fields) {
+  scroll-margin-block: 24px;
+}
+.portal [data-editor-form] textarea {
+  min-height: 140px;
+  line-height: 1.65;
+}
+.portal [data-editor-form] #f-description {
+  min-height: 260px;
+}
+.editor-actionbar {
+  position: sticky;
+  bottom: 12px;
+  z-index: 5;
+  margin-top: 24px;
+  padding: 12px 16px;
+  border: 1px solid #b7afc3;
+  border-radius: 10px;
+  background: var(--ct-paper);
+  box-shadow: 0 4px 24px #18122422;
+}
+.editor-actionbar [data-editor-status] {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  margin: 0 0 10px;
+}
+.editor-actionbar [data-error='true'] {
+  color: var(--ct-error-fg);
+  font-weight: 700;
+}
+.editor-actionbar .portal-actions {
+  margin: 0;
+  padding: 0;
+  gap: 8px;
+}
+.portal .editor-actionbar .button {
+  width: auto;
+  padding: 12px 16px;
+  min-height: 48px;
+  flex: 1 1 auto;
+  font-size: 0.875rem;
+}
+.portal [data-editor-form] :is(input, textarea, select) {
+  scroll-margin-bottom: 180px;
+}
+.portal [data-draft-preview]:focus {
+  outline: none;
 }
 .portal h2 {
   letter-spacing: -0.03em;
@@ -173,6 +261,20 @@
   background: var(--ct-warning-bg);
 }
 @media (max-width: 700px) {
+  .portal-nav {
+    gap: 4px;
+    margin-block: 16px;
+    padding-block: 8px;
+    font-size: 0.875rem;
+  }
+  .portal-nav .text-button {
+    margin-left: 0;
+  }
+  .editor-actionbar {
+    bottom: 8px;
+    padding: 10px;
+    margin-inline: -12px;
+  }
   .portal .reading-panel {
     padding: 22px;
   }
@@ -184,6 +286,11 @@
   }
   .portal legend {
     font-size: 1.3rem;
+  }
+}
+@media (max-height: 550px) {
+  .editor-actionbar {
+    position: static;
   }
 }
 @media print {

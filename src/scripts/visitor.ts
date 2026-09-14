@@ -234,8 +234,19 @@ if (filters) {
     ? params.get('encounter')!
     : 'all';
   search.value = params.get('q') ?? '';
+  const normalizeSearch = (value: string) =>
+    value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+  const clearSearch = filters.querySelector<HTMLButtonElement>(
+    '[data-clear-search]',
+  )!;
   function applyFilters() {
     let count = 0;
+    const query = normalizeSearch(search.value);
     document
       .querySelectorAll<HTMLElement>('#project-results [data-project-card]')
       .forEach((card) => {
@@ -243,9 +254,7 @@ if (filters) {
           (theme === 'all' || card.dataset.theme === theme) &&
           (encounter === 'all' ||
             card.dataset.encounters?.split('|').includes(encounter)) &&
-          (card.dataset.search ?? '').includes(
-            search.value.trim().toLowerCase(),
-          );
+          normalizeSearch(card.dataset.search ?? '').includes(query);
         card.hidden = !match;
         if (match) count++;
       });
@@ -267,6 +276,7 @@ if (filters) {
       );
     document.querySelector('#result-count')!.textContent =
       `${count} ${sampleLabel}${count === 1 ? 'project' : 'projects'}`;
+    clearSearch.hidden = !search.value;
     const surprise =
       document.querySelector<HTMLButtonElement>('[data-surprise]');
     if (surprise) surprise.disabled = count === 0;
@@ -321,6 +331,11 @@ if (filters) {
       }),
     );
   search.addEventListener('input', applyFilters);
+  clearSearch.addEventListener('click', () => {
+    search.value = '';
+    applyFilters();
+    search.focus();
+  });
   function reset() {
     theme = 'all';
     encounter = 'all';

@@ -27,6 +27,13 @@ const objectUrls = new Set<string>();
 function say(message: string, error = false) {
   status.textContent = message;
   status.dataset.error = String(error);
+  const localStatus = content.querySelector<HTMLElement>(
+    '[data-editor-status]',
+  );
+  if (localStatus) {
+    localStatus.textContent = message;
+    localStatus.dataset.error = String(error);
+  }
 }
 function clearPrivate() {
   for (const url of objectUrls) URL.revokeObjectURL(url);
@@ -45,6 +52,8 @@ function urlFor(blob: Blob) {
   return url;
 }
 const messages: Record<string, string> = {
+  SESSION_EXPIRED:
+    'Your session expired. Your text is still here. Sign in again to save.',
   PROJECT_IDENTIFIER_TAKEN:
     'That page identifier is already in use. Choose another; the existing project has not changed.',
   INVALID_PROJECT_DETAILS:
@@ -86,6 +95,8 @@ async function rpc<T = any>(
         'Your session expired. Your text is still here. Sign in again to save.',
         true,
       );
+      login.scrollIntoView({ block: 'start' });
+      throw new Error('SESSION_EXPIRED');
     }
     throw new Error(code || 'REQUEST_FAILED');
   }
@@ -94,6 +105,14 @@ async function rpc<T = any>(
 async function act(fn: () => Promise<void>, saving = false) {
   if (busy) return;
   busy = true;
+  root.setAttribute('aria-busy', 'true');
+  content
+    .querySelectorAll<HTMLButtonElement>(
+      '[data-editor-actions] button, [data-remove-image]',
+    )
+    .forEach((b) => {
+      b.disabled = true;
+    });
   try {
     await fn();
   } catch (error) {
@@ -108,6 +127,14 @@ async function act(fn: () => Promise<void>, saving = false) {
     if (code === 'DRAFT_CONFLICT') showConflict();
   } finally {
     busy = false;
+    root.setAttribute('aria-busy', 'false');
+    content
+      .querySelectorAll<HTMLButtonElement>(
+        '[data-editor-actions] button, [data-remove-image]',
+      )
+      .forEach((b) => {
+        b.disabled = false;
+      });
   }
 }
 const button = (text: string, attr: string = '', kind = 'dark') =>
@@ -138,7 +165,8 @@ function field(
   large = false,
   required = false,
 ) {
-  return `<label for="f-${name}">${e(label)}</label>${large ? `<textarea id="f-${name}" name="${name}" maxlength="${max}" ${required ? 'required' : ''}>${e(value)}</textarea>` : `<input id="f-${name}" name="${name}" value="${e(value)}" maxlength="${max}" ${required ? 'required' : ''} />`}<p class="field-help">Up to ${max} characters.</p>`;
+  const help = `f-${name}-help`;
+  return `<label for="f-${name}">${e(label)}</label>${large ? `<textarea id="f-${name}" name="${name}" maxlength="${max}" aria-describedby="${help}" ${required ? 'required' : ''}>${e(value)}</textarea>` : `<input id="f-${name}" name="${name}" value="${e(value)}" maxlength="${max}" aria-describedby="${help}" ${required ? 'required' : ''} />`}<p id="${help}" class="field-help" data-count-for="f-${name}">${required ? 'Required to submit. ' : ''}Up to ${max} characters.</p>`;
 }
 function readFields(): ParticipantFields {
   const form = $<HTMLFormElement>('[data-editor-form]'),
@@ -195,7 +223,10 @@ async function save() {
 }
 function showConflict() {
   const box = content.querySelector<HTMLElement>('[data-conflict]');
-  if (box) box.hidden = false;
+  if (box) {
+    box.hidden = false;
+    box.scrollIntoView({ block: 'start' });
+  }
 }
 async function dispatch(jobId: string) {
   const { error } = await client.functions.invoke('dispatch-job', {
@@ -217,15 +248,39 @@ function renderEditor() {
     m = draft.metadata;
   content.innerHTML = `<div class="reading-panel"><p class="metadata">Organiser-confirmed details: ${e(m.room || 'Location not confirmed')} · ${e(m.schedule || 'Timing not confirmed')}. Access notes: ${e(m.accessNotes || 'Not confirmed')}. These fields are read-only.</p>
  <div class="conflict" data-conflict hidden><h2>A newer draft exists</h2><p>Your typed text is preserved below. Compare with the latest saved draft before choosing to reload.</p>${button('Compare saved draft', 'data-compare')}${button('Reload saved draft and discard my unsaved text', 'data-reload', 'secondary')}<div data-conflict-comparison></div></div>
- <form data-editor-form><fieldset><legend>Your work</legend>${field('title', 'Project title', f.title || '', 120, false, true)}${field('maker', 'Public contributor name', f.maker || '', 100, false, true)}${field('invitation', 'Short invitation', f.invitation || '', 200, true, true)}${field('description', 'About the work', f.description || '', 2000, true, true)}</fieldset>
+ <nav class="editor-sections" aria-label="Editing sections"><a href="#work-fields">Your work</a><a href="#image-fields">Image</a><a href="#experience-fields">Visitor experience</a><a href="#optional-fields">Links & detail</a><a href="#permission-fields">Review & submit</a></nav>
+ <form data-editor-form><fieldset id="work-fields"><legend>Your work</legend><p class="field-help">You can save an unfinished draft. Complete the required fields before submitting for review.</p>${field('title', 'Project title', f.title || '', 120, false, true)}${field('maker', 'Public contributor name', f.maker || '', 100, false, true)}${field('invitation', 'Short invitation', f.invitation || '', 200, true, true)}${field('description', 'About the work', f.description || '', 2000, true, true)}</fieldset>
  <fieldset><legend>Main image</legend><label for="image-upload">Choose a main image</label><input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">PNG, JPEG or WebP, up to 5 MB. Convert HEIC before uploading. Uploading does not approve an image.</p><div data-image-state>${f.assetId ? '<p>An image is selected for this draft.</p>' : '<p>No image selected.</p>'}</div>${button('Remove image from draft', 'data-remove-image', 'secondary')}${field('alt', 'Image alternative text', f.alt || '', 300, true)}${field('credit', 'Image credit', f.credit || '', 200)}</fieldset>
  <fieldset><legend>Visitor experience</legend>${field('visitorAction', 'What visitors can do', f.visitorAction || '', 700, true, true)}<div class="checks">${['Look / listen', 'Participate'].map((v) => `<label><input type="checkbox" name="encounters" value="${v}" ${f.encounters?.includes(v as 'Participate') ? 'checked' : ''} />${v}</label>`).join('')}</div>${field('accessProposal', 'Proposed access or sensory correction', f.accessProposal || '', 700, true)}<p class="field-help">A proposal is reviewed before it changes confirmed public information.</p></fieldset>
  <fieldset><legend>Links and optional detail</legend>${[0, 1, 2].map((i) => `${field(`link-label-${i}`, `Link ${i + 1} label`, f.links?.[i]?.label || '', 100)}<label for="link-url-${i}">Link ${i + 1} address (HTTPS)</label><input id="link-url-${i}" name="link-url-${i}" type="url" pattern="https://.*" maxlength="2000" value="${e(f.links?.[i]?.url || '')}" />`).join('')}${field('videoUrl', 'Public video link (HTTPS)', f.videoUrl || '', 2000)}${field('processNote', 'Behind the work', f.processNote || '', 800, true)}</fieldset>
  <div class="checks"><label><input name="permission" type="checkbox" ${f.permission ? 'checked' : ''} />I have permission to submit this text and image for public display, with the credit above. I understand this exact version will be reviewed before publication (public-profile-v1).</label></div>
- <div class="portal-actions">${button('Save draft', 'data-save-draft')}${button('Preview', 'data-preview-draft', 'secondary')}${button('Submit for review', 'data-submit', 'secondary')}</div></form><div data-submit-result></div></div><div data-draft-preview hidden class="detail section"></div>`;
+ <div class="editor-actionbar" data-editor-actions><p data-editor-status>Loaded your saved draft.</p><div class="portal-actions">${button('Save draft', 'data-save-draft')}${button('Preview', 'data-preview-draft', 'secondary')}${button('Submit for review', 'data-submit', 'secondary')}</div></div></form><div data-submit-result></div></div><div data-draft-preview hidden class="detail section" tabindex="-1" aria-label="Draft preview"></div>`;
   const form = $<HTMLFormElement>('[data-editor-form]');
+  const sections = form.querySelectorAll('fieldset');
+  [
+    'work-fields',
+    'image-fields',
+    'experience-fields',
+    'optional-fields',
+  ].forEach((id, i) => {
+    sections[i].id = id;
+  });
+  form.querySelector<HTMLElement>(':scope > .checks')!.id = 'permission-fields';
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    void act(save, true);
+  });
+  function updateCounts() {
+    form.querySelectorAll<HTMLElement>('[data-count-for]').forEach((help) => {
+      const input = document.getElementById(help.dataset.countFor!) as
+        HTMLInputElement | HTMLTextAreaElement;
+      help.textContent = `${input.required ? 'Required to submit. ' : ''}${input.value.length} of ${input.maxLength} characters`;
+    });
+  }
+  updateCounts();
   form.addEventListener('input', () => {
     dirty = true;
+    updateCounts();
     say('Unsaved changes.');
   });
   $('[data-save-draft]').onclick = () => act(save, true);
@@ -233,17 +288,26 @@ function renderEditor() {
     if (!draft) return;
     const box = $('[data-draft-preview]');
     box.innerHTML =
+      button('Back to editing', 'data-close-preview', 'secondary') +
       '<p class="notice">Draft preview · Not submitted · Main image is checked after submission.</p>' +
       renderProjectBody(draftView({ ...draft, fields: readFields() }), {
         privatePreview: true,
         synthetic: context.environment === 'local',
       });
     box.hidden = false;
+    box.focus({ preventScroll: true });
     box.scrollIntoView({ behavior: 'auto' });
+    $('[data-close-preview]').onclick = () => {
+      box.hidden = true;
+      $('[data-preview-draft]').focus();
+    };
   };
   $('[data-submit]').onclick = () =>
     act(async () => {
-      if (!form.reportValidity()) return;
+      if (!form.reportValidity()) {
+        say('Complete the highlighted required field before submitting.', true);
+        return;
+      }
       if (!readFields().permission) {
         say('Confirm the permission declaration before submitting.', true);
         return;
@@ -289,6 +353,7 @@ function renderEditor() {
     dirty = true;
     $('[data-image-state]').textContent =
       'Image removed from this draft. Save to keep this change.';
+    say('Image removed from this draft. Save to keep this change.');
   };
   $<HTMLInputElement>('#image-upload').onchange = () =>
     act(async () => {
@@ -304,6 +369,7 @@ function renderEditor() {
         );
         return;
       }
+      say('Uploading image privately… Keep this page open.');
       const reserved = await rpc<{ assetId: string; path: string }>(
         'reserve_upload',
         { p_project: draft!.projectId, p_type: file.type, p_bytes: file.size },
@@ -920,6 +986,11 @@ async function start() {
   };
   $('[data-signout]').onclick = () =>
     act(async () => {
+      if (
+        dirty &&
+        !window.confirm('You have unsaved changes. Sign out and discard them?')
+      )
+        return;
       const { error } = await client.auth.signOut({ scope: 'local' });
       clearPrivate();
       $('[data-private-nav]').hidden = true;

@@ -14,6 +14,23 @@ const routes = [
   '/404.html',
 ];
 
+test('search tolerates extra spaces and clear search preserves the chosen theme', async ({
+  page,
+}) => {
+  await page.goto('/explore/?theme=image');
+  await page
+    .getByLabel('Search the sample projects')
+    .fill('  contributor   a  ');
+  await expect(page.locator('#result-count')).toHaveText('1 sample project');
+  await page.getByRole('button', { name: 'Clear search', exact: true }).click();
+  await expect(page.getByLabel('Search the sample projects')).toBeFocused();
+  await expect(page.locator('#result-count')).toHaveText('2 sample projects');
+  await expect(page).toHaveURL(/theme=image/);
+  await expect(
+    page.getByRole('button', { name: 'Clear search', exact: true }),
+  ).toBeHidden();
+});
+
 test('filtered exploration returns to the same results and project; sharing omits navigation context', async ({
   page,
 }) => {
@@ -180,6 +197,8 @@ test('keyboard navigation exposes skip link, filters, and native details', async
   ).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('main')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.explore-skip')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('#search')).toBeFocused();
   await page.keyboard.press('Tab');

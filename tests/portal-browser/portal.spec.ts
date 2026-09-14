@@ -333,6 +333,73 @@ test('authenticator image decodes under CSP and unfinished setup can be retried 
     await h.close();
   }
 });
+test('editing keeps controls visible, preserves in-flight changes and supports preview return', async ({
+  page,
+}) => {
+  const h = await harness(page);
+  try {
+    await page.goto(`/participant/editor/?project=${PA}`);
+    const title = page.getByLabel('Project title', { exact: true });
+    await title.fill('First edit');
+    await expect(page.locator('#f-title-help')).toContainText('10 of 120');
+    await expect(page.locator('[data-editor-status]')).toHaveText(
+      'Unsaved changes.',
+    );
+    const save = page.getByRole('button', { name: 'Save draft', exact: true });
+    await expect(save).toBeInViewport();
+    let releaseSave!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      releaseSave = resolve;
+    });
+    await page.route(
+      '**/rpc/save_project_draft',
+      async (route) => {
+        await gate;
+        await route.fallback();
+      },
+      { times: 1 },
+    );
+    await save.click();
+    await expect(save).toBeDisabled();
+    await title.fill('Typed while saving');
+    releaseSave();
+    await expect(page.locator('[data-editor-status]')).toContainText(
+      'Newer typed changes are still unsaved',
+    );
+    await expect(title).toHaveValue('Typed while saving');
+    await save.click();
+    await expect(page.locator('[data-editor-status]')).toContainText(
+      'Draft saved. Your public page has not changed.',
+    );
+    await page.getByRole('button', { name: 'Preview', exact: true }).click();
+    await expect(page.locator('[data-draft-preview]')).toBeFocused();
+    await page.getByRole('button', { name: 'Back to editing' }).click();
+    await expect(page.locator('[data-draft-preview]')).toBeHidden();
+    await expect(
+      page.getByRole('button', { name: 'Preview', exact: true }),
+    ).toBeFocused();
+    await title.fill('Keep this unsaved text');
+    page.once('dialog', (dialog) => dialog.dismiss());
+    await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+    await expect(title).toHaveValue('Keep this unsaved text');
+    await expect(page.locator('[data-login]')).toBeHidden();
+    await page
+      .getByRole('link', { name: 'Visitor experience', exact: true })
+      .click();
+    const visitor = page.getByLabel('What visitors can do', { exact: true });
+    await visitor.focus();
+    const inputBox = await visitor.boundingBox();
+    const actionBox = await page.locator('[data-editor-actions]').boundingBox();
+    expect(inputBox!.y + inputBox!.height).toBeLessThanOrEqual(actionBox!.y);
+    await page.screenshot({
+      path: 'docs/evidence/portal/editor-polished-mobile.png',
+      fullPage: false,
+    });
+  } finally {
+    await h.close();
+  }
+});
+
 test('participant saves, previews and submits through real SQL; later draft leaves prepared version intact', async ({
   page,
 }) => {

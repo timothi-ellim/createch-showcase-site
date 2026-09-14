@@ -565,6 +565,29 @@ legend {
 .search-label {
   grid-column: 1/-1;
 }
+.search-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.search-control input {
+  flex: 1;
+}
+.search-control button {
+  flex-shrink: 0;
+  min-height: 48px;
+}
+.explore-skip {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding-block: 10px;
+}
+body[data-page='explore'] .section {
+  padding-top: 36px;
+}
+body[data-page='explore'] h1 {
+  font-size: clamp(2.4rem, 4.5vw, 4rem);
+}
 input {
   display: block;
   border: 1px solid #737978;
