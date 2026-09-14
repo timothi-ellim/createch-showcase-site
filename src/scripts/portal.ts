@@ -45,6 +45,12 @@ function urlFor(blob: Blob) {
   return url;
 }
 const messages: Record<string, string> = {
+  PROJECT_IDENTIFIER_TAKEN:
+    'That page identifier is already in use. Choose another; the existing project has not changed.',
+  INVALID_PROJECT_DETAILS:
+    'Enter a title, contributor name, theme and a valid page identifier.',
+  REQUEST_CONFLICT:
+    'This request was already used with different details. Refresh before starting a new request.',
   DRAFT_CONFLICT:
     'A newer draft was saved elsewhere. Your text is still here. Compare it before reloading.',
   ACCESS_DENIED:
@@ -456,6 +462,29 @@ async function showPeople() {
   const people = await rpc<any[]>('get_people'),
     projects = await rpc<ProjectSummary[]>('get_my_projects');
   content.innerHTML = `<section class="reading-panel"><h2>Project memberships</h2><p>Assignments use verified account identities. Revoking access takes effect on the next authorised request.</p>${people.map((p) => `<article class="portal-card"><h3>${e(p.project)}</h3><p>Account ${e(p.userId)}</p><p>${p.active ? 'Active membership' : 'Membership revoked'}</p>${button(p.active ? 'Revoke membership' : 'Restore membership', `data-member="${e(p.projectId)}" data-user="${e(p.userId)}" data-active="${!p.active}"`, 'secondary')}</article>`).join('') || '<p>No memberships yet.</p>'}</section><section class="reading-panel"><h2>Project withdrawals</h2><p>A withdrawal request excludes a project from the next release. Publish and verify the removal before describing it as removed from the public site.</p>${projects.map((p) => `<article class="portal-card"><h3>${e(p.title)}</h3>${button(p.withdrawn ? 'Lift withdrawal for review' : 'Request withdrawal', `data-exclude="${p.id}" data-withdrawn="${!p.withdrawn}"`, 'secondary')}</article>`).join('')}</section>${context.owner ? `<section class="reading-panel"><h2>Editing window</h2>${button(context.editingOpen ? 'Close participant editing' : 'Reopen participant editing', 'data-editing-window', 'secondary')}</section>` : ''}`;
+  if (context.owner) {
+    const createPanel = document.createElement('section');
+    createPanel.className = 'reading-panel';
+    createPanel.innerHTML = `<h2>Create a private project</h2><p>Create the project before assigning its participant. This saves an unfinished draft; it does not send an email or publish a page.</p><form data-create-project><label for="new-project-id">Page identifier</label><input id="new-project-id" required pattern="[a-z][a-z0-9-]{1,79}" maxlength="80" aria-describedby="new-project-id-help" /><p id="new-project-id-help" class="field-help">Use lowercase letters, numbers and hyphens, starting with a letter. This becomes the page address and stays fixed.</p>${field('new-project-title', 'New project title', '', 120, false, true)}${field('new-project-maker', 'New project contributor', '', 100, false, true)}<label for="new-project-theme">Project theme</label><select id="new-project-theme" required><option value="">Choose a theme</option><option value="image">Image</option><option value="world">World</option><option value="relation">Relation</option></select><button class="button dark">Create private project</button></form>`;
+    content.prepend(createPanel);
+    const creationRequest = crypto.randomUUID();
+    $<HTMLFormElement>('[data-create-project]').onsubmit = (event) => {
+      event.preventDefault();
+      void act(async () => {
+        await rpc('create_project', {
+          p_request: creationRequest,
+          p_public_id: $<HTMLInputElement>('#new-project-id').value.trim(),
+          p_title: $<HTMLInputElement>('#f-new-project-title').value.trim(),
+          p_maker: $<HTMLInputElement>('#f-new-project-maker').value.trim(),
+          p_theme: $<HTMLSelectElement>('#new-project-theme').value,
+        });
+        await showPeople();
+        say(
+          'Private project created. Assign an account below when ready. No email was sent.',
+        );
+      });
+    };
+  }
   content.querySelectorAll<HTMLElement>('[data-member]').forEach(
     (b) =>
       (b.onclick = () =>
@@ -527,6 +556,29 @@ async function showPeople() {
 }
 async function showAdministration(projects: ProjectSummary[], people: any[]) {
   const admin = await rpc<any>('get_event_administration');
+  const assignPanel = document.createElement('section');
+  assignPanel.className = 'reading-panel';
+  const accountIds = [
+    ...new Set([
+      identity,
+      ...people.map((p) => p.userId),
+      ...admin.roles.filter((r: any) => r.active).map((r: any) => r.userId),
+    ]),
+  ].filter(Boolean);
+  assignPanel.innerHTML = `<h2>Assign an existing account</h2><p>Select a checked account already known to this workspace. New participants use the invitation form.</p><form data-assign-existing><label for="existing-project">Project to assign</label><select id="existing-project" required><option value="">Choose a project</option>${projects.map((p) => `<option value="${e(p.id)}">${e(p.title)}</option>`).join('')}</select><label for="existing-account">Existing participant account</label><select id="existing-account" required><option value="">Choose an account</option>${accountIds.map((id) => `<option value="${e(id)}">${id === identity ? 'My signed-in account' : e(id)}</option>`).join('')}</select><button class="button dark">Assign existing account</button></form>`;
+  content.append(assignPanel);
+  $<HTMLFormElement>('[data-assign-existing]').onsubmit = (event) => {
+    event.preventDefault();
+    void act(async () => {
+      await rpc('set_membership', {
+        p_project: $<HTMLSelectElement>('#existing-project').value,
+        p_user: $<HTMLSelectElement>('#existing-account').value,
+        p_active: true,
+      });
+      await showPeople();
+      say('Project assigned to the selected account. No email was sent.');
+    });
+  };
   const panel = document.createElement('section');
   panel.className = 'reading-panel';
   panel.innerHTML = `<h2>Publication settings</h2><p>Changes here require a new reviewed release. Enter confirmed public information only.</p><details><summary>Project placement and access information</summary><label for="metadata-project">Project to update</label><select id="metadata-project"><option value="">Choose a project</option>${projects.map((p) => `<option value="${e(p.id)}">${e(p.title)}</option>`).join('')}</select><div data-metadata-form></div></details><details><summary>Event contact and visitor information</summary><form data-event-form>${field('event-contact', 'Public contact email', admin.event.config.publicContact?.email || '', 254)}${field('event-access', 'Confirmed venue access information', admin.event.config.confirmedVenueAccessInformation || '', 2000, true)}${field('event-booking', 'Confirmed visitor registration link', admin.event.config.visitorRegistrationUrl || '', 1000)}<label><input id="portal-ready" type="checkbox" ${admin.event.config.participantEditingRoute === 'supabase-portal' ? 'checked' : ''} />The Supabase participant route has been verified for this environment</label><button class="button dark">Save event information for review</button></form></details><details><summary>Image permissions</summary><p>Revocation invalidates releases that use the image. A verified removal release is still required.</p>${admin.assets.map((a: any) => `<p>${e(a.project)} · ${e(a.id)} ${a.revoked ? 'Permission revoked' : button('Revoke image permission', `data-revoke-asset="${e(a.id)}"`, 'secondary')}</p>`).join('') || '<p>No uploaded images.</p>'}</details>${

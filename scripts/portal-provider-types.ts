@@ -60,7 +60,7 @@ await writeFile(
       comparison:
         'RPC names agree with independently executed PGlite migrations',
       network: 'createch-local-loopback',
-      notProven: 'Cloud project schema has not been configured',
+      notProven: 'This local type-generation check does not verify the hosted schema.',
     },
     null,
     2,

@@ -677,3 +677,63 @@ test('organiser metadata and event updates are versioned; participant gets no ad
     await h.close();
   }
 });
+
+test('owner creates a private project and assigns an existing account without sending an invitation', async ({
+  page,
+}) => {
+  const h = await harness(page, true);
+  try {
+    await page.goto('/organiser/people/');
+    await page
+      .getByLabel('Page identifier', { exact: true })
+      .fill('synthetic-created-project');
+    await page
+      .getByLabel('New project title', { exact: true })
+      .fill('Synthetic created project');
+    await page
+      .getByLabel('New project contributor', { exact: true })
+      .fill('Synthetic contributor');
+    await page
+      .getByLabel('Project theme', { exact: true })
+      .selectOption('relation');
+    await page
+      .getByRole('button', { name: 'Create private project', exact: true })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'Private project created',
+    );
+    await page
+      .getByLabel('Project to assign', { exact: true })
+      .selectOption({ label: 'Synthetic created project' });
+    await page
+      .getByLabel('Existing participant account', { exact: true })
+      .selectOption({ label: 'My signed-in account' });
+    await page
+      .getByRole('button', { name: 'Assign existing account', exact: true })
+      .click();
+    await expect(page.getByRole('status')).toContainText('Project assigned');
+    await asUser(h.db, O, 'authenticated', 'aal2');
+    const project = (await rpc(h.db, 'get_my_projects')).find(
+      (p: any) => p.publicId === 'synthetic-created-project',
+    );
+    expect(project).toBeTruthy();
+    const draft = await rpc(h.db, 'get_project_draft', [project.id]);
+    expect(draft.fields.permission).toBe(false);
+    expect(draft.fields.description).toBe('');
+    expect(
+      (await rpc(h.db, 'get_people')).some(
+        (p: any) => p.projectId === project.id && p.userId === O && p.active,
+      ),
+    ).toBe(true);
+    await h.db.exec('reset role');
+    expect(
+      (
+        await h.db.query<{ n: number }>(
+          'select count(*)::int as n from editorial.provision_requests',
+        )
+      ).rows[0].n,
+    ).toBe(0);
+  } finally {
+    await h.close();
+  }
+});

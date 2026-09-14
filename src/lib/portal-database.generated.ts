@@ -25,6 +25,16 @@ export type Database = {
         Args: { p_email: string; p_project: string; p_request: string };
         Returns: Json;
       };
+      create_project: {
+        Args: {
+          p_maker: string;
+          p_public_id: string;
+          p_request: string;
+          p_theme: string;
+          p_title: string;
+        };
+        Returns: string;
+      };
       decide_revision: {
         Args: {
           p_decision: string;

@@ -83,5 +83,5 @@ export function renderProjectBody(
     <noscript><p>To share, copy the address from your browser. Enable JavaScript to save a shortlist.</p></noscript>`
         : '<p class="notice">Private preview. This version is not live.</p>'
     }
-    <a class="text-link" href="/visit/">Visit information ↗</a></aside></div>`;
+    ${options.privatePreview ? '<a class="text-link" href="/participants/">Participant help ↗</a>' : '<a class="text-link" href="/visit/">Visit information ↗</a>'}</aside></div>`;
 }
