@@ -1,0 +1,33 @@
+---
+import type { PublicProject } from '../data/catalogue';
+interface Props {
+  project: PublicProject;
+}
+const { project } = Astro.props;
+---
+
+<figure class="project-figure">
+  <div class:list={['project-media', project.theme]}>
+    {project.media ? (
+      <img
+        src={project.media.src}
+        alt={project.media.alt}
+        loading="lazy"
+        width="960"
+        height="640"
+      />
+    ) : (
+      <>
+        <span class="placeholder-symbol" aria-hidden="true">
+          {project.theme === 'image'
+            ? '◉'
+            : project.theme === 'world'
+              ? '↗'
+              : '⤫'}
+        </span>
+        <span class="placeholder-caption">Image pending approval</span>
+      </>
+    )}
+  </div>
+  {project.media && <figcaption>{project.media.credit}</figcaption>}
+</figure>

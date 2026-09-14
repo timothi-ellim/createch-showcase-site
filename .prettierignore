@@ -1,0 +1,10 @@
+node_modules
+.astro
+local-dist
+dist
+.build-candidates
+docs/reference
+docs/evidence
+playwright-report
+test-results
+package-lock.json

@@ -1,0 +1,22 @@
+---
+import { event, timeLabel } from '../data/catalogue';
+---
+
+<dl class="event-facts">
+  <div>
+    <dt>When</dt>
+    <dd>
+      <time datetime={event.date}>{event.dateLabel}</time>
+      <span>{timeLabel}</span>
+    </dd>
+  </div>
+  <div>
+    <dt>Where</dt>
+    <dd>
+      {event.venue.name}, {event.venue.city}
+      <span>
+        {event.venue.streetAddress} · {event.venue.postalCode}
+      </span>
+    </dd>
+  </div>
+</dl>

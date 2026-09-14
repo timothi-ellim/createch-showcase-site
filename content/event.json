@@ -1,0 +1,22 @@
+{
+  "title": "Where Code Becomes Culture",
+  "series": "CreaTech Showcase 2026",
+  "date": "2026-10-28",
+  "dateLabel": "Wednesday 28 October 2026",
+  "startTime": "11:00",
+  "endTime": "16:00",
+  "timeZone": "Europe/London",
+  "venue": {
+    "name": "Canopy",
+    "streetAddress": "41 King Street",
+    "city": "Leicester",
+    "postalCode": "LE1 6RN"
+  },
+  "primaryAction": "Explore the showcase",
+  "secondaryAction": "Plan your visit",
+  "activeParticipantDeadline": null,
+  "visitorRegistrationUrl": null,
+  "publicContact": null,
+  "confirmedVenueAccessInformation": null,
+  "participantEditingRoute": "not-configured"
+}

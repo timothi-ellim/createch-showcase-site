@@ -1,0 +1,13 @@
+---
+import PortalShell from '../../components/PortalShell.astro';
+export function getStaticPaths() {
+  return [
+    { path: undefined, surface: 'dashboard', title: 'Your projects' },
+    { path: 'login', surface: 'login', title: 'Participant sign in' },
+    { path: 'editor', surface: 'editor', title: 'Edit your project' },
+    { path: 'preview', surface: 'preview', title: 'Private project preview' },
+  ].map(({ path, ...props }) => ({ params: { path }, props }));
+}
+---
+
+<PortalShell {...Astro.props} />

@@ -1,0 +1,29 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { projects, isSynthetic } from '../../data/catalogue';
+import { renderProjectBody } from '../../lib/project-renderer';
+export function getStaticPaths() {
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+const { project } = Astro.props;
+const related = project.relatedIds
+  .map((id) => projects.find((candidate) => candidate.id === id))
+  .filter((candidate) => candidate !== undefined);
+---
+
+<Layout
+  title={project.title}
+  description={`${project.invitation}${isSynthetic ? ' Synthetic local fixture; not an announced work.' : ''}`}
+>
+  <div class="wrap section detail">
+    <a class="text-link" href="/explore/" data-back-to-results>
+      ← Back to all projects
+    </a>
+    <Fragment
+      set:html={renderProjectBody(project, { synthetic: isSynthetic, related })}
+    />
+  </div>
+</Layout>

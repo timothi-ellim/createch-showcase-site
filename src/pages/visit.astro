@@ -1,0 +1,91 @@
+---
+import Layout from '../layouts/Layout.astro';
+import EventFacts from '../components/EventFacts.astro';
+import { event, directionsUrl } from '../data/catalogue';
+---
+
+<Layout title="Plan your visit">
+  <div class="wrap section">
+    <p class="eyebrow">Come with curiosity</p>
+    <h1>Plan your visit.</h1>
+    <p class="lead">The essentials for finding your way to the showcase.</p>
+    <div class="visit-grid">
+      <section class="reading-panel">
+        <h2>When & where</h2>
+        <EventFacts />
+        <a class="button lime" href={directionsUrl}>
+          Get directions <span aria-hidden="true">↗</span>
+        </a>
+        <p class="small">Opens a Google Maps search for the venue address.</p>
+      </section>
+      <section class="venue-type">
+        <span class="eyebrow">The meeting point</span>
+        <h2>
+          {event.venue.name}
+          <span>{event.venue.city}</span>
+        </h2>
+        <p>
+          {event.venue.streetAddress}
+          <br />
+          {event.venue.postalCode}
+        </p>
+        <span class="venue-mark" aria-hidden="true">
+          ↗
+        </span>
+      </section>
+    </div>
+    <section class="visit-details">
+      <h2>Know before you go.</h2>
+      <p>
+        {event.registrationPolicy && event.confirmedVenueAccessInformation
+          ? 'Use the organiser-confirmed information below to plan your day.'
+          : 'Some details are awaiting organiser confirmation. Please check back before travelling.'}
+      </p>
+      <details open>
+        <summary>Arrival & registration</summary>
+        <p>
+          {event.arrivalInformation ??
+            'Arrival instructions have not yet been confirmed.'}
+        </p>
+        <p>
+          {event.registrationPolicy ??
+            'Entry eligibility and the registration or booking policy have not yet been confirmed.'}
+        </p>
+        {event.visitorRegistrationUrl && (
+          <a class="text-link" href={event.visitorRegistrationUrl}>
+            Registration information ↗
+          </a>
+        )}
+      </details>
+      <details open>
+        <summary>Accessibility & sensory information</summary>
+        <p>
+          {event.confirmedVenueAccessInformation ??
+            'Verified venue access information has not yet been supplied. Step-free routes, seating, captions and quiet-space arrangements are not confirmed.'}
+        </p>
+      </details>
+      <details>
+        <summary>Programme & finding projects</summary>
+        <p>
+          Final project locations, timings and a room map are not yet available.
+          The Image, World and Relation themes are not room assignments.
+        </p>
+      </details>
+      <details>
+        <summary>Contact the organiser</summary>
+        {event.publicContact ? (
+          <p>
+            <a href={`mailto:${event.publicContact.email}`}>
+              {event.publicContact.label}
+            </a>
+          </p>
+        ) : (
+          <p>
+            An organiser-approved public contact is not yet available on this
+            site.
+          </p>
+        )}
+      </details>
+    </section>
+  </div>
+</Layout>

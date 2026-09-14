@@ -1,0 +1,53 @@
+{
+  "name": "createch-showcase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0 <23 || >=24 <25"
+  },
+  "scripts": {
+    "dev": "astro dev --host 127.0.0.1",
+    "check": "astro check",
+    "build": "astro build",
+    "build:local": "astro build --mode fixture-preview",
+    "build:portal-staging": "astro build --config astro.portal.config.mjs --mode portal-staging",
+    "preview": "astro preview --mode fixture-preview --host 127.0.0.1",
+    "preview:stop": "astro preview stop",
+    "test": "playwright test",
+    "test:unit": "node --test tests/release.test.mjs",
+    "editorial": "node editorial/cli.ts",
+    "pilot": "node editorial/cli.ts pilot",
+    "pilot:serve": "node editorial/cli.ts serve",
+    "test:editorial": "node --test tests/editorial/*.test.ts",
+    "format": "prettier --write src editorial tests astro.config.mjs playwright.config.ts content package.json tsconfig.json",
+    "test:portal": "node --test tests/portal/*.test.ts",
+    "test:portal:browser": "playwright test --config=playwright.portal.config.ts",
+    "portal:types": "node scripts/portal-types.ts",
+    "portal:local": "node scripts/portal-local.ts",
+    "test:portal:integration": "node scripts/portal-integration.ts",
+    "portal:types:local": "node scripts/portal-provider-types.ts",
+    "test:portal:mail": "node scripts/portal-mail-test.ts",
+    "test:portal:real-browser": "node scripts/portal-real-browser.ts",
+    "test:portal:restore": "node scripts/portal-restore-test.ts",
+    "test:portal:api": "node scripts/portal-api-security.ts",
+    "portal:connect-local": "node scripts/portal-connect-local.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.116.0",
+    "astro": "7.3.2",
+    "sharp": "0.35.4",
+    "zod": "4.6.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@axe-core/playwright": "4.11.1",
+    "@electric-sql/pglite": "0.5.8",
+    "@playwright/test": "1.63.0",
+    "prettier": "3.9.6",
+    "prettier-plugin-astro": "1.0.0",
+    "supabase": "2.117.0",
+    "typescript": "6.0.3",
+    "wrangler": "4.131.2"
+  }
+}

@@ -1,0 +1,155 @@
+/* CreaTech poster identity, specification starter v1.1.
+   Merge into the EXISTING token layer after inspection. This is not a complete
+   app stylesheet or proof of browser accessibility. No fonts are bundled.
+   UI colours are normalised approximations of the attached poster. */
+:root {
+  --ct-blue: #3014fa;
+  --ct-blue-deep: #2410be;
+  --ct-lemon: #fffab1;
+  --ct-pink: #ebbeff;
+  --ct-white: #fefdff;
+  --ct-paper: #f7f5f1;
+  --ct-ink: #191721;
+  --ct-muted: #5c556a;
+  --ct-border-strong: #797285;
+  --ct-success-fg: #195834;
+  --ct-success-bg: #e9f5ed;
+  --ct-warning-fg: #714700;
+  --ct-warning-bg: #fff0c7;
+  --ct-error-fg: #9b2348;
+  --ct-error-bg: #fbe6ed;
+  --ct-info-bg: #efebff;
+
+  --ct-font-display: Arial, Helvetica, sans-serif;
+  --ct-font-body: Arial, Helvetica, sans-serif;
+  /* Replace ONLY after the pixel font and web-use licence are established. */
+  --ct-font-pixel: ui-monospace, SFMono-Regular, Consolas, monospace;
+  --ct-body-size: 1.0625rem;
+  --ct-body-leading: 1.6;
+  --ct-reading-measure: 65ch;
+  --ct-radius-card: 0.25rem;
+  --ct-radius-control: 0.25rem;
+  --ct-radius-meta: 999px;
+  --ct-control-primary: 3rem;
+  --ct-control-secondary: 2.75rem;
+  --ct-motion-fast: 120ms;
+  --ct-motion-default: 160ms;
+  --ct-content-max: 80rem;
+
+  /* Default reading surface. Contextual aliases prevent a contrast failure
+     when a button is moved from the hero into a white editing form. */
+  --ct-surface: var(--ct-paper);
+  --ct-text: var(--ct-ink);
+  --ct-text-secondary: var(--ct-muted);
+  --ct-link: var(--ct-blue);
+  --ct-action-bg: var(--ct-blue);
+  --ct-action-fg: var(--ct-white);
+  --ct-control-border: var(--ct-border-strong);
+  --ct-focus-inner: var(--ct-white);
+  --ct-focus-outer: var(--ct-blue);
+}
+
+.ct-brand-surface {
+  --ct-surface: var(--ct-blue);
+  --ct-text: var(--ct-white);
+  --ct-text-secondary: var(--ct-white);
+  --ct-link: var(--ct-lemon);
+  --ct-action-bg: var(--ct-lemon);
+  --ct-action-fg: var(--ct-ink);
+  --ct-control-border: var(--ct-white);
+  --ct-focus-inner: var(--ct-blue-deep);
+  --ct-focus-outer: var(--ct-lemon);
+}
+
+/* Reset in a reading panel nested inside a blue shell. */
+.ct-reading-surface {
+  --ct-surface: var(--ct-paper);
+  --ct-text: var(--ct-ink);
+  --ct-text-secondary: var(--ct-muted);
+  --ct-link: var(--ct-blue);
+  --ct-action-bg: var(--ct-blue);
+  --ct-action-fg: var(--ct-white);
+  --ct-control-border: var(--ct-border-strong);
+  --ct-focus-inner: var(--ct-white);
+  --ct-focus-outer: var(--ct-blue);
+}
+
+.ct-brand-surface,
+.ct-reading-surface {
+  background-color: var(--ct-surface);
+  color: var(--ct-text);
+}
+.ct-link {
+  color: var(--ct-link);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.ct-action {
+  min-block-size: var(--ct-control-primary);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ct-action-fg);
+  border-radius: var(--ct-radius-control);
+  background: var(--ct-action-bg);
+  color: var(--ct-action-fg);
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  white-space: normal;
+}
+/* Do not remove the repo's existing focus rules. Map this example to them. */
+.ct-focusable:focus-visible,
+.ct-action:focus-visible,
+.ct-link:focus-visible {
+  outline: 3px solid var(--ct-focus-outer);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px var(--ct-focus-inner);
+}
+.ct-status {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: var(--ct-radius-control);
+}
+.ct-status--info {
+  color: var(--ct-blue);
+  background: var(--ct-info-bg);
+}
+.ct-status--success {
+  color: var(--ct-success-fg);
+  background: var(--ct-success-bg);
+}
+.ct-status--warning {
+  color: var(--ct-warning-fg);
+  background: var(--ct-warning-bg);
+}
+.ct-status--error {
+  color: var(--ct-error-fg);
+  background: var(--ct-error-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ct-motion-fast: 0ms;
+    --ct-motion-default: 0ms;
+  }
+}
+@media (forced-colors: active) {
+  .ct-brand-surface,
+  .ct-reading-surface,
+  .ct-status,
+  .ct-action {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+  .ct-link {
+    color: LinkText;
+  }
+  .ct-focusable:focus-visible,
+  .ct-action:focus-visible,
+  .ct-link:focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 3px;
+    box-shadow: none;
+  }
+}

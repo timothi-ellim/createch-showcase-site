@@ -1,0 +1,30 @@
+# Minimal hosted override. Copy into an isolated workdir's supabase/config.toml.
+# Do not push the local-development config.toml to the hosted project.
+project_id = "createch-showcase-staging"
+
+[api]
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+auto_expose_new_tables = false
+
+[auth]
+site_url = "https://createch-showcase-staging.pages.dev"
+additional_redirect_urls = ["https://createch-showcase-staging.pages.dev/participant/login/"]
+enable_signup = false
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+otp_length = 6
+otp_expiry = 3600
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+# Custom templates must be applied after an approved SMTP provider is configured.
+# The hosted free/default-mail service rejects template modifications (HTTP 400).
+# Required template files remain in supabase/templates/.

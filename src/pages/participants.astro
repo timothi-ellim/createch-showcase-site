@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { event, isSynthetic } from '../data/catalogue';
+const connected = event.participantEditingRoute === 'supabase-portal';
+const localTesting =
+  isSynthetic &&
+  import.meta.env.PUBLIC_PORTAL_ENVIRONMENT === 'local' &&
+  !!import.meta.env.PUBLIC_SUPABASE_URL;
+---
+
+<Layout title="Participant help">
+  <div class="wrap section prose">
+    <p class="eyebrow">For contributors</p>
+    <h1>Your work, in your words.</h1>
+    <p class="lead">
+      {connected
+        ? 'Sign in with your invited email address to review your public project page.'
+        : localTesting
+          ? 'The local workspace is connected for synthetic testing. Real participant editing is not open yet.'
+          : 'The participant editor is being prepared. It is not connected for participant use yet.'}
+    </p>
+    <section class="reading-panel">
+      <h2>What happens next</h2>
+      <p>
+        {connected
+          ? 'Open the participant workspace and verify your first invitation code. After that, request fresh sign-in codes using your invited email address. You can edit only your assigned projects.'
+          : 'The planned workspace lets invited contributors edit their own text and main image, preview a page and submit an exact version for review.'}
+      </p>
+      <p>
+        Save draft keeps your changes private. Preview shows the shared page
+        layout. Submit for review sends that version to the organiser. Keep
+        sign-in codes private. Installation logistics remain separate.
+      </p>
+      <p>
+        Changes will need organiser review before publication. Submitting an
+        edit, approval and going live are separate steps.
+      </p>
+      <h2>Need help?</h2>
+      {event.publicContact ? (
+        <p>
+          For help with your project assignment or signing in, contact{' '}
+          <a href={`mailto:${event.publicContact.email}`}>
+            {event.publicContact.label}
+          </a>
+          .
+        </p>
+      ) : (
+        <p>
+          A verified public contact is still awaiting confirmation. Use your
+          existing organiser contact for help. Real participant invitations
+          require organiser approval.
+        </p>
+      )}
+    </section>
+    <a class="button dark" href="/participant/login/">
+      {connected
+        ? 'Open participant workspace'
+        : localTesting
+          ? 'Open local test workspace'
+          : 'Check editor availability'}
+    </a>
+    <a class="text-link" href="/">
+      ← Return to the showcase
+    </a>
+  </div>
+</Layout>

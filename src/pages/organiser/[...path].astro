@@ -1,0 +1,13 @@
+---
+import PortalShell from '../../components/PortalShell.astro';
+export function getStaticPaths() {
+  return [
+    { path: undefined, surface: 'queue', title: 'Review submissions' },
+    { path: 'review', surface: 'review', title: 'Review this version' },
+    { path: 'releases', surface: 'releases', title: 'Showcase releases' },
+    { path: 'people', surface: 'people', title: 'People and access' },
+  ].map(({ path, ...props }) => ({ params: { path }, props }));
+}
+---
+
+<PortalShell {...Astro.props} />

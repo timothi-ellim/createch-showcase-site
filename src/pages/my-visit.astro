@@ -1,0 +1,76 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import EventFacts from '../components/EventFacts.astro';
+import { projects } from '../data/catalogue';
+---
+
+<Layout title="My visit">
+  <div class="wrap section" id="shortlist">
+    <p class="eyebrow">A little room for discovery</p>
+    <h1>My visit.</h1>
+    <p class="lead">Your own collection of things to explore.</p>
+    <p class="section-intro">
+      Saved on this device, in this browser. This is not a booking and does not
+      sync across devices. Clearing your browser data removes your shortlist.
+    </p>
+    <noscript>
+      <p class="notice">
+        JavaScript is needed to read your device-local shortlist. You can still{' '}
+        <a href="/explore/">browse every project</a> and note down your
+        favourites.
+      </p>
+    </noscript>
+    <p id="storage-notice" role="status"></p>
+    <button hidden data-remove-unavailable class="button secondary">
+      Remove unavailable entries
+    </button>
+    <div class="shortlist-undo" hidden data-shortlist-undo>
+      <p>Your last shortlist change can be undone until you leave this page.</p>
+      <button class="button secondary" data-undo-saved>
+        Undo last change
+      </button>
+    </div>
+    <div class="shortlist-toolbar" hidden>
+      <p id="shortlist-count" role="status"></p>
+      <a href="/explore/" class="text-link">
+        Find more projects ↗
+      </a>
+      <button data-clear-saved class="button secondary">
+        Clear shortlist
+      </button>
+      <button data-print class="button secondary">
+        Print my visit
+      </button>
+    </div>
+    <div id="shortlist-empty" class="empty-state" hidden>
+      <span class="empty-icon" aria-hidden="true">
+        ＋
+      </span>
+      <h2>A visit full of possibilities.</h2>
+      <p>
+        Find something that sparks your curiosity and choose “Save”. Your
+        projects will appear here.
+      </p>
+      <a class="button lime" href="/explore/">
+        Explore the showcase ↗
+      </a>
+    </div>
+    <div class="project-grid">
+      {projects.map((project) => (
+        <ProjectCard project={project} saved />
+      ))}
+    </div>
+    <div class="visit-note">
+      <h2>Before you set off</h2>
+      <EventFacts />
+      <p>
+        Check the confirmed event details and the information still awaiting
+        confirmation.
+      </p>
+      <a class="text-link" href="/visit/">
+        Plan your visit ↗
+      </a>
+    </div>
+  </div>
+</Layout>

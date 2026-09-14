@@ -1,0 +1,14 @@
+node_modules/
+.astro/
+dist/
+local-dist/
+portal-dist/
+test-results/
+playwright-report/
+.env*
+!.env.example
+.portal-test/
+.build-candidates/
+*.private.json
+.clasp.json
+*.log

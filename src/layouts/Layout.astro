@@ -1,0 +1,125 @@
+---
+import '../styles/global.css';
+import {
+  event,
+  address,
+  timeLabel,
+  contentRevision,
+  isPreview,
+  isSynthetic,
+} from '../data/catalogue';
+interface Props {
+  title?: string;
+  description?: string;
+  privatePage?: boolean;
+}
+const {
+  title,
+  privatePage = false,
+  description = `${event.title}. ${event.dateLabel}, ${timeLabel}. ${address}.${isPreview ? ' Local development preview.' : ''}`,
+} = Astro.props;
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/explore/', label: 'Explore' },
+  { href: '/my-visit/', label: 'My visit' },
+  { href: '/visit/', label: 'Visit info' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title ? `${title} | CreaTech` : `${event.title} | ${event.series}`}</title>
+    <meta name="description" content={description} />
+    {(isPreview || privatePage) && (
+      <meta name="robots" content="noindex, nofollow" />
+    )}
+    <meta name="referrer" content="no-referrer" />
+    <meta name="createch-revision" content={contentRevision} />
+    {!isPreview && event.publicSiteUrl && (
+      <link rel="canonical" href={new URL(path, event.publicSiteUrl).href} />
+    )}
+    <meta property="og:title" content={title ?? event.title} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body
+    data-synthetic={String(isSynthetic)}
+    data-preview={String(isPreview)}
+    data-page={
+      privatePage
+        ? 'private'
+        : path === '/'
+          ? 'home'
+          : path === '/explore/'
+            ? 'explore'
+            : 'reading'
+    }
+  >
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    {isPreview && (
+      <div class="preview-notice" role="region" aria-label="Preview notice">
+        <span>LOCAL PREVIEW</span>{' '}
+        {isSynthetic
+          ? 'Project entries are synthetic. Event details are organiser-confirmed.'
+          : 'Approved content preview. This is not the live public website.'}
+      </div>
+    )}
+    <header class="site-header wrap">
+      <a class="brand" href="/" aria-label="CreaTech homepage">
+        CreaTech
+        <span>{event.series.replace('CreaTech ', '').toUpperCase()}</span>
+      </a>
+      <nav aria-label="Main navigation">
+        {nav.map((item) => (
+          <a
+            href={item.href}
+            aria-current={path === item.href ? 'page' : undefined}
+          >
+            {item.label}
+            {item.label === 'My visit' && (
+              <span data-saved-count aria-hidden="true"></span>
+            )}
+          </a>
+        ))}
+      </nav>
+    </header>
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <footer class="site-footer wrap">
+      <div>
+        <a class="brand" href="/">
+          CreaTech<span>{event.title.toUpperCase()}</span>
+        </a>
+        <p>
+          {event.dateLabel} · {event.venue.name}, {event.venue.city}
+        </p>
+      </div>
+      <div class="footer-links">
+        <a href="/explore/">Browse all projects</a>
+        <a href="/participants/">Participant help</a>
+        <a href="/visit/">Plan your visit</a>
+      </div>
+      <p class="footer-note">
+        {isSynthetic
+          ? 'Local development preview. No participant catalogue has been approved for publication.'
+          : 'Explore the showcase at your own pace. Your shortlist stays in this browser.'}
+      </p>
+    </footer>
+    <div
+      id="status"
+      class="status-toast"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+    {!privatePage && <script>
+      import '../scripts/visitor';
+    </script>}
+  </body>
+</html>

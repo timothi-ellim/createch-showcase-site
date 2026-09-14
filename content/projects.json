@@ -1,0 +1,102 @@
+{
+  "revision": "local-fixtures-1",
+  "publicationStatus": "synthetic-local-only",
+  "themes": [
+    {
+      "id": "image",
+      "name": "Image",
+      "description": "Seeing, representations, bodies and identities.",
+      "number": "01"
+    },
+    {
+      "id": "world",
+      "name": "World",
+      "description": "Places, performance, moving images and presence.",
+      "number": "02"
+    },
+    {
+      "id": "relation",
+      "name": "Relation",
+      "description": "Judgement, ritual, feeling and cooperation.",
+      "number": "03"
+    }
+  ],
+  "projects": [
+    {
+      "id": "fixture-01",
+      "slug": "sample-image-study",
+      "title": "Sample image study",
+      "maker": "Synthetic contributor A",
+      "theme": "image",
+      "encounters": ["Look / listen"],
+      "invitation": "Imagine how a changing pattern could shift the way you see an image.",
+      "description": "This fictional record demonstrates a project page for a visual work. It exists to test browsing, reading and saving; it is not an announced work or participant.",
+      "visitorAction": "Example interaction: observe a sequence of abstract patterns. This is fixture copy, not programme information.",
+      "media": null,
+      "accessNotes": null,
+      "duration": null,
+      "room": null,
+      "schedule": null,
+      "links": [],
+      "relatedIds": [],
+      "approvedRevision": null
+    },
+    {
+      "id": "fixture-02",
+      "slug": "sample-world-study",
+      "title": "Sample world study",
+      "maker": "Synthetic contributor B",
+      "theme": "world",
+      "encounters": ["Look / listen"],
+      "invitation": "Consider how a digital scene might change our sense of place.",
+      "description": "This fictional record tests the shared layout for a screen-based project. No artist, work, equipment or encounter has been confirmed by this example.",
+      "visitorAction": "Example interaction: look at an imagined digital environment. This is fixture copy, not programme information.",
+      "media": null,
+      "accessNotes": null,
+      "duration": null,
+      "room": null,
+      "schedule": null,
+      "links": [],
+      "relatedIds": [],
+      "approvedRevision": null
+    },
+    {
+      "id": "fixture-03",
+      "slug": "sample-relation-study",
+      "title": "Sample relation study",
+      "maker": "Synthetic contributor C",
+      "theme": "relation",
+      "encounters": ["Participate"],
+      "invitation": "Explore the idea of making a shared decision with other people.",
+      "description": "This fictional record demonstrates how an invitation to participate could appear. Participation arrangements and access information require separate approval.",
+      "visitorAction": "Example interaction: choose between hypothetical prompts. This is fixture copy, not programme information.",
+      "media": null,
+      "accessNotes": null,
+      "duration": null,
+      "room": null,
+      "schedule": null,
+      "links": [],
+      "relatedIds": [],
+      "approvedRevision": null
+    },
+    {
+      "id": "fixture-04",
+      "slug": "sample-long-title",
+      "title": "A sample project with a deliberately long title about seeing ourselves through changing digital representations",
+      "maker": "Synthetic contributor D",
+      "theme": "image",
+      "encounters": ["Participate"],
+      "invitation": "A longer example to check that every idea has room to be read.",
+      "description": "This synthetic entry exercises long titles, mobile wrapping and missing imagery. It is not a real project and carries no publication approval.",
+      "visitorAction": "Example interaction: respond to an imagined image prompt. This is fixture copy, not programme information.",
+      "media": null,
+      "accessNotes": null,
+      "duration": null,
+      "room": null,
+      "schedule": null,
+      "links": [],
+      "relatedIds": [],
+      "approvedRevision": null
+    }
+  ]
+}

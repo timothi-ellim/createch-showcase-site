@@ -1,0 +1,122 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { projects, themes, isSynthetic } from '../data/catalogue';
+---
+
+<Layout title="Explore the showcase">
+  <div class="wrap section">
+    <p class="eyebrow">The showcase</p>
+    <h1>Follow your curiosity.</h1>
+    <p class="lead">Explore by idea or by how you’d like to take part.</p>
+    {isSynthetic && (
+      <p class="muted">
+        All entries and encounter labels below are synthetic examples, not a
+        confirmed programme.
+      </p>
+    )}
+    <form
+      id="filters"
+      class="filters"
+      hidden
+      role="search"
+      aria-label="Filter projects"
+    >
+      <label class="search-label" for="search">
+        {isSynthetic ? 'Search the sample projects' : 'Search projects'}
+        <input
+          id="search"
+          type="search"
+          enterkeyhint="search"
+          placeholder="Project, contributor or keyword"
+        />
+      </label>
+      <fieldset>
+        <legend>Theme</legend>
+        <div class="filter-options">
+          <button
+            type="button"
+            aria-label="All themes"
+            data-theme-filter="all"
+            aria-pressed="true"
+          >
+            All themes
+          </button>
+          {themes.map((theme) => (
+            <button
+              type="button"
+              aria-label={theme.name}
+              data-theme-filter={theme.id}
+              aria-pressed="false"
+            >
+              {theme.name}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Encounter</legend>
+        <div class="filter-options">
+          <button
+            type="button"
+            aria-label="All encounters"
+            data-encounter-filter="all"
+            aria-pressed="true"
+          >
+            All encounters
+          </button>
+          <button
+            type="button"
+            aria-label="Look / listen"
+            data-encounter-filter="Look / listen"
+            aria-pressed="false"
+          >
+            Look / listen
+          </button>
+          <button
+            type="button"
+            aria-label="Participate"
+            data-encounter-filter="Participate"
+            aria-pressed="false"
+          >
+            Participate
+          </button>
+        </div>
+      </fieldset>
+      <button type="reset" class="text-button">
+        Clear all filters
+      </button>
+      <button type="button" class="button outline" data-surprise>
+        Surprise me ↗
+      </button>
+      <a
+        class="button lime results-jump"
+        href="#result-count"
+        data-view-results
+      >
+        View results ↓
+      </a>
+    </form>
+    <noscript>
+      <p class="notice">
+        All projects are shown below. Enable JavaScript to filter projects or
+        save a shortlist.
+      </p>
+    </noscript>
+    <p id="result-count" tabindex="-1" role="status" aria-live="polite">
+      {projects.length} {isSynthetic ? 'sample projects' : 'projects'}
+    </p>
+    <div id="project-results" class="project-grid explore-grid">
+      {projects.map((project) => (
+        <ProjectCard project={project} />
+      ))}
+    </div>
+    <div id="no-results" class="empty-state" hidden>
+      <h2>No projects match yet.</h2>
+      <p>Try a different keyword or clear the filters to see every project.</p>
+      <button data-reset-filters class="button lime">
+        Clear all filters
+      </button>
+    </div>
+  </div>
+</Layout>

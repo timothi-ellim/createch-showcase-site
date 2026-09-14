@@ -1,0 +1,13 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": { "allowImportingTsExtensions": true },
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": [
+    "dist",
+    "local-dist",
+    "portal-dist",
+    "node_modules",
+    ".build-candidates",
+    "supabase/functions"
+  ]
+}

@@ -1,0 +1,53 @@
+---
+import type { PublicProject } from '../data/catalogue';
+import { isSynthetic } from '../data/catalogue';
+import ProjectMedia from './ProjectMedia.astro';
+interface Props {
+  project: PublicProject;
+  saved?: boolean;
+  headingLevel?: 'h2' | 'h3';
+}
+const { project, saved = false, headingLevel: Heading = 'h2' } = Astro.props;
+---
+
+<article
+  id={`project-${project.id}`}
+  tabindex="-1"
+  class="project-card"
+  data-project-card
+  data-id={project.id}
+  data-theme={project.theme}
+  data-encounters={project.encounters.join('|')}
+  data-search={`${project.title} ${project.maker} ${project.invitation}`.toLowerCase()}
+  hidden={saved}
+>
+  <ProjectMedia project={project} />
+  <div class="card-copy">
+    {isSynthetic && (
+      <p class="fixture-label">Synthetic fixture · Not an announced work</p>
+    )}
+    <p class:list={['theme-label', project.theme]}>
+      Code becomes {project.theme}
+    </p>
+    <Heading>
+      <a data-project-link href={`/projects/${project.slug}/`}>
+        {project.title}
+      </a>
+    </Heading>
+    <p class="maker">{project.maker}</p>
+    <p>{project.invitation}</p>
+    <div class="card-bottom">
+      <span class="tag">{project.encounters.join(' · ')}</span>
+      <button
+        hidden
+        data-save={project.id}
+        data-title={project.title}
+        aria-pressed="false"
+        aria-label={`Save ${project.title} to my visit`}
+        class="save-button"
+      >
+        ＋ Save
+      </button>
+    </div>
+  </div>
+</article>
