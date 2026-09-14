@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import event from '../../content/event.json';
+import { event, contentRevision } from '../data/catalogue';
 interface Props { title?: string; privatePage?: boolean; }
 const { title = 'Participant workspace' } = Astro.props;
 const standalone = import.meta.env.MODE === 'portal-staging';
@@ -14,6 +14,7 @@ const standalone = import.meta.env.MODE === 'portal-staging';
     <meta name="description" content="The invited participant workspace for CreaTech Showcase 2026." />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="no-referrer" />
+    {!standalone && <meta name="createch-revision" content={contentRevision} />}
   </head>
   <body data-page="private">
     <a class="skip-link" href="#main">Skip to content</a>
