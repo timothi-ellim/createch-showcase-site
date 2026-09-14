@@ -1,10 +1,12 @@
 name: CreaTech approved portal job
 on:
+  schedule:
+    - cron: '2-57/5 * * * *'
   workflow_dispatch:
     inputs:
       job_id:
-        description: Durable database job UUID
-        required: true
+        description: Durable database job UUID (leave empty to check the queue)
+        required: false
         type: string
 permissions:
   contents: read
@@ -26,10 +28,16 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Execute the fixed job
-        run: node editorial/portal-worker.ts "$CREATECH_JOB_ID"
+      - name: Execute the fixed job or reconcile the durable queue
+        run: |
+          if [ -n "$CREATECH_JOB_ID" ]; then
+            node editorial/portal-worker.ts "$CREATECH_JOB_ID"
+          else
+            node scripts/portal-reconcile.ts
+          fi
         env:
           CREATECH_JOB_ID: ${{ inputs.job_id }}
+          CREATECH_RECONCILIATION_ENABLED: ${{ vars.CREATECH_RECONCILIATION_ENABLED }}
           REVIEWED_SOURCE_COMMIT: ${{ github.sha }}
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_WORKER_KEY }}

@@ -6,6 +6,7 @@ export interface ControlDependencies {
     rpc: (name: string, args: Record<string, unknown>) => Promise<unknown>;
   }>;
   dispatch: (jobId: string) => Promise<void>;
+  dispatchMode?: 'direct' | 'scheduled';
 }
 // No service credentials, repository/ref overrides or commands in request bodies.
 export function dispatchHandler(deps: ControlDependencies) {
@@ -44,6 +45,8 @@ export function dispatchHandler(deps: ControlDependencies) {
       })) as { status: string };
       if (permission.status !== 'queued')
         return reply(409, { code: 'JOB_NOT_QUEUED' });
+      if (deps.dispatchMode === 'scheduled')
+        return reply(202, { code: 'QUEUED_FOR_PROCESSING', queued: true });
       try {
         await deps.dispatch(body.jobId);
       } catch {

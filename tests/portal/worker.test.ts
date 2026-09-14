@@ -190,6 +190,30 @@ test('fixed dispatch denies key-only, wrong origin, extra target arguments and u
   assert.equal(failure.status, 503);
   assert.equal((await failure.json()).queued, true);
 });
+test('scheduled processing acknowledges only an authorised durable queued job without pretending to dispatch', async () => {
+  let queued = true;
+  let dispatches = 0;
+  const handler = dispatchHandler({
+    origin: 'https://portal.example',
+    dispatchMode: 'scheduled',
+    authenticate: async () => ({ rpc: async (_name, args) => {
+      if (args.p_job !== PA) throw new Error('ACCESS_DENIED');
+      return { status: queued ? 'queued' : 'done' };
+    } }),
+    dispatch: async () => { dispatches++; },
+  });
+  const request = (id: string) => new Request('https://portal.example', {
+    method: 'POST', headers: {origin:'https://portal.example',authorization:'Bearer user-session'}, body: JSON.stringify({jobId:id}),
+  });
+  assert.equal((await handler(request(randomUUID()))).status, 403);
+  const response = await handler(request(PA));
+  assert.equal(response.status, 202);
+  assert.deepEqual(await response.json(), {code:'QUEUED_FOR_PROCESSING',queued:true});
+  queued = false;
+  assert.equal((await handler(request(PA))).status, 409);
+  assert.equal(dispatches, 0);
+});
+
 test('trusted validator uses organiser facts, strips private proposals and decodes actual image bytes', async () => {
   const aid = randomUUID(),
     rid = randomUUID();

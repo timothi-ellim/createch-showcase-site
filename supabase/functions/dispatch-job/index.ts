@@ -4,6 +4,7 @@ const required=(key:string)=>{const value=Deno.env.get(key);if(!value)throw new 
 const url=required('SUPABASE_URL'),key=required('SUPABASE_ANON_KEY');
 Deno.serve(dispatchHandler({
  origin:required('PORTAL_APP_ORIGIN'),
+ dispatchMode:Deno.env.get('CREATECH_DISPATCH_MODE')==='scheduled'?'scheduled':'direct',
  authenticate:async(authorization)=>{
   const client=createClient(url,key,{global:{headers:{Authorization:authorization}},auth:{persistSession:false}});
   const {data,error}=await client.auth.getUser();if(error||!data.user)throw new Error('AUTH_REQUIRED');
