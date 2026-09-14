@@ -52,13 +52,36 @@ test('portal renders with the emitted hosting CSP enforced', async ({
 });
 
 // Auth/HTTP are explicitly controlled contracts; SQL executes the real migrations.
-async function harness(page: Page, owner = false, signedIn = true) {
+async function harness(
+  page: Page,
+  owner = false,
+  signedIn = true,
+  enrolMfa = false,
+) {
   const db = await database();
   await asUser(db, A);
   await rpc(db, 'save_project_draft', [PA, 0, fields]);
   let userId = owner ? O : A,
     saveFailure = false,
     expired = false;
+  let factors = enrolMfa
+    ? [
+        {
+          id: 'unfinished-createch',
+          factor_type: 'totp',
+          status: 'unverified',
+          friendly_name: 'CreaTech organiser',
+        },
+        {
+          id: 'unfinished-other',
+          factor_type: 'totp',
+          status: 'unverified',
+          friendly_name: 'Another app',
+        },
+      ]
+    : [];
+  let enrolments = 0;
+  const removedFactors: string[] = [];
   const token = () =>
     [
       Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString(
@@ -68,7 +91,7 @@ async function harness(page: Page, owner = false, signedIn = true) {
         JSON.stringify({
           sub: userId,
           role: 'authenticated',
-          aal: owner ? 'aal2' : 'aal1',
+          aal: owner && !enrolMfa ? 'aal2' : 'aal1',
           exp: Math.floor(Date.now() / 1000) + 3600,
           iss: 'http://127.0.0.1:54321/auth/v1',
           session_id: randomUUID(),
@@ -85,6 +108,7 @@ async function harness(page: Page, owner = false, signedIn = true) {
     created_at: '2026-09-14T00:00:00Z',
     app_metadata: {},
     user_metadata: {},
+    factors,
   });
   const session = () => ({
     access_token: token(),
@@ -114,6 +138,41 @@ async function harness(page: Page, owner = false, signedIn = true) {
     }
     if (path === '/auth/v1/user') {
       await route.fulfill({ json: user(), headers });
+      return;
+    }
+    if (
+      enrolMfa &&
+      path.startsWith('/auth/v1/factors/') &&
+      req.method() === 'DELETE'
+    ) {
+      const id = path.split('/').at(-1)!;
+      removedFactors.push(id);
+      factors = factors.filter((f) => f.id !== id);
+      await route.fulfill({ json: { id }, headers });
+      return;
+    }
+    if (enrolMfa && path === '/auth/v1/factors' && req.method() === 'POST') {
+      const id = `synthetic-factor-${++enrolments}`;
+      factors.push({
+        id,
+        factor_type: 'totp',
+        status: 'unverified',
+        friendly_name: 'CreaTech organiser',
+      });
+      // Auth sends raw SVG; the installed supabase-js SDK converts it to a data URL.
+      await route.fulfill({
+        json: {
+          id,
+          type: 'totp',
+          totp: {
+            qr_code:
+              '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect width="24" height="24" fill="black"/></svg>',
+            secret: 'SYNTHETIC-ONLY',
+            uri: 'otpauth://totp/synthetic',
+          },
+        },
+        headers,
+      });
       return;
     }
     if (path === '/auth/v1/verify') {
@@ -185,6 +244,15 @@ async function harness(page: Page, owner = false, signedIn = true) {
   });
   return {
     db,
+    mfaState: () => ({
+      enrolments,
+      removedFactors: [...removedFactors],
+      factors: [...factors],
+    }),
+    verifyFactor: () => {
+      factors.find((f) => f.id === `synthetic-factor-${enrolments}`)!.status =
+        'verified';
+    },
     failSave: (value: boolean) => {
       saveFailure = value;
     },
@@ -200,6 +268,71 @@ async function harness(page: Page, owner = false, signedIn = true) {
     },
   };
 }
+test('authenticator image decodes under CSP and unfinished setup can be retried safely', async ({
+  page,
+}) => {
+  const h = await harness(page, true, true, true);
+  try {
+    const policy = (
+      await readFile('.build-candidates/portal-browser/site/_headers', 'utf8')
+    )
+      .split('/participant/*')[1]
+      .match(/Content-Security-Policy: (.+)/)![1];
+    await page.route('**/participant/', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        headers: { ...response.headers(), 'content-security-policy': policy },
+      });
+    });
+    await page.goto('/participant/');
+    const start = page.getByRole('button', {
+      name: 'Set up or use authenticator',
+    });
+    await start.click();
+    const qr = page.getByRole('img', {
+      name: 'Scan this QR code in your authenticator app',
+    });
+    await expect(qr).toBeVisible();
+    await expect
+      .poll(() =>
+        qr.evaluate(
+          (img: HTMLImageElement) => img.complete && img.naturalWidth === 24,
+        ),
+      )
+      .toBe(true);
+    expect(h.mfaState().removedFactors).toEqual(['unfinished-createch']);
+    await start.click();
+    await expect(
+      page.getByLabel('Authenticator code', { exact: true }),
+    ).toBeFocused();
+    expect(h.mfaState().enrolments).toBe(1);
+    await page.reload();
+    await start.click();
+    await expect
+      .poll(() =>
+        qr.evaluate(
+          (img: HTMLImageElement) => img.complete && img.naturalWidth === 24,
+        ),
+      )
+      .toBe(true);
+    expect(h.mfaState().enrolments).toBe(2);
+    expect(h.mfaState().removedFactors).toEqual([
+      'unfinished-createch',
+      'synthetic-factor-1',
+    ]);
+    expect(h.mfaState().factors.some((f) => f.id === 'unfinished-other')).toBe(
+      true,
+    );
+    h.verifyFactor();
+    await start.click();
+    await expect(qr).toHaveCount(0);
+    expect(h.mfaState().enrolments).toBe(2);
+    expect(h.mfaState().removedFactors).toHaveLength(2);
+  } finally {
+    await h.close();
+  }
+});
 test('participant saves, previews and submits through real SQL; later draft leaves prepared version intact', async ({
   page,
 }) => {

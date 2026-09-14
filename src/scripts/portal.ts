@@ -36,6 +36,7 @@ function clearPrivate() {
   draft = null;
   dirty = false;
   identity = null;
+  factorId = '';
   $('[data-mfa-setup]').replaceChildren();
 }
 function urlFor(blob: Blob) {
@@ -886,7 +887,26 @@ async function start() {
       const existing = data.totp.find((f) => f.status === 'verified');
       if (existing) {
         factorId = existing.id;
+        $('[data-mfa-setup]').replaceChildren();
+      } else if (
+        data.all.some((f) => f.id === factorId && f.status === 'unverified') &&
+        $('[data-mfa-setup] img')
+      ) {
+        // Keep the same visible enrolment when this button is clicked again.
       } else {
+        // A refresh loses the QR secret. Replace only this app's unfinished
+        // enrolments; never remove a verified factor or another app's factor.
+        for (const factor of data.all.filter(
+          (f) =>
+            f.factor_type === 'totp' &&
+            f.status === 'unverified' &&
+            f.friendly_name === 'CreaTech organiser',
+        )) {
+          const { error } = await client.auth.mfa.unenroll({
+            factorId: factor.id,
+          });
+          if (error) throw new Error();
+        }
         const result = await client.auth.mfa.enroll({
           factorType: 'totp',
           friendlyName: 'CreaTech organiser',
@@ -895,7 +915,8 @@ async function start() {
         factorId = result.data.id;
         const image = document.createElement('img');
         image.alt = 'Scan this QR code in your authenticator app';
-        image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(result.data.totp.qr_code)}`;
+        // supabase-js already returns an SVG data URL, ready for img.src.
+        image.src = result.data.totp.qr_code;
         $('[data-mfa-setup]').replaceChildren(image);
       }
       $('[data-mfa-form]').hidden = false;
