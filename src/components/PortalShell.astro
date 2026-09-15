@@ -1,6 +1,7 @@
 ---
 import WorkspaceLayout from '../layouts/WorkspaceLayout.astro';
 import '../styles/portal.css';
+import { event } from '../data/catalogue';
 interface Props {
   surface: string;
   title: string;
@@ -87,7 +88,14 @@ const organiserSurface = ['queue', 'review', 'releases', 'people'].includes(
         ) : (
           <a href="/explore/">Browse the public showcase</a>
         )}
-        . For help, use your existing organiser contact.
+        .{' '}
+        {event.publicContact ? (
+          <a href={`mailto:${event.publicContact.email}`}>
+            Contact CreaTech support
+          </a>
+        ) : (
+          'For help, use your existing organiser contact.'
+        )}
       </p>
     </noscript>
     <section
@@ -151,6 +159,14 @@ const organiserSurface = ['queue', 'review', 'releases', 'people'].includes(
       <a class="text-link" href="/participants/">
         Participant help ↗
       </a>
+      {event.publicContact && (
+        <p class="small">
+          Need a hand?{' '}
+          <a href={`mailto:${event.publicContact.email}`}>
+            {event.publicContact.email}
+          </a>
+        </p>
+      )}
     </section>
     <section
       class="reading-panel"
