@@ -8,8 +8,8 @@ extra_search_path = ["public", "extensions"]
 auto_expose_new_tables = false
 
 [auth]
-site_url = "https://createch-showcase-staging.pages.dev"
-additional_redirect_urls = ["https://createch-showcase-staging.pages.dev/participant/login/"]
+site_url = "https://createch-workspace.pages.dev"
+additional_redirect_urls = ["https://createch-workspace.pages.dev/participant/login/", "https://createch-showcase-staging.pages.dev/participant/login/"]
 enable_signup = false
 enable_anonymous_sign_ins = false
 enable_manual_linking = false
