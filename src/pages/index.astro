@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import EventFacts from '../components/EventFacts.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import ParticipantRoster from '../components/ParticipantRoster.astro';
 import { event, projects, themes, isSynthetic } from '../data/catalogue';
 ---
 
@@ -60,75 +61,82 @@ import { event, projects, themes, isSynthetic } from '../data/catalogue';
       </p>
     </div>
   </section>
-  <section class="section wrap">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Find a starting point</p>
-        <h2>Three ways into the showcase.</h2>
-      </div>
-      <a class="text-link" href="/explore/">
-        Browse all <span aria-hidden="true">↗</span>
-      </a>
-    </div>
-    <p class="section-intro">
-      Follow a theme, or follow your curiosity. These are ideas to explore, not
-      rooms.
-    </p>
-    <div class="theme-grid">
-      {themes.map((theme) => (
-        <a
-          class:list={['theme-tile', theme.id]}
-          href={`/explore/?theme=${theme.id}`}
-        >
-          <span class="tile-top">
-            {theme.number}
-            <span aria-hidden="true">↗</span>
-          </span>
-          <h3>
-            <span>Code becomes</span>
-            {theme.name}
-          </h3>
-          <p>{theme.description}</p>
-        </a>
-      ))}
-    </div>
-  </section>
-  <section class="light-section">
-    <div class="wrap section">
+  {projects.length > 0 && (
+    <section class="section wrap">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">A first look</p>
-          <h2>Meet the possibilities.</h2>
+          <p class="eyebrow">Find a starting point</p>
+          <h2>Three ways into the showcase.</h2>
         </div>
         <a class="text-link" href="/explore/">
-          Explore all projects <span aria-hidden="true">↗</span>
+          Browse all <span aria-hidden="true">↗</span>
         </a>
       </div>
       <p class="section-intro">
-        {isSynthetic
-          ? 'Sample entries show how the guide will work. The approved programme is still to come.'
-          : 'Discover a few starting points, then explore the full showcase.'}
+        Follow a theme, or follow your curiosity. These are ideas to explore,
+        not rooms.
       </p>
-      <div class="project-grid">
-        {projects.slice(0, 3).map((project) => (
-          <ProjectCard project={project} headingLevel="h3" />
+      <div class="theme-grid">
+        {themes.map((theme) => (
+          <a
+            class:list={['theme-tile', theme.id]}
+            href={`/explore/?theme=${theme.id}`}
+          >
+            <span class="tile-top">
+              {theme.number}
+              <span aria-hidden="true">↗</span>
+            </span>
+            <h3>
+              <span>Code becomes</span>
+              {theme.name}
+            </h3>
+            <p>{theme.description}</p>
+          </a>
         ))}
       </div>
-    </div>
-  </section>
-  <section class="wrap section">
-    <div class="visit-banner">
-      <div>
-        <p class="eyebrow">Your day, your discoveries</p>
-        <h2>Make space for something new.</h2>
-        <p>
-          Save projects as you explore, then keep your shortlist handy on the
-          day.
+    </section>
+  )}
+  {projects.length > 0 && (
+    <section class="light-section">
+      <div class="wrap section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">A first look</p>
+            <h2>Meet the possibilities.</h2>
+          </div>
+          <a class="text-link" href="/explore/">
+            Explore all projects <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <p class="section-intro">
+          {isSynthetic
+            ? 'Sample entries show how the guide will work. The approved programme is still to come.'
+            : 'Discover a few starting points, then explore the full showcase.'}
         </p>
+        <div class="project-grid">
+          {projects.slice(0, 3).map((project) => (
+            <ProjectCard project={project} headingLevel="h3" />
+          ))}
+        </div>
       </div>
-      <a class="button dark" href="/my-visit/">
-        Start my visit <span aria-hidden="true">↗</span>
-      </a>
-    </div>
-  </section>
+    </section>
+  )}
+  <ParticipantRoster />
+  {projects.length > 0 && (
+    <section class="wrap section">
+      <div class="visit-banner">
+        <div>
+          <p class="eyebrow">Your day, your discoveries</p>
+          <h2>Make space for something new.</h2>
+          <p>
+            Save projects as you explore, then keep your shortlist handy on the
+            day.
+          </p>
+        </div>
+        <a class="button dark" href="/my-visit/">
+          Start my visit <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
+  )}
 </Layout>

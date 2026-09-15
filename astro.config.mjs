@@ -62,6 +62,11 @@ export default defineConfig({
             entrypoint: './src/lib/hosting-headers.ts',
             prerender: true,
           });
+          injectRoute({
+            pattern: '/_redirects',
+            entrypoint: './src/lib/hosting-redirects.ts',
+            prerender: true,
+          });
         },
       },
     },

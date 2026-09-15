@@ -49,8 +49,9 @@ import { projects } from '../data/catalogue';
       </span>
       <h2>A visit full of possibilities.</h2>
       <p>
-        Find something that sparks your curiosity and choose “Save”. Your
-        projects will appear here.
+        {projects.length
+          ? 'Find something that sparks your curiosity and choose “Save”. Your projects will appear here.'
+          : 'Project pages are coming soon. Once they are published, you can save your favourites here to plan your day.'}
       </p>
       <a class="button lime" href="/explore/">
         Explore the showcase ↗

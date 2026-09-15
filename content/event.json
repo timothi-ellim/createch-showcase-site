@@ -16,7 +16,32 @@
   "secondaryAction": "Plan your visit",
   "activeParticipantDeadline": null,
   "visitorRegistrationUrl": null,
-  "publicContact": null,
-  "confirmedVenueAccessInformation": null,
-  "participantEditingRoute": "not-configured"
+  "publicContact": {
+    "label": "CreaTech support — timothiellim@gmail.com",
+    "email": "timothiellim@gmail.com"
+  },
+  "confirmedVenueAccessInformation": "Venue access guidance is coming soon. Please contact CreaTech support if you need information before planning your visit.",
+  "registrationPolicy": "Booking policy information is coming soon.",
+  "arrivalInformation": "Arrival guidance is coming soon.",
+  "designCredit": "Poster and visual identity: Qilin Zhang.",
+  "participantEditingRoute": "supabase-portal",
+  "participantWorkspaceUrl": "https://createch-showcase-staging.pages.dev/participant/login/",
+  "participants": [
+    { "projectId": "eight-out-of-ten-comments", "name": "Jason Boomer" },
+    { "projectId": "an-unfinished-body", "name": "Qilin Zhang" },
+    { "projectId": "plenography", "name": "Taliesin Stokes" },
+    { "projectId": "eyeballs", "name": "Zohreh Baghban" },
+    { "projectId": "savannah-irving", "name": "Savannah Irving" },
+    { "projectId": "where-a-tool-ends", "name": "Atsushi Yang" },
+    { "projectId": "resonant-wardrobes", "name": "Shanique Thompson" },
+    { "projectId": "listen-scoundrels", "name": "Sean Carroll" },
+    {
+      "projectId": "machinimation-curation-station",
+      "name": "Sophie Determan"
+    },
+    { "projectId": "metaflower-the-kiri", "name": "David C. Hughes" },
+    { "projectId": "virtual-theatre", "name": "Karen Wheatley" },
+    { "projectId": "metaverse-experiences", "name": "Wen Zhang" },
+    { "projectId": "social-xr", "name": "Timothi Lim" }
+  ]
 }

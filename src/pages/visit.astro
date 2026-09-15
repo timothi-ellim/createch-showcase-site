@@ -37,19 +37,15 @@ import { event, directionsUrl } from '../data/catalogue';
     <section class="visit-details">
       <h2>Know before you go.</h2>
       <p>
-        {event.registrationPolicy && event.confirmedVenueAccessInformation
-          ? 'Use the organiser-confirmed information below to plan your day.'
-          : 'Some details are awaiting organiser confirmation. Please check back before travelling.'}
+        Please check back before travelling for the latest booking, arrival and
+        access information.
       </p>
       <details open>
         <summary>Arrival & registration</summary>
-        <p>
-          {event.arrivalInformation ??
-            'Arrival instructions have not yet been confirmed.'}
-        </p>
+        <p>{event.arrivalInformation ?? 'Arrival guidance is coming soon.'}</p>
         <p>
           {event.registrationPolicy ??
-            'Entry eligibility and the registration or booking policy have not yet been confirmed.'}
+            'Booking policy information is coming soon.'}
         </p>
         {event.visitorRegistrationUrl && (
           <a class="text-link" href={event.visitorRegistrationUrl}>
@@ -61,14 +57,14 @@ import { event, directionsUrl } from '../data/catalogue';
         <summary>Accessibility & sensory information</summary>
         <p>
           {event.confirmedVenueAccessInformation ??
-            'Verified venue access information has not yet been supplied. Step-free routes, seating, captions and quiet-space arrangements are not confirmed.'}
+            'Venue access guidance is coming soon.'}
         </p>
       </details>
       <details>
         <summary>Programme & finding projects</summary>
         <p>
-          Final project locations, timings and a room map are not yet available.
-          The Image, World and Relation themes are not room assignments.
+          Project locations, timings and further visitor guidance are coming
+          soon. The Image, World and Relation themes are not room assignments.
         </p>
       </details>
       <details>

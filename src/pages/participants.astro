@@ -52,7 +52,10 @@ const localTesting =
         </p>
       )}
     </section>
-    <a class="button dark" href="/participant/login/">
+    <a
+      class="button dark"
+      href={event.participantWorkspaceUrl ?? '/participant/login/'}
+    >
       {connected
         ? 'Open participant workspace'
         : localTesting

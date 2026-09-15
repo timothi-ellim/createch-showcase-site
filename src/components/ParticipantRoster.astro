@@ -1,0 +1,62 @@
+---
+import { event, projects } from '../data/catalogue';
+---
+
+{event.participants.length > 0 && (
+  <section class="wrap section" aria-labelledby="participant-roster-heading">
+    <p class="eyebrow">The people behind the showcase</p>
+    <h2 id="participant-roster-heading">
+      Meet our {event.participants.length} participants.
+    </h2>
+    <p class="section-intro">
+      Discover the artists, designers and researchers taking part. Project pages
+      will appear here as they are ready.
+    </p>
+    <ul class="participant-roster">
+      {event.participants.map((participant) => {
+        const project = projects.find(
+          (item) => item.id === participant.projectId,
+        );
+        return (
+          <li>
+            <h3>{participant.name}</h3>
+            {project ? (
+              <a class="text-link" href={`/projects/${project.slug}/`}>
+                {project.title} <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              <p>Project details coming soon.</p>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+)}
+
+<style>
+  .participant-roster {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 1rem;
+  }
+  .participant-roster li {
+    border-top: 1px solid currentColor;
+    padding: 1.25rem 0;
+    min-width: 0;
+  }
+  .participant-roster h3 {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem;
+  }
+  .participant-roster p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  .participant-roster a {
+    overflow-wrap: anywhere;
+  }
+</style>

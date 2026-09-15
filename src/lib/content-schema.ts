@@ -143,6 +143,25 @@ export const eventSchema = z
     ]),
     registrationPolicy: plain(3000).nullable().default(null),
     arrivalInformation: plain(3000).nullable().default(null),
+    designCredit: plain(300).nullable().default(null),
+    participantWorkspaceUrl: httpsUrl.nullable().default(null),
+    participants: z
+      .array(
+        z
+          .object({
+            projectId: idSchema,
+            name: plain(160),
+          })
+          .strict(),
+      )
+      .max(500)
+      .refine(
+        (rows) =>
+          new Set(rows.map((row) => row.projectId)).size === rows.length,
+        'Duplicate participant project',
+      )
+      .default([]),
+    programmeStatus: z.enum(['announcement', 'projects']).default('projects'),
     publicSiteUrl: httpsUrl
       .refine((value) => {
         const url = new URL(value);
@@ -270,7 +289,16 @@ export function releaseBlockers(snapshot: PublicSnapshot): string[] {
   const blockers: string[] = [];
   if (snapshot.publicationStatus !== 'approved-public')
     blockers.push('synthetic content');
-  if (!snapshot.projects.length) blockers.push('approved projects');
+  if (
+    !snapshot.projects.length &&
+    !(
+      snapshot.event.programmeStatus === 'announcement' &&
+      snapshot.event.participants.length > 0
+    )
+  )
+    blockers.push(
+      'approved projects or an explicitly approved participant announcement',
+    );
   for (const key of [
     'publicContact',
     'registrationPolicy',
