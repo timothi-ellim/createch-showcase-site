@@ -28,6 +28,14 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Remove expired sign-in attempt state
+        if: vars.CREATECH_PARTICIPANT_AUTH_V2_ENABLED == 'true'
+        run: node scripts/participant-auth-cleanup.ts
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_WORKER_KEY }}
+          PORTAL_ENVIRONMENT: ${{ vars.PORTAL_ENVIRONMENT }}
+          PORTAL_APP_ORIGIN: ${{ vars.PORTAL_APP_ORIGIN }}
       - name: Execute the fixed job or reconcile the durable queue
         run: |
           if [ -n "$CREATECH_JOB_ID" ]; then

@@ -1,6 +1,10 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { escapeHtml as e, renderProjectBody } from '../lib/project-renderer';
 import { checkPortalEnvironment, draftView } from '../lib/portal-contract';
+import {
+  installParticipantSignIn,
+  newAttemptKey,
+} from '../lib/participant-sign-in';
 import type {
   ParticipantFields,
   PortalDraft,
@@ -24,6 +28,7 @@ let draft: PortalDraft | null = null,
   requestId = crypto.randomUUID(),
   factorId = '';
 const objectUrls = new Set<string>();
+let tabStorageAvailable = true;
 let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
 function say(message: string, error = false) {
   status.textContent = message;
@@ -47,6 +52,8 @@ function clearPrivate() {
   objectUrls.clear();
   content.replaceChildren();
   content.hidden = true;
+  $('[data-private-nav]').hidden = true;
+  $('[data-mfa]').hidden = true;
   draft = null;
   dirty = false;
   identity = null;
@@ -252,8 +259,45 @@ async function dispatch(jobId: string) {
 }
 async function showDashboard() {
   const projects = await rpc<ProjectSummary[]>('get_my_projects');
+  if (
+    import.meta.env.PUBLIC_PARTICIPANT_AUTH_V2 === 'true' &&
+    !context.organiser &&
+    projects.length === 1 &&
+    !projects[0].withdrawn
+  ) {
+    await navigateParticipant(
+      `/participant/editor/?project=${encodeURIComponent(projects[0].id)}`,
+    );
+    return;
+  }
   content.innerHTML = `<div class="reading-panel">${projects.length ? projects.map((p) => `<article class="portal-card"><h2>${e(p.title)}</h2><p class="badge">${p.withdrawn ? 'Withdrawal requested' : state(p.status)}</p>${p.liveRevision ? '<p>A previously verified version is published.</p>' : '<p>No verified public version yet.</p>'}${p.feedback ? `<p>${e(p.feedback)}</p>` : ''}<div class="portal-actions">${link('Edit project', `/participant/editor/?project=${p.id}`)}${p.latestRevision ? link('View submitted version', `/participant/preview/?revision=${p.latestRevision}`) : ''}</div></article>`).join('') : '<h2>No assigned projects</h2><p>You are signed in, but no project is assigned to this account. Use your existing organiser contact for help.</p>'}</div>`;
   say('Your assigned projects are up to date.');
+}
+async function navigateParticipant(path: string) {
+  if (tabStorageAvailable) {
+    location.replace(path);
+    return;
+  }
+  const url = new URL(path, location.origin);
+  const surfaces: Record<string, string> = {
+    '/participant/': 'dashboard',
+    '/participant/editor/': 'editor',
+    '/participant/preview/': 'preview',
+  };
+  const surface = surfaces[url.pathname];
+  if (url.origin !== location.origin || !surface)
+    throw new Error('REQUEST_FAILED');
+  history.replaceState(null, '', url);
+  root.dataset.portal = surface;
+  const title =
+    surface === 'editor'
+      ? 'Edit your project'
+      : surface === 'preview'
+        ? 'Submitted version'
+        : 'Your projects';
+  root.querySelector('h1')!.textContent = title;
+  document.title = title + ' | CreaTech';
+  await load();
 }
 function renderEditor() {
   clearTimeout(autosaveTimer);
@@ -616,6 +660,48 @@ async function showPeople() {
       });
     };
   }
+  if (import.meta.env.PUBLIC_PARTICIPANT_AUTH_V2 === 'true') {
+    const recovery = document.createElement('section');
+    recovery.className = 'reading-panel';
+    recovery.innerHTML = `<h2>Send a fresh sign-in code</h2><p>Recover an existing account without changing its project assignment. You will see the recipient before sending.</p>${[...new Map(people.filter((p) => p.active).map((p) => [p.userId, p])).values()].map((p) => `<p>${e(p.project)} ${button('Send a fresh sign-in code', `data-resend-user="${e(p.userId)}"`, 'secondary')}</p>`).join('')}`;
+    content.append(recovery);
+    recovery.querySelectorAll<HTMLElement>('[data-resend-user]').forEach(
+      (b) =>
+        (b.onclick = () =>
+          act(async () => {
+            const recipient = await rpc<{ email: string }>(
+              'auth_resend_recipient',
+              { p_user: b.dataset.resendUser },
+            );
+            if (
+              !window.confirm(
+                `Send a fresh sign-in code to ${recipient.email}? Their existing project assignment stays the same.`,
+              )
+            )
+              return;
+            const { data, error } = await client.functions.invoke(
+              'participant-auth-resend',
+              {
+                body: {
+                  userId: b.dataset.resendUser,
+                  attemptKey: (b.dataset.authAttempt ||= newAttemptKey()),
+                },
+              },
+            );
+            if (!error) delete b.dataset.authAttempt;
+            if (error || data?.status !== 'accepted') {
+              say(
+                'A new code is not confirmed. Check the cooldown or delivery record before sending again.',
+                true,
+              );
+              return;
+            }
+            say(
+              'Fresh code accepted by the mail service. Inbox delivery is not confirmed.',
+            );
+          })),
+    );
+  }
   content.querySelectorAll<HTMLElement>('[data-member]').forEach(
     (b) =>
       (b.onclick = () =>
@@ -913,7 +999,7 @@ async function load() {
   }
   switch (surface) {
     case 'login':
-      location.replace('/participant/');
+      await navigateParticipant('/participant/');
       return;
     case 'dashboard':
       await showDashboard();
@@ -945,6 +1031,20 @@ async function load() {
   if (surface !== 'editor') say('Workspace loaded.');
 }
 async function start() {
+  // Never accept or retain credentials or return destinations in browser URLs.
+  const cleanUrl = new URL(location.href);
+  cleanUrl.hash = '';
+  for (const name of [
+    'email',
+    'code',
+    'token',
+    'token_hash',
+    'access_token',
+    'refresh_token',
+    'next',
+  ])
+    cleanUrl.searchParams.delete(name);
+  if (cleanUrl.href !== location.href) history.replaceState(null, '', cleanUrl);
   const url = import.meta.env.PUBLIC_SUPABASE_URL,
     key = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     env = import.meta.env.PUBLIC_PORTAL_ENVIRONMENT;
@@ -969,11 +1069,34 @@ async function start() {
     sessionStorage.removeItem('createch-auth-check');
     storage = sessionStorage;
   } catch {
+    tabStorageAvailable = false;
     say(
       'Session storage is unavailable. Sign-in will last only while this page stays open.',
     );
   }
   const memory = new Map<string, string>();
+  if (!tabStorageAvailable) {
+    root.addEventListener('click', (event) => {
+      const a = (event.target as Element).closest<HTMLAnchorElement>('a[href]');
+      if (!a) return;
+      const url = new URL(a.href);
+      if (
+        url.origin !== location.origin ||
+        !/^\/participant\/(?:editor\/|preview\/)?$/.test(url.pathname)
+      )
+        return;
+      event.preventDefault();
+      if (
+        dirty &&
+        !window.confirm('Leave this draft without saving your latest changes?')
+      )
+        return;
+      clearTimeout(autosaveTimer);
+      draft = null;
+      dirty = false;
+      void act(() => navigateParticipant(url.href));
+    });
+  }
   client = createClient(url, key, {
     auth: {
       storage: storage || {
@@ -990,65 +1113,72 @@ async function start() {
       autoRefreshToken: true,
     },
   });
-  let cooldown = 0;
-  $<HTMLFormElement>('[data-email-form]').onsubmit = (event) => {
-    event.preventDefault();
-    void act(async () => {
-      if (Date.now() < cooldown) return;
-      const email = $<HTMLInputElement>('#email').value.trim();
-      const { error } = await client.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: false },
-      });
-      if (error) {
-        say(
-          'A code could not be requested. If this is your first visit, use the invitation code already sent by the organiser. Otherwise check the address or wait before retrying.',
-          true,
-        );
-        return;
-      }
-      cooldown = Date.now() + 60000;
-      $<HTMLInputElement>('#first-invitation').checked = false;
-      $('[data-code-form]').hidden = false;
-      say(
-        'If this address has been invited, a code will be sent. Check your email.',
-      );
-      $<HTMLInputElement>('#email-code').focus();
-      const b = $<HTMLButtonElement>('[data-send-code]');
-      b.disabled = true;
-      const timer = setInterval(() => {
-        const seconds = Math.max(0, Math.ceil((cooldown - Date.now()) / 1000));
-        b.textContent = seconds ? `Resend in ${seconds}s` : 'Send email code';
-        if (!seconds) {
-          b.disabled = false;
-          clearInterval(timer);
+  if (import.meta.env.PUBLIC_PARTICIPANT_AUTH_V2 === 'true') {
+    installParticipantSignIn(root, client, say, () => act(load));
+  } else {
+    let cooldown = 0;
+    $<HTMLFormElement>('[data-email-form]').onsubmit = (event) => {
+      event.preventDefault();
+      void act(async () => {
+        if (Date.now() < cooldown) return;
+        const email = $<HTMLInputElement>('#email').value.trim();
+        const { error } = await client.auth.signInWithOtp({
+          email,
+          options: { shouldCreateUser: false },
+        });
+        if (error) {
+          say(
+            'A code could not be requested. If this is your first visit, use the invitation code already sent by the organiser. Otherwise check the address or wait before retrying.',
+            true,
+          );
+          return;
         }
-      }, 1000);
-    });
-  };
-  $<HTMLFormElement>('[data-code-form]').onsubmit = (event) => {
-    event.preventDefault();
-    void act(async () => {
-      if (!$<HTMLInputElement>('#email').reportValidity()) return;
-      const { error } = await client.auth.verifyOtp({
-        email: $<HTMLInputElement>('#email').value.trim(),
-        token: $<HTMLInputElement>('#email-code').value.trim(),
-        type: $<HTMLInputElement>('#first-invitation').checked
-          ? 'invite'
-          : 'email',
-      });
-      $<HTMLInputElement>('#email-code').value = '';
-      if (error) {
+        cooldown = Date.now() + 60000;
+        $<HTMLInputElement>('#first-invitation').checked = false;
+        $('[data-code-form]').hidden = false;
         say(
-          'That code could not be verified. Use a fresh code and try again.',
-          true,
+          'If this address has been invited, a code will be sent. Check your email.',
         );
-        return;
-      }
-      $<HTMLInputElement>('#first-invitation').checked = false;
-      await load();
-    });
-  };
+        $<HTMLInputElement>('#email-code').focus();
+        const b = $<HTMLButtonElement>('[data-send-code]');
+        b.disabled = true;
+        const timer = setInterval(() => {
+          const seconds = Math.max(
+            0,
+            Math.ceil((cooldown - Date.now()) / 1000),
+          );
+          b.textContent = seconds ? `Resend in ${seconds}s` : 'Send email code';
+          if (!seconds) {
+            b.disabled = false;
+            clearInterval(timer);
+          }
+        }, 1000);
+      });
+    };
+    $<HTMLFormElement>('[data-code-form]').onsubmit = (event) => {
+      event.preventDefault();
+      void act(async () => {
+        if (!$<HTMLInputElement>('#email').reportValidity()) return;
+        const { error } = await client.auth.verifyOtp({
+          email: $<HTMLInputElement>('#email').value.trim(),
+          token: $<HTMLInputElement>('#email-code').value.trim(),
+          type: $<HTMLInputElement>('#first-invitation').checked
+            ? 'invite'
+            : 'email',
+        });
+        $<HTMLInputElement>('#email-code').value = '';
+        if (error) {
+          say(
+            'That code could not be verified. Use a fresh code and try again.',
+            true,
+          );
+          return;
+        }
+        $<HTMLInputElement>('#first-invitation').checked = false;
+        await load();
+      });
+    };
+  }
   $('[data-signout]').onclick = () =>
     act(async () => {
       if (

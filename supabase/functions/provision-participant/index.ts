@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.116.0';
+import { appOrigins } from '../_shared/origins.ts';
 const required = (key: string) => {
   const v = Deno.env.get(key);
   if (!v) throw new Error('CONFIGURATION_REQUIRED');
@@ -7,8 +8,16 @@ const required = (key: string) => {
 const origin = required('PORTAL_APP_ORIGIN'),
   url = required('SUPABASE_URL');
 Deno.serve(async (request) => {
+  const allowed = appOrigins(
+    origin,
+    Deno.env.get('PORTAL_COMPATIBILITY_ORIGINS'),
+    Deno.env.get('PORTAL_COMPATIBILITY_UNTIL'),
+  );
+  const requestOrigin = request.headers.get('origin') ?? '';
   const headers = {
-    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Origin': allowed.includes(requestOrigin)
+      ? requestOrigin
+      : origin,
     'Access-Control-Allow-Headers':
       'authorization, apikey, content-type, x-client-info',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -17,7 +26,7 @@ Deno.serve(async (request) => {
   };
   const reply = (status: number, body: unknown) =>
     Response.json(body, { status, headers });
-  if (request.headers.get('origin') !== origin)
+  if (!allowed.includes(requestOrigin))
     return reply(403, { code: 'ORIGIN_DENIED' });
   if (request.method === 'OPTIONS')
     return new Response(null, { status: 204, headers });

@@ -1,4 +1,10 @@
 import { defineConfig } from 'astro/config';
+import { workspaceDescriptor } from './scripts/workspace-descriptor.mjs';
+
+const descriptor =
+  process.env.PUBLIC_PARTICIPANT_AUTH_V2 === 'true'
+    ? workspaceDescriptor(process.env.CREATECH_WORKSPACE_DESCRIPTOR)
+    : null;
 
 // A separate route tree lets invited people edit before a public catalogue is
 // approved. This does not relax the public-release checks in astro.config.mjs.
@@ -20,7 +26,7 @@ export default defineConfig({
   publicDir: './portal-site/public',
   outDir: './portal-dist',
   cacheDir: './node_modules/.astro-portal',
-  site: 'https://createch-showcase-staging.pages.dev',
+  site: descriptor?.appOrigin ?? 'https://createch-showcase-staging.pages.dev',
   output: 'static',
   trailingSlash: 'always',
   build: { inlineStylesheets: 'never' },

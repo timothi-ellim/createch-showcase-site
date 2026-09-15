@@ -23,6 +23,8 @@
     "format": "prettier --write src editorial tests astro.config.mjs playwright.config.ts content package.json tsconfig.json",
     "test:portal": "node --test tests/portal/*.test.ts",
     "test:portal:browser": "playwright test --config=playwright.portal.config.ts",
+    "test:participant-auth:browser": "playwright test --config=playwright.participant-auth.config.ts",
+    "test:participant-auth:provider": "node scripts/participant-auth-proof.ts",
     "portal:types": "node scripts/portal-types.ts",
     "portal:local": "node scripts/portal-local.ts",
     "test:portal:integration": "node scripts/portal-integration.ts",

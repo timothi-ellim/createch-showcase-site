@@ -52,6 +52,16 @@
 .portal-login {
   max-width: 600px;
 }
+.sign-in-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-block: 12px;
+}
+.sign-in-actions .button {
+  flex-basis: 100%;
+}
 .portal-login [data-code-form] {
   border-top: 1px solid #b7afc3;
   margin-top: 28px;

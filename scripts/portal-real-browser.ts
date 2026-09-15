@@ -65,15 +65,32 @@ try {
     }),
     participant = await visitorContext.newPage();
   await participant.goto(`${origin}/participant/login/`);
-  await participant.getByLabel('Invited email address').fill(email);
-  await participant.getByLabel('This is my first invitation code').check();
+  const singleSignIn =
+    (await participant.locator('[data-existing-code]').count()) > 0;
+  await participant
+    .getByLabel(singleSignIn ? 'Email address' : 'Invited email address', {
+      exact: true,
+    })
+    .fill(email);
+  if (singleSignIn)
+    await participant
+      .getByRole('button', { name: 'I already have a code', exact: true })
+      .click();
+  else await participant.getByLabel('This is my first invitation code').check();
   await participant
     .getByLabel('Email code', { exact: true })
     .fill(invitation.code);
   await participant
-    .getByRole('button', { name: 'Verify code', exact: true })
+    .getByRole('button', {
+      name: singleSignIn ? 'Continue' : 'Verify code',
+      exact: true,
+    })
     .click();
-  await expect(participant).toHaveURL(`${origin}/participant/`);
+  if (singleSignIn)
+    await expect(participant).toHaveURL(
+      `${origin}/participant/editor/?project=${j.projects[0]}`,
+    );
+  else await expect(participant).toHaveURL(`${origin}/participant/`);
   phase = 'edit-save-upload-submit';
   await participant.goto(
     `${origin}/participant/editor/?project=${j.projects[0]}`,
@@ -314,6 +331,18 @@ try {
     'Real local browser invitation -> edit/upload -> submit -> validate -> approve -> static build passed. No hosted deployment.\n',
   );
 } catch (error) {
+  for (const c of browser.contexts())
+    for (const p of c.pages()) {
+      const message = await p
+        .locator('[data-portal-status]')
+        .textContent()
+        .catch(() => null);
+      if (message)
+        console.error(
+          'UI status:',
+          message.replace(/[\w.+-]+@[\w.-]+/g, '[email]').slice(0, 180),
+        );
+    }
   process.stderr.write(
     `REAL_LOCAL_BROWSER_FAILED at ${phase}: ${(error as Error).message
       .split('\n')[0]

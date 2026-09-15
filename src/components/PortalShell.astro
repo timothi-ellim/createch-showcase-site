@@ -8,6 +8,7 @@ interface Props {
 }
 const { surface, title } = Astro.props;
 const standalone = import.meta.env.MODE === 'portal-staging';
+const singleSignIn = import.meta.env.PUBLIC_PARTICIPANT_AUTH_V2 === 'true';
 const organiserSurface = ['queue', 'review', 'releases', 'people'].includes(
   surface,
 );
@@ -104,54 +105,119 @@ const organiserSurface = ['queue', 'review', 'releases', 'people'].includes(
       hidden
       aria-labelledby="login-heading"
     >
-      <h2 id="login-heading">Sign in to your workspace</h2>
+      <h2 id="login-heading">
+        {singleSignIn
+          ? 'Sign in to your CreaTech page'
+          : 'Sign in to your workspace'}
+      </h2>
       <p>
-        Use the email address invited by the organiser.
+        Use the email address invited by the organiser.{' '}
         {!standalone && 'Visitors can browse without signing in.'}
       </p>
-      <form data-email-form>
-        <label for="email">Invited email address</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autocomplete="email"
-          required
-          maxlength="254"
-        />
-        <button class="button dark" type="submit" data-send-code>
-          Send email code
-        </button>
-      </form>
-      <form data-code-form>
-        <p class="small">
-          Already have an invitation code? Enter it below without requesting
-          another code.
-        </p>
-        <label class="invitation-choice">
-          <input id="first-invitation" type="checkbox" /> This is my first
-          invitation code
-        </label>
-        <label for="email-code">Email code</label>
-        <input
-          id="email-code"
-          name="code"
-          inputmode="numeric"
-          autocomplete="one-time-code"
-          pattern="[0-9]{6,8}"
-          minlength="6"
-          maxlength="8"
-          required
-          aria-describedby="code-help"
-        />
-        <p id="code-help" class="small">
-          Paste the code from your email. A code request does not confirm
-          delivery.
-        </p>
-        <button class="button dark" type="submit">
-          Verify code
-        </button>
-      </form>
+      {singleSignIn ? (
+        <>
+          <form data-email-form>
+            <label for="email">Email address</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              maxlength="254"
+            />
+            <p class="small">
+              Use the email address where you received your invitation.
+            </p>
+            <div class="sign-in-actions">
+              <button class="button dark" type="submit" data-send-code>
+                Email me a code
+              </button>
+              <button class="text-button" type="button" data-existing-code>
+                I already have a code
+              </button>
+            </div>
+          </form>
+          <form data-code-form hidden>
+            <h3>Check your email</h3>
+            <p class="small" data-code-address></p>
+            <label for="email-code">Email code</label>
+            <input
+              id="email-code"
+              name="code"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              pattern="[0-9]{6}"
+              minlength="6"
+              maxlength="12"
+              required
+              aria-describedby="code-help"
+            />
+            <p id="code-help" class="small">
+              Use the latest six-digit code. It expires 24 hours after it was
+              sent. You can request a new code when needed.
+            </p>
+            <div class="sign-in-actions">
+              <button class="button dark" type="submit">
+                Continue
+              </button>
+              <button class="text-button" type="button" data-resend-code>
+                Send a new code
+              </button>
+              <button class="text-button" type="button" data-change-email>
+                Change email
+              </button>
+            </div>
+          </form>
+        </>
+      ) : (
+        <>
+          <form data-email-form>
+            <label for="email">Invited email address</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              maxlength="254"
+            />
+            <button class="button dark" type="submit" data-send-code>
+              Send email code
+            </button>
+          </form>
+          <form data-code-form>
+            <p class="small">
+              Already have an invitation code? Enter it below without requesting
+              another code.
+            </p>
+            <label class="invitation-choice">
+              <input id="first-invitation" type="checkbox" /> This is my first
+              invitation code
+            </label>
+            <label for="email-code">Email code</label>
+            <input
+              id="email-code"
+              name="code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              pattern="[0-9]{6,8}"
+              minlength="6"
+              maxlength="8"
+              required
+              aria-describedby="code-help"
+            />
+            <p id="code-help" class="small">
+              Paste the code from your email. A code request does not confirm
+              delivery.
+            </p>
+            <button class="button dark" type="submit">
+              Verify code
+            </button>
+          </form>
+        </>
+      )}
       <p class="small">
         Closing this tab may require you to sign in again. Unsaved text is kept
         only while this page remains open.

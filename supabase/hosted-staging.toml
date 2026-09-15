@@ -14,12 +14,21 @@ enable_signup = false
 enable_anonymous_sign_ins = false
 enable_manual_linking = false
 
+# Bounded custom-SMTP capacity for the approved cohort; preserves verification.
+[auth.rate_limit]
+email_sent = 30
+
 [auth.email]
 enable_signup = true
 enable_confirmations = true
 double_confirm_changes = true
 otp_length = 6
-otp_expiry = 3600
+otp_expiry = 86400
+
+# Deploy the additive migration before enabling this hook. Live patch is separate.
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/before_participant_created"
 
 [auth.mfa.totp]
 enroll_enabled = true

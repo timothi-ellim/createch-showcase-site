@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { resolve, join } from 'node:path';
+import { workspaceDescriptor } from './workspace-descriptor.mjs';
 
 const root = resolve('portal-dist');
 const expectedPages = [
@@ -41,7 +42,9 @@ for (const path of files) {
 assert(combined.includes('https://audbvodildfpmschwyot.supabase.co'));
 assert(combined.includes('sb_publishable_'));
 assert(!files.some(x => x.endsWith('.map')));
-const result = { kind: 'participant-workspace', verifiedAt: new Date().toISOString(), projectContentIncluded: false, files: manifest };
+const v2 = (await readFile(join(root, 'participant/login/index.html'), 'utf8')).includes('data-existing-code');
+const descriptor = v2 ? workspaceDescriptor(process.env.CREATECH_WORKSPACE_DESCRIPTOR) : null;
+const result = { kind: 'participant-workspace', authMode: v2 ? 'single-code-v2' : 'legacy', descriptor, verifiedAt: new Date().toISOString(), projectContentIncluded: false, files: manifest };
 await mkdir('.portal-test', { recursive: true });
 await writeFile('.portal-test/workspace-artifact.json', JSON.stringify(result, null, 2) + '\n');
 console.log(JSON.stringify({ verified: true, htmlPages: expectedPages.length, files: files.length, projectContentIncluded: false }));

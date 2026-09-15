@@ -2,6 +2,7 @@
 import Layout from '../../src/layouts/WorkspaceLayout.astro';
 import ParticipantGuide from '../../src/components/ParticipantGuide.astro';
 import { event } from '../../src/data/catalogue';
+const singleSignIn = import.meta.env.PUBLIC_PARTICIPANT_AUTH_V2 === 'true';
 ---
 
 <Layout title="Participant help">
@@ -10,13 +11,14 @@ import { event } from '../../src/data/catalogue';
     <ParticipantGuide />
     <ol>
       <li>
-        Use the email address in your organiser invitation. If an Access screen
-        appears, verify the same approved email address there first.
+        {singleSignIn
+          ? 'Use the email address in your organiser invitation. Choose Email me a code, or I already have a code if you have an unused code.'
+          : 'Use the email address in your organiser invitation. If an Access screen appears, verify the same approved email address there first.'}
       </li>
       <li>
-        On the participant sign-in page, enter your invitation code and select
-        “This is my first invitation code”. For later visits, use “Send email
-        code”.
+        {singleSignIn
+          ? 'Enter the latest six-digit code and choose Continue. Codes expire 24 hours after sending. Choose Send a new code when the countdown ends if you need a replacement.'
+          : 'On the participant sign-in page, enter your invitation code and select “This is my first invitation code”. For later visits, use “Send email code”.'}
       </li>
       <li>
         Open your assigned project. Add your public name, project description,

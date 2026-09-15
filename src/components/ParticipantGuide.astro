@@ -1,8 +1,13 @@
+---
+const singleSignIn = import.meta.env.PUBLIC_PARTICIPANT_AUTH_V2 === 'true';
+---
+
 <section class="reading-panel" aria-labelledby="participant-guide-title">
   <h2 id="participant-guide-title">A guide to updating your page</h2>
   <p>
-    Follow the visual walkthrough, with screenshots beside each relevant step, for signing in,
-    editing, choosing an image, saving and submitting for review.
+    Follow the visual walkthrough, with screenshots beside each relevant step,
+    for signing in, editing, choosing an image, saving and submitting for
+    review.
   </p>
   <p>
     Please complete your page and submit it for review by{' '}
@@ -15,5 +20,8 @@
   >
     Download the visual walkthrough (PDF)
   </a>
-  <p class="small">Six pages, with labelled steps and screenshots using sample content.</p>
+  <p class="small">
+    {singleSignIn ? 'Seven' : 'Six'} pages, with labelled steps and screenshots
+    using sample content.
+  </p>
 </section>

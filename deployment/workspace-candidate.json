@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "status": "approved",
+  "pagesProject": "createch-workspace",
+  "appOrigin": "https://createch-workspace.pages.dev",
+  "apiOrigin": "https://audbvodildfpmschwyot.supabase.co",
+  "environment": "staging",
+  "legacyOrigin": "https://createch-showcase-staging.pages.dev",
+  "publicOrigin": "https://createch-showcase.pages.dev",
+  "organiserAccess": true,
+  "note": "User authorised live deployment on 16 September 2026. Project ownership verified in the connected Cloudflare account. Existing identity database is retained. Verify TLS, protected candidate and canonical routing as part of cutover."
+}

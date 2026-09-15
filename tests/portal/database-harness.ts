@@ -10,9 +10,9 @@ export const PA = '10000000-0000-4000-8000-000000000001',
 // identities only; this suite does NOT claim JWT, Auth, HTTP or Storage API proof.
 export async function database() {
   const db = new PGlite();
-  await db.exec(`create role anon; create role authenticated; create role service_role;
+  await db.exec(`create role anon; create role authenticated; create role service_role; create role supabase_auth_admin;
     create schema auth; create schema storage;
-    create table auth.users(id uuid primary key);
+    create table auth.users(id uuid primary key,email text unique,email_confirmed_at timestamptz,invited_at timestamptz,banned_until timestamptz,deleted_at timestamptz);
     create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
     create function auth.uid() returns uuid language sql stable as $$ select (auth.jwt()->>'sub')::uuid $$;
     create function auth.role() returns text language sql stable as $$ select auth.jwt()->>'role' $$;
@@ -35,7 +35,7 @@ export async function database() {
   }
   const event = JSON.parse(await readFile('content/event.json', 'utf8'));
   const data = JSON.parse(await readFile('content/projects.json', 'utf8'));
-  await db.exec(`insert into auth.users values('${A}'),('${B}'),('${O}'),('${U}');
+  await db.exec(`insert into auth.users(id) values('${A}'),('${B}'),('${O}'),('${U}');
     insert into editorial.settings(environment) values('local');
     insert into editorial.event_roles values('${O}','owner',true);
     insert into editorial.projects(id,public_id,slug) values('${PA}','fixture-01','sample-image-study'),('${PB}','fixture-02','sample-world-study');

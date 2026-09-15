@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import ParticipantGuide from '../components/ParticipantGuide.astro';
 import { event, isSynthetic } from '../data/catalogue';
 const connected = event.participantEditingRoute === 'supabase-portal';
+const singleSignIn = import.meta.env.PUBLIC_PARTICIPANT_AUTH_V2 === 'true';
 const localTesting =
   isSynthetic &&
   import.meta.env.PUBLIC_PORTAL_ENVIRONMENT === 'local' &&
@@ -25,7 +26,9 @@ const localTesting =
       <h2>What happens next</h2>
       <p>
         {connected
-          ? 'Open the participant workspace and verify your first invitation code. After that, request fresh sign-in codes using your invited email address. You can edit only your assigned projects.'
+          ? singleSignIn
+            ? 'Open the workspace, enter your invited email address and choose Email me a code. Enter the latest code and choose Continue. Codes last 24 hours; request a replacement when needed. You can edit only your assigned projects.'
+            : 'Open the participant workspace and verify your first invitation code. After that, request fresh sign-in codes using your invited email address. You can edit only your assigned projects.'
           : 'The planned workspace lets invited contributors edit their own text and main image, preview a page and submit an exact version for review.'}
       </p>
       <p>
