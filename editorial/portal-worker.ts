@@ -13,6 +13,7 @@ import {
 } from './portal-validator.ts';
 import { runAstroBuild, verifyOutput } from './publisher.ts';
 import { verifyDeployment } from './deployment.ts';
+import { writeMediaDerivatives } from './media-derivatives.ts';
 
 interface Job {
   jobId: string;
@@ -149,6 +150,7 @@ export async function buildPortalCandidate(
         throw new ContentError('PREPARED_MEDIA_HASH_MISMATCH');
       await mkdir(join(site, 'media'), { recursive: true });
       await writeFile(join(site, 'media', `${media.sha256}.webp`), bytes);
+      await writeMediaDerivatives(bytes, media.sha256, site);
     }
   const verified = await verifyOutput(site, snapshot, [
     process.env.SUPABASE_SECRET_KEY || '',

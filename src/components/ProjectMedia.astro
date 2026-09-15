@@ -1,5 +1,6 @@
 ---
 import type { PublicProject } from '../data/catalogue';
+import { responsiveMedia } from '../lib/responsive-media';
 interface Props {
   project: PublicProject;
 }
@@ -11,6 +12,8 @@ const { project } = Astro.props;
     {project.media ? (
       <img
         src={project.media.src}
+        srcset={responsiveMedia(project.media.src)}
+        sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 45vw"
         alt={project.media.alt}
         loading="lazy"
         width="960"

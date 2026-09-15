@@ -3,14 +3,25 @@
    app stylesheet or proof of browser accessibility. No fonts are bundled.
    UI colours are normalised approximations of the attached poster. */
 :root {
-  --ct-blue: #3014fa;
-  --ct-blue-deep: #2410be;
-  --ct-lemon: #fffab1;
-  --ct-pink: #ebbeff;
-  --ct-white: #fefdff;
-  --ct-paper: #f7f5f1;
-  --ct-ink: #191721;
-  --ct-muted: #5c556a;
+  --ct-cobalt: #3117fa;
+  --ct-cobalt-deep: #2410d7;
+  --ct-navy: #11194c;
+  --ct-signal: #fbfc7f;
+  --ct-lilac: #d9ccff;
+  --ct-blue: var(--ct-cobalt);
+  --ct-blue-deep: var(--ct-cobalt-deep);
+  --ct-lemon: var(--ct-signal);
+  --ct-pink: var(--ct-lilac);
+  --ct-white: #ffffff;
+  --ct-paper: #f4f3f1;
+  --ct-ink: #111217;
+  --ct-muted: #666978;
+  --ct-line-light: rgb(255 255 255 / 26%);
+  --ct-line-dark: rgb(17 18 23 / 18%);
+  --ct-space-section: clamp(3rem, 6vw, 6rem);
+  --ct-space-gutter: clamp(1rem, 3vw, 3rem);
+  --ct-text-display: clamp(3.4rem, 8vw, 7.5rem);
+  --ct-text-heading: clamp(2rem, 4.5vw, 4.5rem);
   --ct-border-strong: #797285;
   --ct-success-fg: #195834;
   --ct-success-bg: #e9f5ed;
@@ -34,7 +45,7 @@
   --ct-control-secondary: 2.75rem;
   --ct-motion-fast: 120ms;
   --ct-motion-default: 160ms;
-  --ct-content-max: 80rem;
+  --ct-content-max: 90rem;
 
   /* Default reading surface. Contextual aliases prevent a contrast failure
      when a button is moved from the hero into a white editing form. */

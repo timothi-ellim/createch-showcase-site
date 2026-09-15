@@ -1,11 +1,13 @@
 ---
 import Layout from '../../src/layouts/WorkspaceLayout.astro';
+import ParticipantGuide from '../../src/components/ParticipantGuide.astro';
 import { event } from '../../src/data/catalogue';
 ---
 
 <Layout title="Participant help">
   <section class="wrap section">
     <h1>Prepare your showcase page</h1>
+    <ParticipantGuide />
     <ol>
       <li>
         Use the email address in your organiser invitation. If an Access screen
@@ -39,8 +41,8 @@ import { event } from '../../src/data/catalogue';
       ) : (
         'contact the organiser through your existing correspondence'
       )}
-      . Invitations are being prepared for all {event.participants.length} participants. There is no
-      public account registration.
+      . Invitations are being prepared for all {event.participants.length}{' '}
+      participants. There is no public account registration.
     </p>
     <p>
       <a class="button dark" href="/participant/login/">

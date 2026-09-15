@@ -128,13 +128,35 @@ test('two-project approved SQL release builds real static files; pending draft a
       ])
         assert.ok(!bytes.includes(marker), `${file.path} leaked ${marker}`);
     }
-    for (const file of built.files.filter((f) => f.path.endsWith('.webp')))
+    for (const file of built.files.filter((f) =>
+      /^media\/[a-f0-9]{64}\.webp$/.test(f.path),
+    ))
       assert.ok(
         [...media.values()].some(
           (bytes) =>
             createHash('sha256').update(bytes).digest('hex') === file.sha256,
         ),
       );
+    for (const file of built.files.filter((f) =>
+      /-(480|960|1600)\.webp$/.test(f.path),
+    )) {
+      const parent = file.path.match(
+        /^media\/([a-f0-9]{64})-(480|960|1600)\.webp$/,
+      )!;
+      assert.ok(
+        [...media.values()].some(
+          (bytes) =>
+            createHash('sha256').update(bytes).digest('hex') === parent[1],
+        ),
+        'Derivative must belong to approved media',
+      );
+      const { default: sharp } = await import('sharp');
+      const metadata = await sharp(
+        await readFile(join(built.site, file.path)),
+      ).metadata();
+      assert.equal(metadata.width, Number(parent[2]));
+      assert.equal(metadata.exif, undefined);
+    }
     await asUser(db, O, 'authenticated', 'aal2');
     await rpc(db, 'register_reviewed_source', ['b'.repeat(40)]);
     const rebrand = await rpc(db, 'prepare_release', [

@@ -17,6 +17,8 @@ import {
 } from '../src/lib/content-schema.ts';
 import type { PublicSnapshot } from '../src/lib/content-schema.ts';
 import { atomicJson, readJson, repositoryRoot, within } from './store.ts';
+import { writeMediaDerivatives } from './media-derivatives.ts';
+import { mediaWidths } from '../src/lib/responsive-media.ts';
 
 export interface FileDigest {
   path: string;
@@ -166,9 +168,19 @@ export async function verifyOutput(
   for (const project of snapshot.projects) {
     if (!fileNames.has(`projects/${project.slug}/index.html`))
       throw new ContentError('PROJECT_ROUTE_MISSING');
-    for (const media of [project.media, ...project.processMedia])
-      if (media && !fileNames.has(media.src.slice(1)))
+    for (const media of [project.media, ...project.processMedia]) {
+      if (
+        media &&
+        (!fileNames.has(media.src.slice(1)) ||
+          mediaWidths.some(
+            (width) =>
+              !fileNames.has(
+                media.src.slice(1).replace(/\.[^.]+$/, '') + `-${width}.webp`,
+              ),
+          ))
+      )
         throw new ContentError('PUBLIC_MEDIA_MISSING');
+    }
   }
   const expected = new Set(
     snapshot.projects.map((project) => `projects/${project.slug}/index.html`),
@@ -195,10 +207,13 @@ export async function verifyOutput(
         )
       )
         throw new ContentError('PAGE_REVISION_MISMATCH', [file.path]);
+      const dateChecked =
+        file.path === 'participants/index.html'
+          ? text.replaceAll('29 September 2026', 'CONFIRMED_PARTICIPANT_DEADLINE')
+          : text;
       if (
-        /edit2=|editLinkSecret|ownerContact|responseId|7 August|September 2026/i.test(
-          text,
-        )
+        /edit2=|editLinkSecret|ownerContact|responseId|7 August/i.test(text) ||
+        /September 2026/i.test(dateChecked)
       )
         throw new ContentError('PRIVATE_OR_STALE_MARKER_IN_OUTPUT');
       if (
@@ -332,6 +347,11 @@ export async function copyApprovedMedia(
       throw new ContentError('MEDIA_HASH_MISMATCH');
     await mkdir(join(outDir, 'media'), { recursive: true });
     await copyFile(source, join(outDir, src.slice(1)));
+    await writeMediaDerivatives(
+      bytes,
+      src.split('/').at(-1)!.split('.')[0],
+      outDir,
+    );
   }
 }
 export async function verifyRelease(root: string, release: Release) {

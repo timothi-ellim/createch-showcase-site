@@ -1,0 +1,122 @@
+---
+import Layout from '../layouts/Layout.astro';
+import EventFacts from '../components/EventFacts.astro';
+import { projects, isSynthetic } from '../data/catalogue';
+// Existing approved schedule text is authoritative. Do not infer clock times,
+// rooms, ordering or a live NOW state from free-form participant descriptions.
+const scheduled = projects.filter((project) => project.schedule);
+const rooms = [
+  ...new Set(
+    scheduled.flatMap((project) => (project.room ? [project.room] : [])),
+  ),
+];
+---
+
+<Layout title="Programme">
+  <div class="programme-heading">
+    <div class="wrap section">
+      <p class="eyebrow">
+        {'{'} On the day {'}'}
+      </p>
+      <h1>
+        Time to
+        <br />
+        <em>get curious.</em>
+      </h1>
+      <EventFacts />
+    </div>
+  </div>
+  <div class="wrap section">
+    {scheduled.length ? (
+      <>
+        <h2>{isSynthetic ? 'Sample programme' : 'Programme'}</h2>
+        <p>
+          Published timings are shown as supplied. Event times are UK time.
+          Saving a project is not a reservation.
+        </p>
+        {rooms.length > 1 && (
+          <label class="programme-room" hidden>
+            Filter by location
+            <select data-programme-room>
+              <option value="all">All locations</option>
+              {rooms.map((room) => (
+                <option value={room}>{room}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        <ol class="programme-list">
+          {scheduled.map((project) => (
+            <li data-programme-item data-room={project.room ?? ''}>
+              <p class="programme-time">{project.schedule}</p>
+              <div>
+                <h3>
+                  <a href={`/projects/${project.slug}/`}>{project.title} ↗</a>
+                </h3>
+                <p>{project.maker}</p>
+                <p class="small">
+                  {project.room ?? 'Location not confirmed'}
+                  {project.duration && ` · ${project.duration}`}
+                </p>
+              </div>
+              <button
+                hidden
+                class="save-button"
+                data-save={project.id}
+                data-title={project.title}
+                aria-pressed="false"
+              >
+                Save to my visit
+              </button>
+            </li>
+          ))}
+        </ol>
+        <p role="status" data-programme-count>
+          {scheduled.length} programme entries
+        </p>
+      </>
+    ) : (
+      <div class="publishing-state">
+        <span class="publishing-mark" aria-hidden="true">
+          {'{ … }'}
+        </span>
+        <div>
+          <p class="eyebrow">More to discover</p>
+          <h2>Programme publishing soon.</h2>
+          <p>
+            Project locations, timings and further visitor guidance will appear
+            here when confirmed.
+          </p>
+          <div class="actions">
+            <a class="button dark" href="/explore/">
+              Explore the showcase ↗
+            </a>
+            <a class="text-link" href="/visit/">
+              Plan your visit ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</Layout>
+<script>
+  const select = document.querySelector<HTMLSelectElement>(
+    '[data-programme-room]',
+  );
+  if (select) {
+    select.closest<HTMLElement>('label')!.hidden = false;
+    select.addEventListener('change', () => {
+      let count = 0;
+      document
+        .querySelectorAll<HTMLElement>('[data-programme-item]')
+        .forEach((item) => {
+          item.hidden =
+            select.value !== 'all' && item.dataset.room !== select.value;
+          if (!item.hidden) count++;
+        });
+      document.querySelector('[data-programme-count]')!.textContent =
+        `${count} programme ${count === 1 ? 'entry' : 'entries'}`;
+    });
+  }
+</script>

@@ -44,5 +44,8 @@ export default defineConfig({
       },
     },
   ],
-  vite: { build: { sourcemap: false }, css: { postcss: { plugins: [] } } },
+  vite: {
+    build: { sourcemap: false, assetsInlineLimit: 0 },
+    css: { postcss: { plugins: [] } },
+  },
 });

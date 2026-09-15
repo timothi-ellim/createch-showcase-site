@@ -9,6 +9,7 @@ let saved = new Set<string>();
 let storageAvailable = true;
 let notice = '';
 let undoSaved: Set<string> | null = null;
+let savedStateRendered = false;
 let timer: ReturnType<typeof setTimeout>;
 
 function announce(message: string) {
@@ -55,7 +56,7 @@ function renderSaved() {
       `${selected ? 'Remove' : 'Save'} ${button.dataset.title} ${selected ? 'from' : 'to'} my visit`,
     );
     button.textContent = selected
-      ? '✓ Saved · Remove'
+      ? '✓ Saved'
       : button.classList.contains('save-button')
         ? '＋ Save'
         : 'Save to my visit';
@@ -63,8 +64,17 @@ function renderSaved() {
   document
     .querySelectorAll<HTMLElement>('[data-saved-count]')
     .forEach((count) => {
-      count.textContent = saved.size ? String(saved.size) : '';
+      const label = saved.size ? String(saved.size) : '';
+      const changed = count.textContent !== label;
+      count.textContent = label;
+      if (changed && savedStateRendered)
+        document.dispatchEvent(
+          new CustomEvent('createch:count-feedback', {
+            detail: { target: count },
+          }),
+        );
     });
+  savedStateRendered = true;
   if (!shortlist) return;
   const unavailable = [...saved].filter((id) => !knownIds.has(id));
   const cards = [
@@ -100,7 +110,7 @@ function renderSaved() {
 function updateProjectLinks() {
   if (!shortlist && !document.querySelector('#filters')) return;
   for (const link of document.querySelectorAll<HTMLAnchorElement>(
-    '[data-project-link]',
+    '[data-project-link], [data-project-media-link]',
   )) {
     const card = link.closest<HTMLElement>('[data-project-card]')!;
     const destination = new URL(link.href);
@@ -168,7 +178,10 @@ for (const button of buttons)
       focusShortlist();
     }
   });
-document.querySelector('[data-clear-saved]')?.addEventListener('click', () => {
+const clearDialog = document.querySelector<HTMLDialogElement>(
+  '[data-clear-dialog]',
+);
+function clearSaved() {
   const previous = new Set(saved);
   if (
     writeSaved(
@@ -180,6 +193,32 @@ document.querySelector('[data-clear-saved]')?.addEventListener('click', () => {
     renderSaved();
     focusShortlist();
   }
+}
+document.querySelector('[data-clear-saved]')?.addEventListener('click', () => {
+  if (
+    saved.size > 1 &&
+    clearDialog &&
+    typeof clearDialog.showModal === 'function'
+  ) {
+    clearDialog.showModal();
+    clearDialog
+      .querySelector<HTMLButtonElement>('[data-cancel-clear]')
+      ?.focus();
+  } else clearSaved();
+});
+document
+  .querySelector('[data-cancel-clear]')
+  ?.addEventListener('click', () => clearDialog?.close());
+document
+  .querySelector('[data-confirm-clear]')
+  ?.addEventListener('click', () => {
+    clearDialog?.close();
+    clearSaved();
+  });
+// A cross-tab edit invalidates an outstanding bulk-clear decision.
+window.addEventListener('storage', (event) => {
+  if ((event.key === KEY || event.key === null) && clearDialog?.open)
+    clearDialog.close();
 });
 document
   .querySelector('[data-remove-unavailable]')
@@ -233,6 +272,26 @@ if (filters) {
   filters.hidden = false;
   const search = document.querySelector<HTMLInputElement>('#search')!;
   const params = new URLSearchParams(location.search);
+  const sort = filters.querySelector<HTMLSelectElement>('#sort')!;
+  sort.value = ['title', 'maker'].includes(params.get('sort') ?? '')
+    ? params.get('sort')!
+    : 'featured';
+  const grid = document.querySelector<HTMLElement>('#project-results')!;
+  const originalCards = [
+    ...grid.querySelectorAll<HTMLElement>('[data-project-card]'),
+  ];
+  function sortCards() {
+    const ordered = [...originalCards];
+    if (sort.value !== 'featured')
+      ordered.sort((a, b) =>
+        (a.dataset[sort.value] ?? '').localeCompare(
+          b.dataset[sort.value] ?? '',
+          'en',
+          { sensitivity: 'base' },
+        ),
+      );
+    grid.append(...ordered);
+  }
   let theme = ['image', 'world', 'relation'].includes(params.get('theme') ?? '')
     ? params.get('theme')!
     : 'all';
@@ -301,6 +360,7 @@ if (filters) {
       ['theme', theme],
       ['encounter', encounter],
       ['q', search.value.trim()],
+      ['sort', sort.value === 'featured' ? '' : sort.value],
     ]) {
       if (value && value !== 'all') url.searchParams.set(key, value);
       else url.searchParams.delete(key);
@@ -344,6 +404,10 @@ if (filters) {
       }),
     );
   search.addEventListener('input', () => applyFilters());
+  sort.addEventListener('change', () => {
+    sortCards();
+    applyFilters();
+  });
   clearSearch.addEventListener('click', () => {
     search.value = '';
     applyFilters();
@@ -353,6 +417,8 @@ if (filters) {
     theme = 'all';
     encounter = 'all';
     search.value = '';
+    sort.value = 'featured';
+    sortCards();
     applyFilters();
   }
   filters.addEventListener('reset', (event) => {
@@ -365,6 +431,7 @@ if (filters) {
       reset();
       search.focus();
     });
+  sortCards();
   applyFilters();
   document.querySelector('[data-surprise]')?.addEventListener('click', () => {
     const matches = [
@@ -378,6 +445,25 @@ if (filters) {
       ]?.querySelector<HTMLAnchorElement>('h2 a, h3 a');
     if (link) location.assign(link.href);
   });
+}
+const homeSurprise = document.querySelector<HTMLButtonElement>(
+  '[data-home-surprise]',
+);
+if (homeSurprise) {
+  const paths: unknown = JSON.parse(homeSurprise.dataset.projectPaths ?? '[]');
+  if (
+    Array.isArray(paths) &&
+    paths.length &&
+    paths.every(
+      (path) =>
+        typeof path === 'string' && /^\/projects\/[a-z0-9-]+\/$/.test(path),
+    )
+  ) {
+    homeSurprise.hidden = false;
+    homeSurprise.addEventListener('click', () =>
+      location.assign(paths[Math.floor(Math.random() * paths.length)]),
+    );
+  }
 }
 const backLink = document.querySelector<HTMLAnchorElement>(
   '[data-back-to-results]',

@@ -84,5 +84,9 @@ export default defineConfig({
   trailingSlash: 'always',
   devToolbar: { enabled: false },
   server: { host: '127.0.0.1', port: 4321 },
-  vite: { build: { sourcemap: false }, css: { postcss: { plugins: [] } } },
+  // Small processed scripts must remain external under script-src 'self'.
+  vite: {
+    build: { sourcemap: false, assetsInlineLimit: 0 },
+    css: { postcss: { plugins: [] } },
+  },
 });

@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ParticipantGuide from '../components/ParticipantGuide.astro';
 import { event, isSynthetic } from '../data/catalogue';
 const connected = event.participantEditingRoute === 'supabase-portal';
 const localTesting =
@@ -19,6 +20,7 @@ const localTesting =
           ? 'The local workspace is connected for synthetic testing. Real participant editing is not open yet.'
           : 'The participant editor is being prepared. It is not connected for participant use yet.'}
     </p>
+    <ParticipantGuide />
     <section class="reading-panel">
       <h2>What happens next</h2>
       <p>

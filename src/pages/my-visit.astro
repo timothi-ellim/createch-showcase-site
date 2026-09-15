@@ -57,6 +57,25 @@ import { projects } from '../data/catalogue';
         Explore the showcase ↗
       </a>
     </div>
+    <dialog
+      class="clear-dialog"
+      data-clear-dialog
+      aria-labelledby="clear-title"
+    >
+      <h2 id="clear-title">Clear your shortlist?</h2>
+      <p>
+        Remove all saved projects from this browser. You can undo this on the
+        page afterwards.
+      </p>
+      <div class="actions">
+        <button class="button dark" data-cancel-clear>
+          Keep my shortlist
+        </button>
+        <button class="button secondary" data-confirm-clear>
+          Yes, clear shortlist
+        </button>
+      </div>
+    </dialog>
     <div class="project-grid">
       {projects.map((project) => (
         <ProjectCard project={project} saved />

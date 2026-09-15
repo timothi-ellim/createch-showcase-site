@@ -3,11 +3,12 @@ import Layout from '../layouts/Layout.astro';
 import EventFacts from '../components/EventFacts.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import ParticipantRoster from '../components/ParticipantRoster.astro';
+import ProgrammePreview from '../components/ProgrammePreview.astro';
 import { event, projects, themes, isSynthetic } from '../data/catalogue';
 ---
 
 <Layout>
-  <section class="hero wrap">
+  <section class="hero wrap poster-grid">
     <div class="hero-copy">
       <p class="eyebrow">{event.series}</p>
       <h1>
@@ -48,32 +49,53 @@ import { event, projects, themes, isSynthetic } from '../data/catalogue';
       </div>
     </div>
     <div class="poster-margin" aria-hidden="true">
-      <span>{'{ '}</span>
-      <p>
-        Art
+      <div class="poster-registration">
+        <span>CT / 26</span>
+        <span>↗</span>
+      </div>
+      <div class="poster-object">
+        <span>{'{'}</span>
+        <span class="poster-star">✳</span>
+        <span>{'}'}</span>
+      </div>
+      <p class="poster-annotation">
+        A meeting point
         <br />
-        Technology
-        <br />
-        People
-        <br />
-        Culture
+        for the unexpected.
       </p>
-      <span>+</span>
-      <p>
-        Ideas, experiences
-        <br />
-        and people
-        <br />
-        in conversation.
-      </p>
+      <div class="poster-registration">
+        <span>Art ↔ Technology</span>
+        <span>＋</span>
+      </div>
     </div>
   </section>
-  {projects.length > 0 && (
+  <section class="curatorial-intro light-section">
+    <div class="wrap section">
+      <p class="discipline-line">
+        <span>Art</span>
+        <span>Technology</span>
+        <span>People</span>
+        <span>Culture</span>
+      </p>
+      <h2 data-motion-reveal>
+        Ideas, experiences and people
+        <br />
+        <em>in conversation.</em>
+      </h2>
+      <a class="text-link" href="/about/">
+        About the showcase <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </section>
+  <ParticipantRoster />
+  {
     <section class="section wrap">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">Find a starting point</p>
-          <h2>Three ways into the showcase.</h2>
+          <p class="eyebrow">
+            {'{'} Find a starting point {'}'}
+          </p>
+          <h2>Follow a thread.</h2>
         </div>
         <a class="text-link" href="/explore/">
           Browse all <span aria-hidden="true">↗</span>
@@ -87,7 +109,11 @@ import { event, projects, themes, isSynthetic } from '../data/catalogue';
         {themes.map((theme) => (
           <a
             class:list={['theme-tile', theme.id]}
-            href={`/explore/?theme=${theme.id}`}
+            href={
+              projects.some((project) => project.theme === theme.id)
+                ? `/explore/?theme=${theme.id}`
+                : `/about/#thread-${theme.id}`
+            }
           >
             <span class="tile-top">
               {theme.number}
@@ -102,7 +128,7 @@ import { event, projects, themes, isSynthetic } from '../data/catalogue';
         ))}
       </div>
     </section>
-  )}
+  }
   {projects.length > 0 && (
     <section class="light-section">
       <div class="wrap section">
@@ -120,7 +146,7 @@ import { event, projects, themes, isSynthetic } from '../data/catalogue';
             ? 'Sample entries show how the guide will work. The approved programme is still to come.'
             : 'Discover a few starting points, then explore the full showcase.'}
         </p>
-        <div class="project-grid">
+        <div class="project-grid featured-grid">
           {projects.slice(0, 3).map((project) => (
             <ProjectCard project={project} headingLevel="h3" />
           ))}
@@ -128,22 +154,55 @@ import { event, projects, themes, isSynthetic } from '../data/catalogue';
       </div>
     </section>
   )}
-  <ParticipantRoster />
-  {projects.length > 0 && (
-    <section class="wrap section">
-      <div class="visit-banner">
-        <div>
-          <p class="eyebrow">Your day, your discoveries</p>
-          <h2>Make space for something new.</h2>
-          <p>
-            Save projects as you explore, then keep your shortlist handy on the
-            day.
-          </p>
-        </div>
-        <a class="button dark" href="/my-visit/">
-          Start my visit <span aria-hidden="true">↗</span>
+  <section class="wrap discovery-break">
+    {projects.length > 0 ? (
+      <>
+        <p>
+          Leave a little room
+          <br />
+          <em>for the unexpected.</em>
+        </p>
+        <button
+          class="button lime"
+          data-home-surprise
+          hidden
+          data-project-paths={JSON.stringify(
+            projects.map((project) => `/projects/${project.slug}/`),
+          )}
+        >
+          Surprise me <span aria-hidden="true">↗</span>
+        </button>
+      </>
+    ) : (
+      <>
+        <p>
+          Project details
+          <br />
+          <em>publishing soon.</em>
+        </p>
+        <a class="text-link" href="/explore/">
+          Meet the participants ↗
         </a>
+      </>
+    )}
+  </section>
+  <ProgrammePreview />
+  <section class="light-section">
+    <div class="visit-banner wrap section">
+      <div>
+        <p class="eyebrow">
+          {'{'} See you there {'}'}
+        </p>
+        <h2>
+          Make space for
+          <br />
+          <em>something new.</em>
+        </h2>
+        <EventFacts />
       </div>
-    </section>
-  )}
+      <a class="button dark" href="/visit/">
+        Plan your visit <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </section>
 </Layout>

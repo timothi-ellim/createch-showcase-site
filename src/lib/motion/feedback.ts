@@ -38,6 +38,8 @@ export function feedback(
 document.addEventListener('click', settle, true);
 document.addEventListener('createch:save-feedback', ((event: CustomEvent) =>
   feedback(event.detail.target, event.detail.saved)) as EventListener);
+document.addEventListener('createch:count-feedback', ((event: CustomEvent) =>
+  feedback(event.detail.target, true, motionDuration.ui)) as EventListener);
 document.addEventListener('createch:status-feedback', ((event: CustomEvent) => {
   if (event.detail.error) {
     settle();

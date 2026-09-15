@@ -398,9 +398,49 @@ test('editing keeps controls visible, preserves in-flight changes and supports p
     const actionBox = await page.locator('[data-editor-actions]').boundingBox();
     expect(inputBox!.y + inputBox!.height).toBeLessThanOrEqual(actionBox!.y);
     await page.screenshot({
-      path: 'docs/evidence/portal/editor-polished-mobile.png',
+      path: 'docs/evidence/redesign/portal/editor-polished-mobile.png',
       fullPage: false,
     });
+  } finally {
+    await h.close();
+  }
+});
+
+test('autosave persists only a draft and failed autosave keeps edits for manual retry', async ({
+  page,
+}) => {
+  const h = await harness(page);
+  try {
+    await page.goto(`/participant/editor/?project=${PA}`);
+    const title = page.getByLabel('Project title', { exact: true });
+    await title.fill('Automatically saved synthetic draft');
+    await expect(page.locator('[data-editor-status]')).toContainText(
+      'Draft saved',
+      { timeout: 6000 },
+    );
+    await page.reload();
+    await expect(title).toHaveValue('Automatically saved synthetic draft');
+    await page.route(
+      '**/rpc/save_project_draft',
+      (route) =>
+        route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Simulated save failure' }),
+        }),
+      { times: 1 },
+    );
+    await title.fill('Keep these edits after failure');
+    await expect(page.locator('[data-editor-status]')).toContainText(
+      'not saved',
+      { timeout: 6000 },
+    );
+    await expect(title).toHaveValue('Keep these edits after failure');
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect(page.locator('[data-editor-status]')).toContainText(
+      'Draft saved',
+    );
+    await expect(page.locator('[data-submit-result]')).toBeEmpty();
   } finally {
     await h.close();
   }
@@ -542,7 +582,7 @@ test('failed save, optimistic conflict and inline session recovery preserve type
     );
     await mkdir('docs/evidence/portal', { recursive: true });
     await page.screenshot({
-      path: 'docs/evidence/portal/editor-save-failure.png',
+      path: 'docs/evidence/redesign/portal/editor-save-failure.png',
       fullPage: true,
     });
     h.failSave(false);
@@ -643,7 +683,7 @@ test('organiser approves exact revision and prepares a release; queued dispatch 
       'Verified live',
     );
     await page.screenshot({
-      path: 'docs/evidence/portal/release-queued-dispatch-failure.png',
+      path: 'docs/evidence/redesign/portal/release-queued-dispatch-failure.png',
       fullPage: true,
     });
   } finally {
@@ -678,7 +718,7 @@ test('all private routes stay accessible and fit four widths; screenshots use sy
         expect(result.violations).toEqual([]);
         if (width === 390 || width === 1440)
           await page.screenshot({
-            path: `docs/evidence/portal/${width}-${route.split('?')[0].replaceAll('/', '-')}.png`,
+            path: `docs/evidence/redesign/portal/${width}-${route.split('?')[0].replaceAll('/', '-')}.png`,
             fullPage: true,
           });
       }
@@ -719,7 +759,7 @@ test('email code screen and explicit logout clear private DOM; another account c
     await expect(page.locator('[data-send-code]')).toBeDisabled();
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     await page.screenshot({
-      path: 'docs/evidence/portal/email-code-login.png',
+      path: 'docs/evidence/redesign/portal/email-code-login.png',
       fullPage: true,
     });
     await page.getByLabel('Email code', { exact: true }).fill('123456');

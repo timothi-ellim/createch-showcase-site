@@ -13,15 +13,25 @@ const { project, saved = false, headingLevel: Heading = 'h2' } = Astro.props;
 <article
   id={`project-${project.id}`}
   tabindex="-1"
-  class="project-card"
+  class:list={['project-card', { 'type-card': !project.media }]}
   data-project-card
   data-id={project.id}
   data-theme={project.theme}
   data-encounters={project.encounters.join('|')}
-  data-search={`${project.title} ${project.maker} ${project.invitation}`.toLowerCase()}
+  data-title={project.title}
+  data-maker={project.maker}
+  data-search={`${project.title} ${project.maker} ${project.invitation} ${project.theme} ${project.encounters.join(' ')}`.toLowerCase()}
   hidden={saved}
 >
-  <ProjectMedia project={project} />
+  <a
+    class="card-media-link"
+    href={`/projects/${project.slug}/`}
+    data-project-media-link
+    tabindex="-1"
+    aria-label={`View ${project.title}`}
+  >
+    <ProjectMedia project={project} />
+  </a>
   <div class="card-copy">
     {isSynthetic && (
       <p class="fixture-label">Synthetic fixture · Not an announced work</p>
@@ -32,6 +42,9 @@ const { project, saved = false, headingLevel: Heading = 'h2' } = Astro.props;
     <Heading>
       <a data-project-link href={`/projects/${project.slug}/`}>
         {project.title}
+        <span class="card-arrow" aria-hidden="true">
+          ↗
+        </span>
       </a>
     </Heading>
     <p class="maker">{project.maker}</p>

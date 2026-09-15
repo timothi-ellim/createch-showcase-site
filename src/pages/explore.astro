@@ -7,7 +7,9 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
 
 <Layout title="Explore the showcase">
   <div class="wrap section">
-    <p class="eyebrow">The showcase</p>
+    <p class="eyebrow">
+      {'{'} Explore the works {'}'}
+    </p>
     <h1>Follow your curiosity.</h1>
     <p class="lead">
       {projects.length
@@ -64,16 +66,20 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
               >
                 All themes
               </button>
-              {themes.map((theme) => (
-                <button
-                  type="button"
-                  aria-label={theme.name}
-                  data-theme-filter={theme.id}
-                  aria-pressed="false"
-                >
-                  {theme.name}
-                </button>
-              ))}
+              {themes
+                .filter((theme) =>
+                  projects.some((project) => project.theme === theme.id),
+                )
+                .map((theme) => (
+                  <button
+                    type="button"
+                    aria-label={theme.name}
+                    data-theme-filter={theme.id}
+                    aria-pressed="false"
+                  >
+                    {theme.name}
+                  </button>
+                ))}
             </div>
           </fieldset>
           <fieldset>
@@ -87,37 +93,57 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
               >
                 All encounters
               </button>
-              <button
-                type="button"
-                aria-label="Look / listen"
-                data-encounter-filter="Look / listen"
-                aria-pressed="false"
-              >
-                Look / listen
-              </button>
-              <button
-                type="button"
-                aria-label="Participate"
-                data-encounter-filter="Participate"
-                aria-pressed="false"
-              >
-                Participate
-              </button>
+              {projects.some((project) =>
+                project.encounters.includes('Look / listen'),
+              ) && (
+                <button
+                  type="button"
+                  aria-label="Look / listen"
+                  data-encounter-filter="Look / listen"
+                  aria-pressed="false"
+                >
+                  Look / listen
+                </button>
+              )}
+              {projects.some((project) =>
+                project.encounters.includes('Participate'),
+              ) && (
+                <button
+                  type="button"
+                  aria-label="Participate"
+                  data-encounter-filter="Participate"
+                  aria-pressed="false"
+                >
+                  Participate
+                </button>
+              )}
             </div>
           </fieldset>
-          <button type="reset" class="text-button">
-            Clear all filters
-          </button>
-          <button type="button" class="button outline" data-surprise>
-            Surprise me ↗
-          </button>
-          <a
-            class="button lime results-jump"
-            href="#result-count"
-            data-view-results
-          >
-            View results ↓
-          </a>
+          <div class="filter-tools">
+            <label class="sort-control">
+              Sort projects
+              <select id="sort">
+                <option value="featured">Featured</option>
+                <option value="title">A–Z</option>
+                <option value="maker">Participant</option>
+              </select>
+            </label>
+            <button type="reset" class="text-button">
+              Clear all filters
+            </button>
+          </div>
+          <div class="filter-actions">
+            <button type="button" class="button outline" data-surprise>
+              Surprise me ↗
+            </button>
+            <a
+              class="button lime results-jump"
+              href="#result-count"
+              data-view-results
+            >
+              View results ↓
+            </a>
+          </div>
         </form>
         <noscript>
           <p class="notice">

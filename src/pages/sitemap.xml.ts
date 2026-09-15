@@ -5,6 +5,8 @@ export function GET() {
   const paths = [
     '/',
     '/explore/',
+    '/programme/',
+    '/about/',
     '/visit/',
     ...projects.map((project) => `/projects/${project.slug}/`),
   ];

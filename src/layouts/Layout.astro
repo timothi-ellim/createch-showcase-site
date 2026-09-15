@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import '../styles/redesign.css';
+import SiteHeader from '../components/SiteHeader.astro';
 import { motionLevel } from '../lib/motion/config';
 import {
   event,
@@ -20,11 +22,6 @@ const {
   description = `${event.title}. ${event.dateLabel}, ${timeLabel}. ${address}.${isPreview ? ' Local development preview.' : ''}`,
 } = Astro.props;
 const path = Astro.url.pathname;
-const nav = [
-  { href: '/explore/', label: 'Explore' },
-  { href: '/my-visit/', label: 'My visit' },
-  { href: '/visit/', label: 'Visit info' },
-];
 ---
 
 <!doctype html>
@@ -71,29 +68,14 @@ const nav = [
           : 'Approved content preview. This is not the live public website.'}
       </div>
     )}
-    <header class="site-header wrap">
-      <a class="brand" href="/" aria-label="CreaTech homepage">
-        CreaTech
-        <span>{event.series.replace('CreaTech ', '').toUpperCase()}</span>
-      </a>
-      <nav aria-label="Main navigation">
-        {nav.map((item) => (
-          <a
-            href={item.href}
-            aria-current={path === item.href ? 'page' : undefined}
-          >
-            {item.label}
-            {item.label === 'My visit' && (
-              <span data-saved-count aria-hidden="true"></span>
-            )}
-          </a>
-        ))}
-      </nav>
-    </header>
+    <SiteHeader />
     <main id="main" tabindex="-1">
       <slot />
     </main>
     <footer class="site-footer wrap">
+      <p class="footer-statement" aria-hidden="true">
+        Stay curious.<span>Code becomes culture ↗</span>
+      </p>
       <div>
         <a class="brand" href="/">
           CreaTech<span>{event.title.toUpperCase()}</span>
@@ -104,6 +86,8 @@ const nav = [
       </div>
       <div class="footer-links">
         <a href="/explore/">Browse all projects</a>
+        <a href="/programme/">Programme</a>
+        <a href="/about/">About</a>
         <a href="/participants/">Participant help</a>
         <a href="/visit/">Plan your visit</a>
       </div>

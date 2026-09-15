@@ -4,6 +4,8 @@ const KEY = 'createch-shortlist-v1';
 const routes = [
   '/',
   '/explore/',
+  '/programme/',
+  '/about/',
   '/projects/sample-image-study/',
   '/projects/sample-world-study/',
   '/projects/sample-relation-study/',
@@ -82,6 +84,7 @@ test('shortlist cleanup preserves valid saves and clear/remove can be undone', a
   await expect(page.locator('#storage-notice')).toBeEmpty();
   await expect(page.locator('[data-project-card]:visible')).toHaveCount(2);
   await page.getByRole('button', { name: 'Clear shortlist' }).click();
+  await page.getByRole('button', { name: 'Yes, clear shortlist' }).click();
   await expect(
     page.getByRole('button', { name: 'Print my visit' }),
   ).toBeDisabled();
@@ -221,15 +224,21 @@ test('keyboard navigation exposes skip link, filters, and native details', async
   await summary.focus();
   await page.keyboard.press('Enter');
   await expect(
-    page.getByText('Project locations, timings and further visitor guidance are coming soon.', {
-      exact: false,
-    }),
+    page.getByText(
+      'Project locations, timings and further visitor guidance are coming soon.',
+      {
+        exact: false,
+      },
+    ),
   ).toBeVisible();
   await page.keyboard.press('Space');
   await expect(
-    page.getByText('Project locations, timings and further visitor guidance are coming soon.', {
-      exact: false,
-    }),
+    page.getByText(
+      'Project locations, timings and further visitor guidance are coming soon.',
+      {
+        exact: false,
+      },
+    ),
   ).toBeHidden();
 });
 
@@ -284,6 +293,7 @@ test('corrupt and removed project IDs have recovery states and clear works', asy
   );
   await expect(page.locator('[data-project-card]:visible')).toHaveCount(1);
   await page.locator('[data-clear-saved]').click();
+  await page.getByRole('button', { name: 'Yes, clear shortlist' }).click();
   await expect(page.locator('#shortlist-empty')).toBeVisible();
   expect(
     await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), KEY),
@@ -415,7 +425,7 @@ test('320, 390, tablet and desktop layouts do not overflow; capture evidence', a
         `${route} at ${width}px`,
       ).toBe(true);
       await page.screenshot({
-        path: `docs/evidence/${width}-${route === '/' ? 'home' : route.split('/').filter(Boolean).join('-')}.png`,
+        path: `docs/evidence/redesign/fixtures/${width}-${route === '/' ? 'home' : route.split('/').filter(Boolean).join('-')}.png`,
         fullPage: true,
       });
     }

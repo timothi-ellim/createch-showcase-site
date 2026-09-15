@@ -24,6 +24,7 @@ let draft: PortalDraft | null = null,
   requestId = crypto.randomUUID(),
   factorId = '';
 const objectUrls = new Set<string>();
+let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
 function say(message: string, error = false) {
   status.textContent = message;
   status.dataset.error = String(error);
@@ -41,6 +42,7 @@ function say(message: string, error = false) {
   );
 }
 function clearPrivate() {
+  clearTimeout(autosaveTimer);
   for (const url of objectUrls) URL.revokeObjectURL(url);
   objectUrls.clear();
   content.replaceChildren();
@@ -201,6 +203,7 @@ function readFields(): ParticipantFields {
   };
 }
 async function save() {
+  clearTimeout(autosaveTimer);
   if (!draft) throw new Error('REQUEST_FAILED');
   const fields = readFields();
   say('Saving draft…');
@@ -219,6 +222,10 @@ async function save() {
     updatedAt: saved.updatedAt,
   };
   dirty = JSON.stringify(readFields()) !== JSON.stringify(fields);
+  const savedAt = content.querySelector<HTMLElement>('[data-saved-at]');
+  if (savedAt && Number.isFinite(Date.parse(saved.updatedAt))) {
+    savedAt.textContent = `Last saved ${new Date(saved.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (your local time)`;
+  }
   requestId = crypto.randomUUID();
   say(
     dirty
@@ -249,6 +256,7 @@ async function showDashboard() {
   say('Your assigned projects are up to date.');
 }
 function renderEditor() {
+  clearTimeout(autosaveTimer);
   if (!draft) return;
   const f = draft.fields,
     m = draft.metadata;
@@ -284,10 +292,45 @@ function renderEditor() {
     });
   }
   updateCounts();
+  const editorIdentity = identity;
+  const editorProject = draft.projectId;
+  function queueAutosave() {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => {
+      if (
+        !form.isConnected ||
+        !dirty ||
+        identity !== editorIdentity ||
+        draft?.projectId !== editorProject ||
+        !login.hidden ||
+        content.querySelector<HTMLElement>('[data-conflict]')?.hidden === false
+      )
+        return;
+      if (busy) {
+        queueAutosave();
+        return;
+      }
+      // Same version-checked draft RPC as manual Save. Never submits or publishes.
+      void act(async () => {
+        await save();
+        if (dirty) queueAutosave();
+      }, true);
+    }, 2000);
+  }
+  const autosaveNote = document.createElement('p');
+  autosaveNote.className = 'field-help';
+  autosaveNote.textContent =
+    'Draft changes save automatically after a short pause. You can also choose Save draft. Submitting for review is a separate step.';
+  form.prepend(autosaveNote);
+  const savedTime = document.createElement('p');
+  savedTime.className = 'small';
+  savedTime.dataset.savedAt = '';
+  form.querySelector('[data-editor-actions]')?.append(savedTime);
   form.addEventListener('input', () => {
     dirty = true;
     updateCounts();
     say('Unsaved changes.');
+    queueAutosave();
   });
   $('[data-save-draft]').onclick = () => act(save, true);
   $('[data-preview-draft]').onclick = () => {
@@ -325,6 +368,7 @@ function renderEditor() {
         say('Save your changes before submitting this version.', true);
         return;
       }
+      say('Submitting for review… Your public page stays the same.');
       const result = await rpc<{ revisionId: string; jobId: string }>(
         'submit_project_revision',
         {

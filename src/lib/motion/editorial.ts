@@ -52,6 +52,25 @@ export function startEditorial() {
   if (!canMove()) return;
   const hero = document.querySelector('.hero');
   if (hero) {
+    const mark = hero.querySelector<HTMLElement>('.poster-star');
+    if (mark && mark.getClientRects().length && canMove()) {
+      const motion = mark.animate(
+        [
+          { transform: 'rotate(-18deg) scale(.9)' },
+          { transform: 'rotate(0deg) scale(1)' },
+        ],
+        {
+          duration: d.editorial,
+          easing: `cubic-bezier(${motionEase.editorial.join(',')})`,
+        },
+      );
+      const clear = () => {
+        motion.cancel();
+        untrack();
+      };
+      const untrack = track(clear);
+      motion.finished.then(clear, () => {});
+    }
     for (const [selector, delay, duration] of [
       ['.poster-margin', 0, 250],
       ['.hero-copy > .eyebrow', h.label, 180],

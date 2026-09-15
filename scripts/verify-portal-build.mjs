@@ -26,7 +26,7 @@ assert.deepEqual(files.filter(x => x.endsWith('.html')).sort(), expectedPages.so
 const manifest = [];
 let combined = '';
 for (const path of files) {
-  assert(expectedPages.includes(path) || ['_headers', 'robots.txt', 'motion.css'].includes(path) || /^_astro\/[\w.-]+\.(css|js)$/.test(path), 'Unexpected output path');
+  assert(expectedPages.includes(path) || ['_headers', 'robots.txt', 'motion.css', 'grain.svg'].includes(path) || /^_astro\/[\w.-]+\.(css|js)$/.test(path), 'Unexpected output path');
   const bytes = await readFile(join(root, path));
   const text = bytes.toString('utf8');
   combined += text;

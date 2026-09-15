@@ -3,34 +3,42 @@ import { event, projects } from '../data/catalogue';
 ---
 
 {event.participants.length > 0 && (
-  <section class="wrap section" aria-labelledby="participant-roster-heading">
-    <p class="eyebrow">The people behind the showcase</p>
-    <h2 id="participant-roster-heading" data-motion-reveal>
-      Meet our {event.participants.length} participants.
-    </h2>
-    <p class="section-intro">
-      Discover the artists, designers and researchers taking part. Project pages
-      will appear here as they are ready.
-    </p>
-    <ul class="participant-roster">
-      {event.participants.map((participant) => {
-        const project = projects.find(
-          (item) => item.id === participant.projectId,
-        );
-        return (
-          <li>
-            <h3>{participant.name}</h3>
-            {project ? (
-              <a class="text-link" href={`/projects/${project.slug}/`}>
-                {project.title} <span aria-hidden="true">↗</span>
-              </a>
-            ) : (
-              <p>Project details coming soon.</p>
-            )}
-          </li>
-        );
-      })}
-    </ul>
+  <section
+    class="roster-section light-section"
+    aria-labelledby="participant-roster-heading"
+  >
+    <div class="wrap section">
+      <p class="eyebrow">The people behind the showcase</p>
+      <h2 id="participant-roster-heading" data-motion-reveal>
+        {event.participants.length} practices. <em>One exhibition.</em>
+      </h2>
+      <p class="section-intro">
+        Discover the artists, designers and researchers taking part. Project
+        pages will appear here as they are ready.
+      </p>
+      <ul class="participant-roster">
+        {event.participants.map((participant) => {
+          const project = projects.find(
+            (item) => item.id === participant.projectId,
+          );
+          return (
+            <li>
+              <h3>{participant.name}</h3>
+              {project ? (
+                <a class="text-link" href={`/projects/${project.slug}/`}>
+                  {project.title} <span aria-hidden="true">↗</span>
+                </a>
+              ) : (
+                <span class="roster-divider" aria-hidden="true">
+                  {' '}
+                  /{' '}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   </section>
 )}
 
@@ -39,18 +47,23 @@ import { event, projects } from '../data/catalogue';
     list-style: none;
     padding: 0;
     margin: 2rem 0 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
   }
   .participant-roster li {
-    border-top: 1px solid currentColor;
-    padding: 1.25rem 0;
+    display: flex;
+    align-items: baseline;
+    gap: 1.1rem;
+    padding: 0.3rem 0;
     min-width: 0;
   }
   .participant-roster h3 {
-    font-size: 1.25rem;
-    margin: 0 0 0.5rem;
+    font-size: clamp(1.4rem, 2.5vw, 2.5rem);
+    font-weight: 500;
+    line-height: 1.25;
+    margin: 0;
+    letter-spacing: -0.035em;
   }
   .participant-roster p {
     margin: 0;
@@ -58,5 +71,18 @@ import { event, projects } from '../data/catalogue';
   }
   .participant-roster a {
     overflow-wrap: anywhere;
+  }
+  .roster-divider {
+    color: var(--ct-blue);
+    font-size: 1.8rem;
+  }
+  .participant-roster li:has(a) {
+    flex-direction: column;
+    gap: 0.25rem;
+    flex-basis: 100%;
+    border-top: 1px solid var(--ct-line-dark);
+  }
+  .participant-roster li:last-child .roster-divider {
+    display: none;
   }
 </style>

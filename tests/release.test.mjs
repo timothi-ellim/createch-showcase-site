@@ -37,10 +37,15 @@ test('local static output has no handoff references, secrets, or stale recruitme
     .join('\n');
   assert.doesNotMatch(
     output,
-    /edit2=|responseId|editLinkSecret|ownerContact|1e1L8KAw|7 August|September 2026|WS09|captions provided/i,
+    /edit2=|responseId|editLinkSecret|ownerContact|1e1L8KAw|7 August|WS09|captions provided/i,
   );
   for (const path of paths.filter((path) => path.endsWith('.html'))) {
     const html = readFileSync(path, 'utf8');
+    // September is the confirmed participant deadline, never the showcase date.
+    const dateChecked = /[\\/]participants[\\/]index\.html$/.test(path)
+      ? html.replaceAll('29 September 2026', 'CONFIRMED_PARTICIPANT_DEADLINE')
+      : html;
+    assert.doesNotMatch(dateChecked, /September 2026/i);
     assert.match(html, /noindex, nofollow/);
     if (!html.includes('data-page="private"')) assert.match(html, /LOCAL PREVIEW/);
     assert.match(html, /Wednesday 28 October 2026/);

@@ -1,0 +1,88 @@
+---
+import { event } from '../data/catalogue';
+const path = Astro.url.pathname;
+const nav = [
+  ['/explore/', 'Explore'],
+  ['/programme/', 'Programme'],
+  ['/visit/', 'Visit'],
+  ['/about/', 'About'],
+];
+---
+
+<header class="public-header">
+  <div class="site-header wrap">
+    <a class="brand" href="/" aria-label="CreaTech homepage">
+      CreaTech<span>{event.series.replace('CreaTech ', '').toUpperCase()}</span>
+    </a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      {nav.map(([href, label]) => (
+        <a href={href} aria-current={path === href ? 'page' : undefined}>
+          {label}
+        </a>
+      ))}
+    </nav>
+    <noscript>
+      <nav class="nojs-nav" aria-label="Main navigation">
+        {nav.map(([href, label]) => (
+          <a href={href} aria-current={path === href ? 'page' : undefined}>
+            {label}
+          </a>
+        ))}
+      </nav>
+    </noscript>
+    <a
+      class="visit-utility"
+      href="/my-visit/"
+      aria-current={path === '/my-visit/' ? 'page' : undefined}
+    >
+      <span aria-hidden="true">{'{'}</span> My visit{' '}
+      <span data-saved-count aria-hidden="true"></span>
+      <span aria-hidden="true">{'}'}</span>
+    </a>
+    <button
+      class="menu-toggle"
+      data-menu-open
+      hidden
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+    >
+      Menu <span aria-hidden="true">＋</span>
+    </button>
+  </div>
+</header>
+<dialog id="mobile-menu" class="mobile-menu" aria-labelledby="menu-title">
+  <div class="menu-heading">
+    <p id="menu-title" class="eyebrow">
+      Find your way
+    </p>
+    <button class="button outline" data-menu-close>
+      Close <span aria-hidden="true">×</span>
+    </button>
+  </div>
+  <nav aria-label="Mobile navigation">
+    {nav.map(([href, label], index) => (
+      <a href={href} aria-current={path === href ? 'page' : undefined}>
+        <span class="notation" aria-hidden="true">
+          0{index + 1}
+        </span>
+        {label}
+        <span aria-hidden="true">↗</span>
+      </a>
+    ))}
+    <a
+      href="/my-visit/"
+      aria-current={path === '/my-visit/' ? 'page' : undefined}
+    >
+      My visit <span data-saved-count aria-hidden="true"></span>
+      <span aria-hidden="true">↗</span>
+    </a>
+  </nav>
+  <p class="small">
+    {event.dateLabel}
+    <br />
+    {event.venue.name}, {event.venue.city}
+  </p>
+</dialog>
+<script>
+  import '../scripts/navigation';
+</script>

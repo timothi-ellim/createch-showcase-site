@@ -1,0 +1,56 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { event, themes } from '../data/catalogue';
+---
+
+<Layout title="About the showcase">
+  <div class="wrap section about-page">
+    <p class="eyebrow">
+      {'{'} Art · Technology · People · Culture {'}'}
+    </p>
+    <h1>{event.title}.</h1>
+    <p class="lead">
+      A meeting point for creative technology, art, design and research.
+    </p>
+    <div class="about-intro">
+      <h2>
+        Ideas, experiences
+        <br />
+        and people
+        <br />
+        <em>in conversation.</em>
+      </h2>
+      <div class="prose">
+        <p>
+          {event.series} brings creative practices together at{' '}
+          {event.venue.name} in {event.venue.city}. Explore the work, follow an
+          idea and shape your own visit.
+        </p>
+        <p>
+          Image, World and Relation offer three ways into the exhibition. These
+          are themes to explore, not room assignments.
+        </p>
+        <a class="button dark" href="/explore/">
+          Explore the showcase ↗
+        </a>
+      </div>
+    </div>
+    <div class="about-threads">
+      {themes.map((theme) => (
+        <section
+          id={`thread-${theme.id}`}
+          tabindex="-1"
+          class="thread-description"
+        >
+          <p class="notation">{theme.number} /</p>
+          <h2>{theme.name}</h2>
+          <p>{theme.description}</p>
+        </section>
+      ))}
+    </div>
+    {event.designCredit && <p class="identity-credit">{event.designCredit}</p>}
+    <a class="text-link" href="/visit/">
+      Event details & contact ↗
+    </a>
+  </div>
+</Layout>
