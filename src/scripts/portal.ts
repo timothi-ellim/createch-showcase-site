@@ -96,7 +96,15 @@ async function rpc<T = any>(
   name: string,
   args: Record<string, unknown> = {},
 ): Promise<T> {
-  const { data, error } = await client.rpc(name, args);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  let result;
+  try {
+    result = await client.rpc(name, args).abortSignal(controller.signal);
+  } finally {
+    clearTimeout(timeout);
+  }
+  const { data, error } = result;
   if (error) {
     const code = Object.keys(messages).find((c) => error.message.includes(c));
     if (
@@ -134,7 +142,7 @@ async function act(fn: () => Promise<void>, saving = false) {
     say(
       messages[code] ||
         (saving
-          ? 'This change was not saved. Your text is still here. Please try again.'
+          ? 'Saving could not be confirmed. Your text is still here. Please try again.'
           : 'The request could not be completed. Please try again.'),
       true,
     );

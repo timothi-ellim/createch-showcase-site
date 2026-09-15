@@ -69,7 +69,7 @@ async function invite() {
   );
   assert.ok(
     result.status === 201 || result.status === 200,
-    'Real owner provisioning failed',
+    `Real owner provisioning failed (${result.status}: ${String(result.data?.code || 'UNKNOWN').replace(/[^A-Z_]/g, '')})`,
   );
   const id = sql(`select id from auth.users where email='${email}'`);
   assert.match(id, /^[a-f0-9-]{36}$/);
@@ -207,12 +207,10 @@ try {
     'confirmed identity automatically uses returning email verification',
   );
   phase = 'direct-provider-controls';
-  const throttled = await r
-    .client()
-    .auth.signInWithOtp({
-      email: expired.email,
-      options: { shouldCreateUser: false },
-    });
+  const throttled = await r.client().auth.signInWithOtp({
+    email: expired.email,
+    options: { shouldCreateUser: false },
+  });
   assert.equal(
     throttled.error?.status,
     429,

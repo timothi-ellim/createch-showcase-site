@@ -432,7 +432,7 @@ test('autosave persists only a draft and failed autosave keeps edits for manual 
     );
     await title.fill('Keep these edits after failure');
     await expect(page.locator('[data-editor-status]')).toContainText(
-      'not saved',
+      'could not be confirmed',
       { timeout: 6000 },
     );
     await expect(title).toHaveValue('Keep these edits after failure');
@@ -562,6 +562,43 @@ test('participant saves, previews and submits through real SQL; later draft leav
     await h.close();
   }
 });
+test('a stalled save restores controls and retains the draft for retry', async ({
+  page,
+}) => {
+  await page.clock.install();
+  const h = await harness(page);
+  try {
+    await page.goto(`/participant/editor/?project=${PA}`);
+    let pending = false;
+    await page.route(
+      '**/rpc/save_project_draft',
+      () => {
+        pending = true;
+      },
+      { times: 1 },
+    );
+    await page
+      .getByLabel('Project title', { exact: true })
+      .fill('Keep this through a stalled save');
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect.poll(() => pending).toBe(true);
+    await page.clock.fastForward(31000);
+    await expect(page.getByRole('status')).toContainText(
+      'could not be confirmed',
+    );
+    await expect(
+      page.getByRole('button', { name: 'Save draft', exact: true }),
+    ).toBeEnabled();
+    await expect(page.getByLabel('Project title', { exact: true })).toHaveValue(
+      'Keep this through a stalled save',
+    );
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Draft saved.');
+  } finally {
+    await h.close();
+  }
+});
+
 test('failed save, optimistic conflict and inline session recovery preserve typed text', async ({
   page,
 }) => {
@@ -573,7 +610,9 @@ test('failed save, optimistic conflict and inline session recovery preserve type
       .fill('Unsaved title retained');
     h.failSave(true);
     await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-    await expect(page.getByRole('status')).toContainText('not saved');
+    await expect(page.getByRole('status')).toContainText(
+      'could not be confirmed',
+    );
     await expect
       .poll(() => page.evaluate(() => document.getAnimations().length))
       .toBe(0);

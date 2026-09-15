@@ -1,6 +1,101 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { mkdir } from 'node:fs/promises';
+
+test('a valid code entered after an idle tab gets a fresh verification attempt without another email', async ({
+  page,
+}) => {
+  await page.clock.install();
+  const requests: any[] = [];
+  const verifies: any[] = [];
+  await page.route('**/functions/v1/participant-auth-request', (route) => {
+    requests.push(route.request().postDataJSON());
+    if (requests.length === 2)
+      return route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: '{"code":"SIGN_IN_UNAVAILABLE"}',
+      });
+    return route.fulfill({
+      status: 202,
+      contentType: 'application/json',
+      body: '{"status":"check_email","retryAfterSeconds":60}',
+    });
+  });
+  await page.route('**/functions/v1/participant-auth-verify', (route) => {
+    verifies.push(route.request().postDataJSON());
+    return route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: '{"code":"CODE_NOT_VERIFIED"}',
+    });
+  });
+  await page.goto('/participant/login/');
+  await page
+    .getByLabel('Email address', { exact: true })
+    .fill('idle@example.invalid');
+  await page
+    .getByRole('button', { name: 'Email me a code', exact: true })
+    .click();
+  await expect(page.getByLabel('Email code', { exact: true })).toBeVisible();
+  await page.clock.fastForward(17 * 60 * 1000);
+  await page.getByLabel('Email code', { exact: true }).fill('001234');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText(
+    'temporarily unavailable',
+  );
+  expect(verifies).toHaveLength(0);
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('could not be verified');
+  expect(requests.map((r) => r.mode)).toEqual([
+    'send',
+    'existing-code',
+    'existing-code',
+  ]);
+  expect(requests[1].attemptKey).not.toBe(requests[0].attemptKey);
+  expect(requests[2].attemptKey).toBe(requests[1].attemptKey);
+  expect(verifies).toEqual([
+    { attemptKey: requests[1].attemptKey, code: '001234' },
+  ]);
+});
+
+test('a stalled code request times out and restores controls without duplicating the send', async ({
+  page,
+}) => {
+  await page.clock.install();
+  const attempts: string[] = [];
+  await page.route('**/functions/v1/participant-auth-request', (route) => {
+    attempts.push(route.request().postDataJSON().attemptKey);
+    // Deliberately leave the first request unanswered until the client aborts.
+    if (attempts.length > 1)
+      return route.fulfill({
+        status: 202,
+        contentType: 'application/json',
+        body: '{"status":"check_email","retryAfterSeconds":60}',
+      });
+  });
+  await page.goto('/participant/login/');
+  await page
+    .getByLabel('Email address', { exact: true })
+    .fill('slow@example.invalid');
+  await page
+    .getByRole('button', { name: 'Email me a code', exact: true })
+    .click();
+  await expect.poll(() => attempts.length).toBe(1);
+  await page.clock.fastForward(31000);
+  await expect(page.getByRole('status')).toContainText(
+    'temporarily unavailable',
+  );
+  await expect(
+    page.getByRole('button', { name: 'Email me a code', exact: true }),
+  ).toBeEnabled();
+  await page
+    .getByRole('button', { name: 'Email me a code', exact: true })
+    .click();
+  await expect(page.getByLabel('Email code', { exact: true })).toBeVisible();
+  expect(attempts).toHaveLength(2);
+  expect(attempts[1]).toBe(attempts[0]);
+});
 test('single-code journey has one email screen, accessible code entry, cooldown and error recovery', async ({
   page,
 }) => {

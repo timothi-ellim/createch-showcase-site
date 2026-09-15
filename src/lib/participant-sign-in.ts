@@ -24,6 +24,7 @@ export function installParticipantSignIn(
   const send = get<HTMLButtonElement>('[data-send-code]'),
     resend = get<HTMLButtonElement>('[data-resend-code]');
   let attempt = '',
+    attemptStartedAt = 0,
     attemptInput = '',
     requestCompleted = false,
     busy = false,
@@ -46,7 +47,10 @@ export function installParticipantSignIn(
     timer = setInterval(tick, 1000);
   }
   async function call(name: string, body: object) {
-    const { data, error } = await client.functions.invoke(name, { body });
+    const { data, error } = await client.functions.invoke(name, {
+      body,
+      timeout: 30000,
+    });
     if (error) {
       const response = (error as any).context;
       if (response instanceof Response && response.status === 429) {
@@ -92,6 +96,7 @@ export function installParticipantSignIn(
     const input = `${mode}:${email.value.trim().toLowerCase()}`;
     if (!attempt || attemptInput !== input) {
       attempt = newAttemptKey();
+      attemptStartedAt = Date.now();
       attemptInput = input;
       requestCompleted = false;
     }
@@ -141,7 +146,14 @@ export function installParticipantSignIn(
   codeForm.onsubmit = (event) => {
     event.preventDefault();
     void action(async () => {
-      if (!attempt || !code.reportValidity()) return;
+      if (!code.reportValidity()) return;
+      // The code lasts 24 hours, but the server's verification attempt lasts
+      // 15 minutes. Refresh only the attempt, never send another email here.
+      if (!attempt || Date.now() - attemptStartedAt >= 14 * 60 * 1000) {
+        attempt = '';
+        requestCompleted = false;
+      }
+      if (!attempt || !requestCompleted) await start('existing-code');
       say('Checking your code…');
       const result = await call('participant-auth-verify', {
         attemptKey: attempt,
