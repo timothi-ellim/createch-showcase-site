@@ -28,7 +28,11 @@ function reveal(
         ? [0.75, 1]
         : [1, 1],
       transform: code
-        ? ['translateX(-4px) scaleX(.98)', 'translateX(2px) scaleX(1)', 'none']
+        ? [
+            `translateX(-${distance.small}px) scaleX(.94)`,
+            `translateX(${distance.register}px) scaleX(1)`,
+            'none',
+          ]
         : [`translateY(${offset}px)`, 'none'],
     },
     {
@@ -42,7 +46,7 @@ function reveal(
     untrack();
   };
   const untrack = track(clear);
-  Promise.resolve(controls).then(clear, clear);
+  controls.finished.then(clear, clear);
 }
 export function startEditorial() {
   if (!canMove()) return;
@@ -65,7 +69,9 @@ export function startEditorial() {
           element,
           delay,
           duration,
-          distance.register,
+          selector.startsWith('.title-word') || selector === '.poster-margin'
+            ? distance.reveal
+            : distance.register,
           selector.includes('nth-child(2)'),
         );
     }

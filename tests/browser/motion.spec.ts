@@ -57,6 +57,85 @@ test('hero is readable, bounded, stops on reduced preference and has no settled 
   await page.waitForTimeout(750);
   expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
 });
+test('a hidden initial tab starts once when visible, and reduced preference can be disabled in-session', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    (window as any).hiddenForTest = true;
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      get: () => (window as any).hiddenForTest,
+    });
+  });
+  await page.goto('/');
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => (window as any).motionCalls.length)).toBe(0);
+  await page.evaluate(() => {
+    (window as any).hiddenForTest = false;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect
+    .poll(() => page.evaluate(() => document.getAnimations().length))
+    .toBeGreaterThan(0);
+  await page.waitForTimeout(750);
+  const count = await page.evaluate(() => (window as any).motionCalls.length);
+  await page.evaluate(() =>
+    document.dispatchEvent(new Event('visibilitychange')),
+  );
+  expect(await page.evaluate(() => (window as any).motionCalls.length)).toBe(
+    count,
+  );
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  await page.evaluate(() => {
+    (window as any).hiddenForTest = false;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect
+    .poll(() => page.evaluate(() => document.getAnimations().length))
+    .toBeGreaterThan(0);
+});
+
+test('hero produces visible intermediate frames before it settles', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const frames: string[] = [];
+    (window as any).heroFrames = frames;
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (keyframes, options) {
+      const result = animate.call(this, keyframes, options);
+      if (
+        this.matches('.title-word:first-child') &&
+        !(window as any).samplingHero
+      ) {
+        (window as any).samplingHero = true;
+        const element = this;
+        const until = performance.now() + 700;
+        const sample = () => {
+          frames.push(getComputedStyle(element).transform);
+          if (performance.now() < until) requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+      }
+      return result;
+    };
+  });
+  await page.goto('/');
+  await page.waitForTimeout(850);
+  const samples = await page.evaluate(
+    () => (window as any).heroFrames as string[],
+  );
+  expect(new Set(samples).size).toBeGreaterThan(3);
+  const translations = samples
+    .filter((s) => s.startsWith('matrix('))
+    .map((s) => Number(s.slice(7, -1).split(',')[5]));
+  expect(Math.max(...translations)).toBeGreaterThan(10);
+  expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
+});
+
 test('failed motion load and reduced motion keep public content visible', async ({
   page,
 }) => {
