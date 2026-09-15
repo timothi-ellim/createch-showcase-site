@@ -154,6 +154,14 @@ for (const button of buttons)
         ? `Project removed from your shortlist.${shortlist ? ' Undo is available on this page.' : ''}`
         : 'Project saved on this device. This is not a booking.',
     );
+    document.dispatchEvent(
+      new CustomEvent('createch:save-feedback', {
+        detail: {
+          target: changed ? button : null,
+          saved: changed && !removing,
+        },
+      }),
+    );
     if (changed && removing && shortlist) {
       undoSaved = previous;
       renderSaved();
@@ -244,7 +252,7 @@ if (filters) {
   const clearSearch = filters.querySelector<HTMLButtonElement>(
     '[data-clear-search]',
   )!;
-  function applyFilters() {
+  function applyFilters(animateChange = false) {
     let count = 0;
     const query = normalizeSearch(search.value);
     document
@@ -299,6 +307,11 @@ if (filters) {
     }
     history.replaceState(null, '', url);
     updateProjectLinks();
+    document.dispatchEvent(
+      new CustomEvent('createch:filters-changed', {
+        detail: { animate: animateChange },
+      }),
+    );
   }
   function viewResults() {
     document.querySelector<HTMLElement>('#result-count')?.focus();
@@ -319,7 +332,7 @@ if (filters) {
     .forEach((button) =>
       button.addEventListener('click', () => {
         theme = button.dataset.themeFilter!;
-        applyFilters();
+        applyFilters(true);
       }),
     );
   filters
@@ -327,10 +340,10 @@ if (filters) {
     .forEach((button) =>
       button.addEventListener('click', () => {
         encounter = button.dataset.encounterFilter!;
-        applyFilters();
+        applyFilters(true);
       }),
     );
-  search.addEventListener('input', applyFilters);
+  search.addEventListener('input', () => applyFilters());
   clearSearch.addEventListener('click', () => {
     search.value = '';
     applyFilters();

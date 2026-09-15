@@ -1,34 +1,61 @@
 ---
 import '../styles/global.css';
+import { motionLevel } from '../lib/motion/config';
 import { event, contentRevision } from '../data/catalogue';
-interface Props { title?: string; privatePage?: boolean; }
+interface Props {
+  title?: string;
+  privatePage?: boolean;
+}
 const { title = 'Participant workspace' } = Astro.props;
 const standalone = import.meta.env.MODE === 'portal-staging';
 ---
+
 <!doctype html>
-<html lang="en">
+<html lang="en" data-motion-level={motionLevel}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{title} | CreaTech</title>
-    <meta name="description" content="The invited participant workspace for CreaTech Showcase 2026." />
+    <meta
+      name="description"
+      content="The invited participant workspace for CreaTech Showcase 2026."
+    />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="no-referrer" />
+    <link rel="stylesheet" href="/motion.css" />
     {!standalone && <meta name="createch-revision" content={contentRevision} />}
   </head>
   <body data-page="private">
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
     <header class="site-header wrap">
-      <a class="brand" href="/">CreaTech<span>SHOWCASE 2026</span></a>
+      <a class="brand" href="/">
+        CreaTech<span>SHOWCASE 2026</span>
+      </a>
       <nav aria-label="Main navigation">
         <a href="/participant/">My projects</a>
         <a href="/participants/">Participant help</a>
       </nav>
     </header>
-    <main id="main" tabindex="-1"><slot /></main>
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
     <footer class="site-footer wrap">
-      <div><p>{event.title}</p><p>{event.dateLabel} · {event.venue.name}, {event.venue.city}</p></div>
-      <p class="footer-note">{standalone ? 'Participant workspace · The public showcase catalogue will follow after review.' : 'Saving a draft does not publish it. Public pages change after an approved release.'}</p>
+      <div>
+        <p>{event.title}</p>
+        <p>
+          {event.dateLabel} · {event.venue.name}, {event.venue.city}
+        </p>
+      </div>
+      <p class="footer-note">
+        {standalone
+          ? 'Participant workspace · The public showcase catalogue will follow after review.'
+          : 'Saving a draft does not publish it. Public pages change after an approved release.'}
+      </p>
     </footer>
+    <script>
+      import '../lib/motion/boot';
+    </script>
   </body>
 </html>

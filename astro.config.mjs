@@ -58,6 +58,11 @@ export default defineConfig({
       hooks: {
         'astro:config:setup': ({ injectRoute }) => {
           injectRoute({
+            pattern: '/motion.css',
+            entrypoint: './src/lib/motion/style.ts',
+            prerender: true,
+          });
+          injectRoute({
             pattern: '/_headers',
             entrypoint: './src/lib/hosting-headers.ts',
             prerender: true,

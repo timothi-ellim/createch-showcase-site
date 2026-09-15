@@ -34,6 +34,11 @@ function say(message: string, error = false) {
     localStatus.textContent = message;
     localStatus.dataset.error = String(error);
   }
+  document.dispatchEvent(
+    new CustomEvent('createch:status-feedback', {
+      detail: { target: localStatus ?? status, error },
+    }),
+  );
 }
 function clearPrivate() {
   for (const url of objectUrls) URL.revokeObjectURL(url);
@@ -298,6 +303,9 @@ function renderEditor() {
     box.hidden = false;
     box.focus({ preventScroll: true });
     box.scrollIntoView({ behavior: 'auto' });
+    document.dispatchEvent(
+      new CustomEvent('createch:preview-feedback', { detail: { target: box } }),
+    );
     $('[data-close-preview]').onclick = () => {
       box.hidden = true;
       $('[data-preview-draft]').focus();
@@ -332,7 +340,7 @@ function renderEditor() {
       );
       if (!(await dispatch(result.jobId)))
         say(
-          'Your submission is saved. Open “View this submitted version” below, then choose “Retry checks”.',
+          'Submitted for review. Your current public page stays the same. Checks have not started. Open “View this submitted version” below, then choose “Retry checks”.',
         );
     });
   $('[data-compare]').onclick = () =>

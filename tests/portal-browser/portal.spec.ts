@@ -361,6 +361,12 @@ test('editing keeps controls visible, preserves in-flight changes and supports p
     );
     await save.click();
     await expect(save).toBeDisabled();
+    await expect(page.locator('[data-editor-status]')).not.toContainText(
+      'Draft saved',
+    );
+    await page.setViewportSize({ width: 844, height: 390 });
+    await expect(title).toHaveValue('First edit');
+    await page.setViewportSize({ width: 390, height: 844 });
     await title.fill('Typed while saving');
     releaseSave();
     await expect(page.locator('[data-editor-status]')).toContainText(
@@ -410,7 +416,7 @@ test('queued submission has a visible recovery link and retry failure stays trut
       .getByRole('button', { name: 'Submit for review', exact: true })
       .click();
     await expect(page.getByRole('status')).toContainText(
-      'Your submission is saved. Open',
+      'Submitted for review. Your current public page stays the same. Checks have not started.',
     );
     const submitted = page.getByRole('link', {
       name: 'View this submitted version',
@@ -473,6 +479,9 @@ test('participant saves, previews and submits through real SQL; later draft leav
     await expect(page.locator('[data-submit-result]')).toContainText(
       'View this submitted version',
     );
+    await expect(page.getByRole('status')).toContainText(
+      'Submitted for review. Your current public page stays the same.',
+    );
     await asUser(h.db, A);
     const projects = await rpc(h.db, 'get_my_projects');
     const revision = projects[0].latestRevision;
@@ -525,6 +534,9 @@ test('failed save, optimistic conflict and inline session recovery preserve type
     h.failSave(true);
     await page.getByRole('button', { name: 'Save draft', exact: true }).click();
     await expect(page.getByRole('status')).toContainText('not saved');
+    await expect
+      .poll(() => page.evaluate(() => document.getAnimations().length))
+      .toBe(0);
     await expect(page.getByLabel('Project title', { exact: true })).toHaveValue(
       'Unsaved title retained',
     );

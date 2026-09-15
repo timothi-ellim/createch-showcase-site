@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { motionLevel } from '../lib/motion/config';
 import {
   event,
   address,
@@ -27,7 +28,7 @@ const nav = [
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-motion-level={motionLevel}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -44,6 +45,7 @@ const nav = [
     <meta property="og:title" content={title ?? event.title} />
     <meta property="og:description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/motion.css" />
   </head>
   <body
     data-synthetic={String(isSynthetic)}
@@ -122,5 +124,8 @@ const nav = [
     {!privatePage && <script>
       import '../scripts/visitor';
     </script>}
+    <script>
+      import '../lib/motion/boot';
+    </script>
   </body>
 </html>

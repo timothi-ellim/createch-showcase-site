@@ -221,13 +221,13 @@ test('keyboard navigation exposes skip link, filters, and native details', async
   await summary.focus();
   await page.keyboard.press('Enter');
   await expect(
-    page.getByText('Final project locations, timings and a room map', {
+    page.getByText('Project locations, timings and further visitor guidance are coming soon.', {
       exact: false,
     }),
   ).toBeVisible();
   await page.keyboard.press('Space');
   await expect(
-    page.getByText('Final project locations, timings and a room map', {
+    page.getByText('Project locations, timings and further visitor guidance are coming soon.', {
       exact: false,
     }),
   ).toBeHidden();
