@@ -236,6 +236,7 @@ async function dispatch(jobId: string) {
     say(
       'Submitted and queued. The worker could not be contacted; use Retry checks or ask the organiser to retry dispatch.',
     );
+  return !error;
 }
 async function showDashboard() {
   const projects = await rpc<ProjectSummary[]>('get_my_projects');
@@ -254,7 +255,7 @@ function renderEditor() {
  <fieldset><legend>Visitor experience</legend>${field('visitorAction', 'What visitors can do', f.visitorAction || '', 700, true, true)}<div class="checks">${['Look / listen', 'Participate'].map((v) => `<label><input type="checkbox" name="encounters" value="${v}" ${f.encounters?.includes(v as 'Participate') ? 'checked' : ''} />${v}</label>`).join('')}</div>${field('accessProposal', 'Proposed access or sensory correction', f.accessProposal || '', 700, true)}<p class="field-help">A proposal is reviewed before it changes confirmed public information.</p></fieldset>
  <fieldset><legend>Links and optional detail</legend>${[0, 1, 2].map((i) => `${field(`link-label-${i}`, `Link ${i + 1} label`, f.links?.[i]?.label || '', 100)}<label for="link-url-${i}">Link ${i + 1} address (HTTPS)</label><input id="link-url-${i}" name="link-url-${i}" type="url" pattern="https://.*" maxlength="2000" value="${e(f.links?.[i]?.url || '')}" />`).join('')}${field('videoUrl', 'Public video link (HTTPS)', f.videoUrl || '', 2000)}${field('processNote', 'Behind the work', f.processNote || '', 800, true)}</fieldset>
  <div class="checks"><label><input name="permission" type="checkbox" ${f.permission ? 'checked' : ''} />I have permission to submit this text and image for public display, with the credit above. I understand this exact version will be reviewed before publication (public-profile-v1).</label></div>
- <div class="editor-actionbar" data-editor-actions><p data-editor-status>Loaded your saved draft.</p><div class="portal-actions">${button('Save draft', 'data-save-draft')}${button('Preview', 'data-preview-draft', 'secondary')}${button('Submit for review', 'data-submit', 'secondary')}</div></div></form><div data-submit-result></div></div><div data-draft-preview hidden class="detail section" tabindex="-1" aria-label="Draft preview"></div>`;
+ <div class="editor-actionbar" data-editor-actions><p data-editor-status>Loaded your saved draft.</p><div class="portal-actions">${button('Save draft', 'data-save-draft')}${button('Preview', 'data-preview-draft', 'secondary')}${button('Submit for review', 'data-submit', 'secondary')}</div><div data-submit-result></div></div></form></div><div data-draft-preview hidden class="detail section" tabindex="-1" aria-label="Draft preview"></div>`;
   const form = $<HTMLFormElement>('[data-editor-form]');
   const sections = form.querySelectorAll('fieldset');
   [
@@ -329,7 +330,10 @@ function renderEditor() {
         'View this submitted version',
         `/participant/preview/?revision=${result.revisionId}`,
       );
-      await dispatch(result.jobId);
+      if (!(await dispatch(result.jobId)))
+        say(
+          'Your submission is saved. Open “View this submitted version” below, then choose “Retry checks”.',
+        );
     });
   $('[data-compare]').onclick = () =>
     act(async () => {
@@ -419,16 +423,25 @@ async function showPreview(review = false) {
     p_revision: id,
   });
   const body = await previewMarkup(preview);
-  content.innerHTML = `<section class="reading-panel"><h2>Submitted version</h2><p class="badge">${state(preview.decision || preview.jobStatus)}</p><p>${e(preview.feedback || 'No review feedback yet.')}</p><p class="small">Revision ${e(id)}<br />Application source: ${e(preview.sourceCommit || 'Awaiting validation')}</p><div class="portal-actions">${link('Continue editing', `/participant/editor/?project=${preview.projectId}`)}${button('Refresh status', 'data-refresh', 'secondary')}${!preview.prepared ? button(preview.jobStatus === 'failed' ? 'Retry checks' : 'Retry dispatch', 'data-retry-checks', 'secondary') : ''}</div></section>${review && preview.prepared ? `<section class="reading-panel"><h2>Exact changes</h2><p>Review this prepared snapshot and its image before deciding. Later drafts remain private.</p>${diff(preview.previous, preview.prepared)}<p class="small">Snapshot ${e(preview.digest)}</p><label for="feedback">Participant-visible feedback</label><textarea id="feedback" maxlength="2000"></textarea><label for="private-note">Private organiser note</label><textarea id="private-note" maxlength="4000"></textarea><div class="portal-actions">${button('Approve this version', 'data-decision="approved"')}${button('Request changes', 'data-decision="changes_requested"', 'secondary')}</div></section>` : ''}<div class="detail section">${body}</div>`;
-  $('[data-refresh]').onclick = () => act(() => showPreview(review));
+  content.innerHTML = `<section class="reading-panel"><h2>Submitted version</h2><p class="badge">${state(preview.decision || preview.jobStatus)}</p><p>${e(preview.feedback || 'No review feedback yet.')}</p><p class="small">Revision ${e(id)}<br />Application source: ${e(preview.sourceCommit || 'Awaiting validation')}</p><div class="portal-actions">${link('Continue editing', `/participant/editor/?project=${preview.projectId}`)}${button('Refresh status', 'data-refresh', 'secondary')}${!preview.prepared ? button('Retry checks', 'data-retry-checks', 'secondary') : ''}</div></section>${review && preview.prepared ? `<section class="reading-panel"><h2>Exact changes</h2><p>Review this prepared snapshot and its image before deciding. Later drafts remain private.</p>${diff(preview.previous, preview.prepared)}<p class="small">Snapshot ${e(preview.digest)}</p><label for="feedback">Participant-visible feedback</label><textarea id="feedback" maxlength="2000"></textarea><label for="private-note">Private organiser note</label><textarea id="private-note" maxlength="4000"></textarea><div class="portal-actions">${button('Approve this version', 'data-decision="approved"')}${button('Request changes', 'data-decision="changes_requested"', 'secondary')}</div></section>` : ''}<div class="detail section">${body}</div>`;
+  $('[data-refresh]').onclick = () =>
+    act(async () => {
+      await showPreview(review);
+      say('Submission status updated.');
+    });
   const retry = content.querySelector<HTMLElement>('[data-retry-checks]');
   if (retry)
     retry.onclick = () =>
       act(async () => {
         if (preview.jobStatus === 'failed')
           await rpc('retry_job', { p_job: preview.jobId });
-        await dispatch(preview.jobId);
-        say('Checks are queued. Refresh to see their outcome.');
+        if (await dispatch(preview.jobId))
+          say('Checks are queued. Refresh to see their outcome.');
+        else
+          say(
+            'Your submission is saved, but checks could not start. Choose “Retry checks” again in a moment.',
+            true,
+          );
       });
   content.querySelectorAll<HTMLElement>('[data-decision]').forEach(
     (b) =>

@@ -400,6 +400,55 @@ test('editing keeps controls visible, preserves in-flight changes and supports p
   }
 });
 
+test('queued submission has a visible recovery link and retry failure stays truthful', async ({
+  page,
+}) => {
+  const h = await harness(page);
+  try {
+    await page.goto(`/participant/editor/?project=${PA}`);
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'Your submission is saved. Open',
+    );
+    const submitted = page.getByRole('link', {
+      name: 'View this submitted version',
+    });
+    const bounds = await submitted.boundingBox();
+    expect(bounds!.y).toBeGreaterThanOrEqual(0);
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(
+      page.viewportSize()!.height,
+    );
+    await submitted.click();
+    await page
+      .getByRole('button', { name: 'Retry checks', exact: true })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'checks could not start',
+    );
+    await expect(page.getByRole('status')).not.toContainText(
+      'Refresh to see their outcome',
+    );
+    await page.route('**/functions/v1/dispatch-job', (route) =>
+      route.fulfill({ status: 200, json: { queued: true } }),
+    );
+    await page
+      .getByRole('button', { name: 'Retry checks', exact: true })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'Checks are queued. Refresh',
+    );
+    await h.db.exec('reset role');
+    const jobs = await h.db.query<{ count: number }>(
+      "select count(*)::int as count from editorial.jobs where kind='validate'",
+    );
+    expect(jobs.rows[0].count).toBe(1);
+  } finally {
+    await h.close();
+  }
+});
+
 test('participant saves, previews and submits through real SQL; later draft leaves prepared version intact', async ({
   page,
 }) => {
