@@ -664,6 +664,253 @@ test('server image-validation rejection explains recovery without exposing raw e
   }
 });
 
+test('link and video validation focuses the correct row and permits correction and submission', async ({
+  page,
+}) => {
+  const h = await harness(page);
+  try {
+    await page.goto(`/participant/editor/?project=${PA}`);
+    await page
+      .getByLabel('Link 3 address (HTTPS)', { exact: true })
+      .fill('https://example.com/work');
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(
+      page.getByLabel('Link 3 label', { exact: true }),
+    ).toBeFocused();
+    await expect(page.getByRole('status')).toContainText('Add a short label');
+    await page.getByLabel('Link 3 label', { exact: true }).fill('My work');
+    await page
+      .getByLabel('Link 3 address (HTTPS)', { exact: true })
+      .fill('https://drive.google.com/file/d/synthetic');
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'Google Drive and Google Docs links are not accepted',
+    );
+    await expect(
+      page.getByLabel('Link 3 address (HTTPS)', { exact: true }),
+    ).toBeFocused();
+    await page
+      .getByLabel('Link 3 address (HTTPS)', { exact: true })
+      .fill('https://example.com/work');
+    await page
+      .getByLabel('Public video link (HTTPS)', { exact: true })
+      .fill('http://example.com/video');
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(
+      page.getByLabel('Public video link (HTTPS)', { exact: true }),
+    ).toBeFocused();
+    await expect(page.getByRole('status')).toContainText(
+      'starting with https://',
+    );
+    await page
+      .getByLabel('Public video link (HTTPS)', { exact: true })
+      .fill('https://example.com/video');
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Draft saved');
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(page.locator('[data-submit-result]')).toContainText(
+      'View this submitted version',
+    );
+  } finally {
+    await h.close();
+  }
+});
+
+test('unsupported text gives a field-specific save error and preserves the draft for correction', async ({
+  page,
+}) => {
+  const h = await harness(page);
+  try {
+    await page.goto(`/participant/editor/?project=${PA}`);
+    const title = page.getByLabel('Project title', { exact: true });
+    await title.fill('Work <draft>');
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Use plain text');
+    await expect(title).toBeFocused();
+    await expect(title).toHaveValue('Work <draft>');
+    await title.fill('Work draft');
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Draft saved');
+  } finally {
+    await h.close();
+  }
+});
+
+test('uncertain submission can retry without creating a second revision or losing saved text', async ({
+  page,
+}) => {
+  const h = await harness(page);
+  try {
+    await page.route(
+      '**/rpc/submit_project_revision',
+      async (route) => {
+        const a = route.request().postDataJSON();
+        await asUser(h.db, A);
+        await rpc(h.db, 'submit_project_revision', [
+          a.p_project,
+          a.p_expected_version,
+          a.p_request,
+        ]);
+        await route.fulfill({
+          status: 503,
+          json: { message: 'private-error-must-not-display' },
+        });
+      },
+      { times: 1 },
+    );
+    await page.goto(`/participant/editor/?project=${PA}`);
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'Submission could not be confirmed',
+    );
+    await expect(page.getByRole('status')).not.toContainText(
+      'private-error-must-not-display',
+    );
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(page.locator('[data-submit-result]')).toContainText(
+      'View this submitted version',
+    );
+    await h.db.exec('reset role');
+    const count = await h.db.query<{ n: number }>(
+      'select count(*)::int as n from editorial.revisions',
+    );
+    expect(count.rows[0].n).toBe(1);
+  } finally {
+    await h.close();
+  }
+});
+
+test('stalled upload restores controls and the same file can be selected again', async ({
+  page,
+}) => {
+  await page.clock.install();
+  const h = await harness(page);
+  try {
+    let uploads = 0;
+    await page.route(
+      '**/storage/v1/object/source-uploads/**',
+      async (route) => {
+        uploads++;
+        if (uploads > 1)
+          await route.fulfill({ json: { Key: 'synthetic', Id: randomUUID() } });
+      },
+    );
+    await page.goto(`/participant/editor/?project=${PA}`);
+    const upload = page.getByLabel('Choose a main image', { exact: true });
+    const file = {
+      name: 'synthetic.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aRZsAAAAASUVORK5CYII=',
+        'base64',
+      ),
+    };
+    await upload.setInputFiles(file);
+    await expect.poll(() => uploads).toBe(1);
+    await page.clock.fastForward(31000);
+    await expect(page.getByRole('status')).toContainText(
+      'image upload could not be confirmed',
+    );
+    await expect(upload).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: 'Save draft', exact: true }),
+    ).toBeEnabled();
+    await upload.setInputFiles(file);
+    await expect(page.getByRole('status')).toContainText(
+      'Image uploaded privately',
+    );
+    await expect(
+      page.getByLabel('Image alternative text', { exact: true }),
+    ).toHaveAttribute('required', '');
+    expect(uploads).toBe(2);
+  } finally {
+    await h.close();
+  }
+});
+
+test('stalled dispatch keeps confirmed submission and restores its recovery controls', async ({
+  page,
+}) => {
+  await page.clock.install();
+  const h = await harness(page);
+  try {
+    let dispatched = false;
+    await page.route('**/functions/v1/dispatch-job', () => {
+      dispatched = true;
+    });
+    await page.goto(`/participant/editor/?project=${PA}`);
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(page.locator('[data-submit-result]')).toContainText(
+      'View this submitted version',
+    );
+    await expect.poll(() => dispatched).toBe(true);
+    await page.clock.fastForward(31000);
+    await expect(page.getByRole('status')).toContainText(
+      'Submitted for review',
+    );
+    await expect(page.getByRole('status')).toContainText('Retry checks');
+    await expect(
+      page.getByRole('button', { name: 'Save draft', exact: true }),
+    ).toBeEnabled();
+  } finally {
+    await h.close();
+  }
+});
+
+test('failed checks explain correction or retry instead of offering a futile retry', async ({
+  page,
+}) => {
+  const h = await harness(page);
+  try {
+    const sub = await rpc(h.db, 'submit_project_revision', [
+      PA,
+      1,
+      randomUUID(),
+    ]);
+    const preview = await rpc(h.db, 'get_revision_preview', [sub.revisionId]);
+    let errorCode = 'IMAGE_DECODE_FAILED';
+    await page.route('**/rpc/get_revision_preview', (route) =>
+      route.fulfill({ json: { ...preview, jobStatus: 'failed', errorCode } }),
+    );
+    await page.goto(`/participant/preview/?revision=${sub.revisionId}`);
+    await expect(page.locator('[data-validation-failure]')).toContainText(
+      'upload a replacement',
+    );
+    await expect(
+      page.getByRole('link', { name: /^Continue editing/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Retry checks', exact: true }),
+    ).toHaveCount(0);
+    errorCode = 'PRIVATE_MEDIA_UNAVAILABLE';
+    await page
+      .getByRole('button', { name: 'Refresh status', exact: true })
+      .click();
+    await expect(page.locator('[data-validation-failure]')).toContainText(
+      'could not read the uploaded image',
+    );
+    await expect(
+      page.getByRole('button', { name: 'Retry checks', exact: true }),
+    ).toBeVisible();
+  } finally {
+    await h.close();
+  }
+});
+
 test('participant saves, previews and submits through real SQL; later draft leaves prepared version intact', async ({
   page,
 }) => {

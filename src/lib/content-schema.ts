@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
+import { publicUrlIssue } from './participant-validation.ts';
 
 // Strict, public-only schemas are shared by editorial export and Astro. Errors name
 // fields; they never repeat the rejected input, which may contain private material.
@@ -35,21 +36,7 @@ const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 const httpsUrl = z
   .url()
   .max(2000)
-  .refine((value) => {
-    const url = new URL(value);
-    return (
-      url.protocol === 'https:' &&
-      !url.username &&
-      !url.password &&
-      !/[<>"'\s]/.test(value) &&
-      !/^(localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|\[|.*\.local$)/i.test(
-        url.hostname,
-      ) &&
-      !/(?:^|\.)docs\.google\.com$/.test(url.hostname) &&
-      !/(?:^|\.)drive\.google\.com$/.test(url.hostname) &&
-      !/[?&](?:token|key|edit2|secret|auth|access_token)=/i.test(value)
-    );
-  }, 'Public HTTPS URL required');
+  .refine((value) => publicUrlIssue(value) === null, 'Public HTTPS URL required');
 export const mediaSchema = z
   .object({
     src: z.string().regex(/^\/media\/[a-f0-9]{64}\.(?:png|jpg|webp)$/),

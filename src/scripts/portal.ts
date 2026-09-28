@@ -2,6 +2,11 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { escapeHtml as e, renderProjectBody } from '../lib/project-renderer';
 import { checkPortalEnvironment, draftView } from '../lib/portal-contract';
 import {
+  participantFieldIssues,
+  validationFailure,
+  type FieldIssue,
+} from '../lib/participant-validation';
+import {
   installParticipantSignIn,
   newAttemptKey,
 } from '../lib/participant-sign-in';
@@ -66,6 +71,28 @@ function urlFor(blob: Blob) {
   return url;
 }
 const messages: Record<string, string> = {
+  INVALID_TEXT_FIELD:
+    'A text field contains unsupported symbols or exceeds its character limit. Check the highlighted fields, correct the text and save again.',
+  INVALID_FIELDS:
+    'The draft could not be saved because its contents are too large or invalid. Shorten the optional details and try Save draft again; contact the organiser if it continues.',
+  UNEXPECTED_FIELD:
+    'This editor version is out of date. Keep a copy of unsaved text, reopen the workspace and try again. Contact the organiser if it continues.',
+  INVALID_ENCOUNTERS:
+    'In Visitor experience, choose Look / listen, Participate, or both, then save and submit again.',
+  INVALID_LINKS:
+    'In Links and optional detail, use at most three public HTTPS links, each with a label. Correct the links, save and submit again.',
+  INVALID_PERMISSION:
+    'Check the permission declaration, save the draft and submit again.',
+  SAVE_UNCONFIRMED:
+    'Saving could not be confirmed. Your text is still here. Check your connection and choose Save draft again. If this continues, contact the organiser.',
+  SUBMISSION_UNCONFIRMED:
+    'Submission could not be confirmed. Your saved draft is still safe. Check your connection and choose Submit for review again; the same attempt will not create a duplicate. Contact the organiser if this continues.',
+  UPLOAD_FAILED:
+    'The image upload could not be confirmed. The previous image selection is unchanged. Check your connection and choose the file again. Contact the organiser if this continues.',
+  WORKSPACE_UNAVAILABLE:
+    'The workspace could not load this information. Check your connection and try My projects again. Keep a copy of unsaved text before reloading; contact the organiser if this continues.',
+  INVALID_WORKSPACE_LINK:
+    'This project or submission link is incomplete or invalid. Choose My projects to reopen your assigned project, or ask the organiser for help.',
   IMAGE_TEXT_REQUIRED:
     'Your draft is saved. In Image, add both image alternative text and an image credit, save the draft, then submit again.',
   REQUIRED_FIELDS:
@@ -107,8 +134,18 @@ async function rpc<T = any>(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
   let result;
+  const failure =
+    name === 'save_project_draft'
+      ? 'SAVE_UNCONFIRMED'
+      : name === 'submit_project_revision'
+        ? 'SUBMISSION_UNCONFIRMED'
+        : name === 'reserve_upload'
+          ? 'UPLOAD_FAILED'
+          : 'WORKSPACE_UNAVAILABLE';
   try {
     result = await client.rpc(name, args).abortSignal(controller.signal);
+  } catch {
+    throw new Error(failure);
   } finally {
     clearTimeout(timeout);
   }
@@ -128,7 +165,7 @@ async function rpc<T = any>(
       login.scrollIntoView({ block: 'start' });
       throw new Error('SESSION_EXPIRED');
     }
-    throw new Error(code || 'REQUEST_FAILED');
+    throw new Error(code || failure);
   }
   return data as T;
 }
@@ -138,7 +175,7 @@ async function act(fn: () => Promise<void>, saving = false) {
   root.setAttribute('aria-busy', 'true');
   content
     .querySelectorAll<HTMLButtonElement>(
-      '[data-editor-actions] button, [data-remove-image]',
+      '[data-editor-actions] button, [data-remove-image], #image-upload',
     )
     .forEach((b) => {
       b.disabled = true;
@@ -147,11 +184,12 @@ async function act(fn: () => Promise<void>, saving = false) {
     await fn();
   } catch (error) {
     const code = (error as Error).message;
+    if (code === 'FIELD_VALIDATION_SHOWN') return;
     say(
       messages[code] ||
         (saving
-          ? 'Saving could not be confirmed. Your text is still here. Please try again.'
-          : 'The request could not be completed. Please try again.'),
+          ? messages.SAVE_UNCONFIRMED
+          : 'This action could not be confirmed. Keep any unsaved text and check your connection before trying again. If it continues, contact the organiser and describe the action you selected.'),
       true,
     );
     if (code === 'DRAFT_CONFLICT') showConflict();
@@ -160,7 +198,7 @@ async function act(fn: () => Promise<void>, saving = false) {
     root.setAttribute('aria-busy', 'false');
     content
       .querySelectorAll<HTMLButtonElement>(
-        '[data-editor-actions] button, [data-remove-image]',
+        '[data-editor-actions] button, [data-remove-image], #image-upload',
       )
       .forEach((b) => {
         b.disabled = false;
@@ -215,20 +253,34 @@ function readFields(): ParticipantFields {
     links: [0, 1, 2]
       .map((i) => ({
         label: text(`link-label-${i}`),
-        url: text(`link-url-${i}`),
+        url: text(`link-url-${i}`).trim(),
       }))
       .filter((l) => l.url || l.label),
-    videoUrl: text('videoUrl') || null,
+    videoUrl: text('videoUrl').trim() || null,
     processNote: text('processNote'),
     accessProposal: text('accessProposal'),
     permission: values.has('permission'),
     termsVersion: 'public-profile-v1',
   };
 }
+function showFieldIssue(issue: FieldIssue) {
+  const input = content.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+    `[name="${issue.name}"]`,
+  );
+  const label = input?.labels?.[0]?.textContent?.trim();
+  say(`${label ? `Check “${label}”. ` : ''}${issue.message}`, true);
+  input?.focus();
+  input?.scrollIntoView({ block: 'center' });
+}
 async function save() {
   clearTimeout(autosaveTimer);
   if (!draft) throw new Error('REQUEST_FAILED');
   const fields = readFields();
+  const issue = participantFieldIssues(fields, false)[0];
+  if (issue) {
+    showFieldIssue(issue);
+    throw new Error('FIELD_VALIDATION_SHOWN');
+  }
   say('Saving draft…');
   const saved = await rpc<{ version: number; updatedAt: string }>(
     'save_project_draft',
@@ -264,14 +316,19 @@ function showConflict() {
   }
 }
 async function dispatch(jobId: string) {
-  const { error } = await client.functions.invoke('dispatch-job', {
-    body: { jobId },
-  });
-  if (error)
-    say(
-      'Submitted and queued. The worker could not be contacted; use Retry checks or ask the organiser to retry dispatch.',
-    );
-  return !error;
+  try {
+    const { error } = await client.functions.invoke('dispatch-job', {
+      body: { jobId },
+      timeout: 30000,
+    });
+    if (error)
+      say(
+        'Submitted and queued. The worker could not be contacted; use Retry checks or ask the organiser to retry dispatch.',
+      );
+    return !error;
+  } catch {
+    return false;
+  }
 }
 async function showDashboard() {
   const projects = await rpc<ProjectSummary[]>('get_my_projects');
@@ -354,17 +411,25 @@ function renderEditor() {
       const input = document.getElementById(help.dataset.countFor!) as
         HTMLInputElement | HTMLTextAreaElement;
       help.textContent = `${input.required ? 'Required to submit. ' : ''}${input.value.length} of ${input.maxLength} characters`;
-      input.setCustomValidity(
-        input.required && !input.value.trim()
-          ? 'Complete this field before submitting.'
-          : '',
-      );
     });
-    $<HTMLInputElement>('#encounter-0').setCustomValidity(
-      form.querySelector('[name="encounters"]:checked')
-        ? ''
-        : 'Choose at least one visitor experience option before submitting.',
-    );
+    form
+      .querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        'input,textarea',
+      )
+      .forEach((input) => input.setCustomValidity(''));
+    const f = readFields();
+    // Preserve visible row numbers even when an earlier optional link is empty.
+    f.links = [0, 1, 2].map((i) => ({
+      label: $<HTMLInputElement>(`#f-link-label-${i}`).value,
+      url: $<HTMLInputElement>(`#link-url-${i}`).value.trim(),
+    }));
+    for (const issue of participantFieldIssues(f)) {
+      form
+        .querySelector<HTMLInputElement | HTMLTextAreaElement>(
+          `[name="${issue.name}"]`,
+        )
+        ?.setCustomValidity(issue.message);
+    }
   }
   updateCounts();
   const editorIdentity = identity;
@@ -431,6 +496,7 @@ function renderEditor() {
   };
   $('[data-submit]').onclick = () =>
     act(async () => {
+      updateCounts();
       if (!form.reportValidity()) {
         const invalid = form.querySelector<
           HTMLInputElement | HTMLTextAreaElement
@@ -502,12 +568,14 @@ function renderEditor() {
     act(async () => {
       const file = $<HTMLInputElement>('#image-upload').files?.[0];
       if (!file) return;
+      $<HTMLInputElement>('#image-upload').value = ''; // Allow choosing the same file after a failed upload.
       if (
         !['image/png', 'image/jpeg', 'image/webp'].includes(file.type) ||
+        file.size < 12 ||
         file.size > 5_000_000
       ) {
         say(
-          'Choose a PNG, JPEG or WebP file up to 5 MB. The previous image is unchanged.',
+          'Choose a non-empty, still PNG, JPEG or WebP file up to 5 MB and 24 megapixels. Convert HEIC before uploading. The previous image is unchanged.',
           true,
         );
         return;
@@ -521,10 +589,7 @@ function renderEditor() {
         .from('source-uploads')
         .upload(reserved.path, file, { upsert: false, contentType: file.type });
       if (error) {
-        say(
-          'Image upload failed. The previous image is still selected. Try again.',
-          true,
-        );
+        say(messages.UPLOAD_FAILED, true);
         return;
       }
       draft!.fields.assetId = reserved.assetId;
@@ -537,6 +602,7 @@ function renderEditor() {
       say(
         'Image uploaded privately. Save the draft, then submit it for checks.',
       );
+      $<HTMLInputElement>('#image-upload').value = '';
     });
 }
 async function previewMarkup(preview: RevisionPreview) {
@@ -545,24 +611,32 @@ async function previewMarkup(preview: RevisionPreview) {
     const { data, error } = await client.storage
       .from('prepared-media')
       .download(media.path);
-    if (error) throw new Error('REQUEST_FAILED');
+    if (error) continue; // Keep the submitted text/status and recovery controls usable.
     urls.set(media.src, urlFor(data));
   }
   return preview.prepared
-    ? renderProjectBody(preview.prepared, {
-        privatePreview: true,
-        synthetic: context.environment === 'local',
-        mediaUrls: urls,
-      })
+    ? (urls.size < (preview.media?.length || 0)
+        ? '<p class="notice">The submitted image could not be loaded. Your submission is saved. Check your connection and choose Refresh status; contact the organiser if the image remains unavailable.</p>'
+        : '') +
+        renderProjectBody(preview.prepared, {
+          privatePreview: true,
+          synthetic: context.environment === 'local',
+          mediaUrls: urls,
+        })
     : '<p>This submitted version has not passed validation yet. It cannot be approved.</p>';
 }
 async function showPreview(review = false) {
   const id = new URLSearchParams(location.search).get('revision');
-  if (!id) throw new Error('REQUEST_FAILED');
+  if (!id || !/^[a-f0-9-]{36}$/i.test(id))
+    throw new Error('INVALID_WORKSPACE_LINK');
   const preview = await rpc<RevisionPreview>('get_revision_preview', {
     p_revision: id,
   });
   const body = await previewMarkup(preview);
+  const failed =
+    preview.jobStatus === 'failed'
+      ? validationFailure(preview.errorCode)
+      : null;
   content.innerHTML = `<section class="reading-panel"><h2>Submitted version</h2><p class="badge">${state(preview.decision || preview.jobStatus)}</p><p>${e(preview.feedback || 'No review feedback yet.')}</p><p class="small">Revision ${e(id)}<br />Application source: ${e(preview.sourceCommit || 'Awaiting validation')}</p><div class="portal-actions">${link('Continue editing', `/participant/editor/?project=${preview.projectId}`)}${button('Refresh status', 'data-refresh', 'secondary')}${!preview.prepared ? button('Retry checks', 'data-retry-checks', 'secondary') : ''}</div></section>${review && preview.prepared ? `<section class="reading-panel"><h2>Exact changes</h2><p>Review this prepared snapshot and its image before deciding. Later drafts remain private.</p>${diff(preview.previous, preview.prepared)}<p class="small">Snapshot ${e(preview.digest)}</p><label for="feedback">Participant-visible feedback</label><textarea id="feedback" maxlength="2000"></textarea><label for="private-note">Private organiser note</label><textarea id="private-note" maxlength="4000"></textarea><div class="portal-actions">${button('Approve this version', 'data-decision="approved"')}${button('Request changes', 'data-decision="changes_requested"', 'secondary')}</div></section>` : ''}<div class="detail section">${body}</div>`;
   $('[data-refresh]').onclick = () =>
     act(async () => {
@@ -570,6 +644,14 @@ async function showPreview(review = false) {
       say('Submission status updated.');
     });
   const retry = content.querySelector<HTMLElement>('[data-retry-checks]');
+  if (failed) {
+    const notice = document.createElement('p');
+    notice.className = 'notice';
+    notice.dataset.validationFailure = '';
+    notice.textContent = failed.message;
+    content.querySelector('.reading-panel .badge')?.after(notice);
+    if (failed.editRequired) retry?.remove();
+  }
   if (retry)
     retry.onclick = () =>
       act(async () => {
@@ -1050,7 +1132,8 @@ async function load() {
       break;
     case 'editor': {
       const id = new URLSearchParams(location.search).get('project');
-      if (!id) throw new Error('REQUEST_FAILED');
+      if (!id || !/^[a-f0-9-]{36}$/i.test(id))
+        throw new Error('INVALID_WORKSPACE_LINK');
       draft = await rpc<PortalDraft>('get_project_draft', { p_project: id });
       renderEditor();
       say('Loaded your saved draft.');
@@ -1142,6 +1225,26 @@ async function start() {
     });
   }
   client = createClient(url, key, {
+    global: {
+      fetch: async (input, init) => {
+        const target = input instanceof Request ? input.url : String(input);
+        if (!new URL(target).pathname.startsWith('/storage/v1/'))
+          return fetch(input, init);
+        const controller = new AbortController();
+        const upstream =
+          init?.signal || (input instanceof Request ? input.signal : undefined);
+        const abort = () => controller.abort();
+        if (upstream?.aborted) abort();
+        upstream?.addEventListener('abort', abort, { once: true });
+        const timer = setTimeout(abort, 30000);
+        try {
+          return await fetch(input, { ...init, signal: controller.signal });
+        } finally {
+          clearTimeout(timer);
+          upstream?.removeEventListener('abort', abort);
+        }
+      },
+    },
     auth: {
       storage: storage || {
         getItem: (k) => memory.get(k) || null,
