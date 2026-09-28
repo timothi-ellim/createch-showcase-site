@@ -495,6 +495,175 @@ test('queued submission has a visible recovery link and retry failure stays trut
   }
 });
 
+for (const scenario of [
+  {
+    name: 'missing image description',
+    alt: '',
+    credit: 'Synthetic image credit',
+  },
+  { name: 'missing description and credit', alt: '', credit: '' },
+  { name: 'whitespace-only image text', alt: '   ', credit: '   ' },
+]) {
+  test(`submission recovery: ${scenario.name}`, async ({ page }) => {
+    const h = await harness(page);
+    try {
+      const asset = await rpc(h.db, 'reserve_upload', [PA, 'image/png', 100]);
+      await rpc(h.db, 'save_project_draft', [
+        PA,
+        1,
+        {
+          ...fields,
+          assetId: asset.assetId,
+          alt: scenario.alt,
+          credit: scenario.credit,
+        },
+      ]);
+      // Reproduce the database rejection without creating a revision.
+      await expect(
+        rpc(h.db, 'submit_project_revision', [PA, 2, randomUUID()]),
+      ).rejects.toThrow('IMAGE_TEXT_REQUIRED');
+      let submissions = 0;
+      page.on('request', (request) => {
+        if (request.url().endsWith('/rpc/submit_project_revision'))
+          submissions++;
+      });
+      await page.goto(`/participant/editor/?project=${PA}`);
+      const alt = page.getByLabel('Image alternative text', { exact: true });
+      const credit = page.getByLabel('Image credit', { exact: true });
+      const submit = page.getByRole('button', {
+        name: 'Submit for review',
+        exact: true,
+      });
+      const save = page.getByRole('button', {
+        name: 'Save draft',
+        exact: true,
+      });
+      await expect(alt).toHaveAttribute('required', '');
+      await expect(page.locator('#f-alt-help')).toContainText(
+        'Required to submit',
+      );
+      await submit.click();
+      await expect(page.getByRole('status')).toContainText(
+        'Image alternative text',
+      );
+      await expect(alt).toBeFocused();
+      await expect(alt).toBeInViewport();
+      expect(submissions).toBe(0);
+      // Incomplete drafts still save, including their missing image text.
+      await save.click();
+      await expect(page.getByRole('status')).toContainText('Draft saved');
+      await page.reload();
+      await expect(alt).toHaveValue(scenario.alt);
+      await alt.fill('A synthetic square used only for this test.');
+      if (!scenario.credit.trim()) {
+        await submit.click();
+        await expect(page.getByRole('status')).toContainText('Image credit');
+        await expect(credit).toBeFocused();
+        await credit.fill('Synthetic test creator');
+      }
+      await save.click();
+      await expect(page.getByRole('status')).toContainText('Draft saved');
+      await submit.click();
+      await expect(page.locator('[data-submit-result]')).toContainText(
+        'View this submitted version',
+      );
+      expect(submissions).toBe(1);
+      await asUser(h.db, A);
+      const projects = await rpc(h.db, 'get_my_projects');
+      const preview = await rpc(h.db, 'get_revision_preview', [
+        projects[0].latestRevision,
+      ]);
+      expect(preview.fields.alt).toBe(
+        'A synthetic square used only for this test.',
+      );
+      expect(preview.fields.credit.trim()).not.toBe('');
+      expect(preview.decision).toBeNull();
+    } finally {
+      await h.close();
+    }
+  });
+}
+
+test('removing an image clears its required fields; encounter choice remains required', async ({
+  page,
+}) => {
+  const h = await harness(page);
+  try {
+    const asset = await rpc(h.db, 'reserve_upload', [PA, 'image/png', 100]);
+    await rpc(h.db, 'save_project_draft', [
+      PA,
+      1,
+      { ...fields, assetId: asset.assetId, encounters: [] },
+    ]);
+    await page.goto(`/participant/editor/?project=${PA}`);
+    await page
+      .getByRole('button', { name: 'Remove image from draft', exact: true })
+      .click();
+    await expect(
+      page.getByLabel('Image alternative text', { exact: true }),
+    ).not.toHaveAttribute('required');
+    await expect(
+      page.getByLabel('Image credit', { exact: true }),
+    ).not.toHaveAttribute('required');
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Draft saved');
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'choose Look / listen, Participate, or both',
+    );
+    await expect(
+      page.getByLabel('Look / listen', { exact: true }),
+    ).toBeFocused();
+    await page.getByLabel('Participate', { exact: true }).check();
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Draft saved');
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(page.locator('[data-submit-result]')).toContainText(
+      'View this submitted version',
+    );
+  } finally {
+    await h.close();
+  }
+});
+
+test('server image-validation rejection explains recovery without exposing raw errors', async ({
+  page,
+}) => {
+  const h = await harness(page);
+  try {
+    await page.route('**/rpc/submit_project_revision', (route) =>
+      route.fulfill({
+        status: 400,
+        json: {
+          code: 'P0001',
+          message: 'IMAGE_TEXT_REQUIRED',
+          details: 'private-diagnostic-do-not-display',
+        },
+      }),
+    );
+    await page.goto(`/participant/editor/?project=${PA}`);
+    await page
+      .getByRole('button', { name: 'Submit for review', exact: true })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'add both image alternative text and an image credit',
+    );
+    await expect(page.locator('[data-submit-result]')).toBeEmpty();
+    await expect(page.locator('body')).not.toContainText(
+      'private-diagnostic-do-not-display',
+    );
+    await expect(page.getByLabel('Project title', { exact: true })).toHaveValue(
+      fields.title,
+    );
+  } finally {
+    await h.close();
+  }
+});
+
 test('participant saves, previews and submits through real SQL; later draft leaves prepared version intact', async ({
   page,
 }) => {

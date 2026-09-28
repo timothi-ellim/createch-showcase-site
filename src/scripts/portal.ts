@@ -66,6 +66,14 @@ function urlFor(blob: Blob) {
   return url;
 }
 const messages: Record<string, string> = {
+  IMAGE_TEXT_REQUIRED:
+    'Your draft is saved. In Image, add both image alternative text and an image credit, save the draft, then submit again.',
+  REQUIRED_FIELDS:
+    'Complete the required fields in Your work and Visitor experience, save the draft, then submit again.',
+  PERMISSION_AND_ENCOUNTERS_REQUIRED:
+    'Choose at least one option in Visitor experience and confirm the permission declaration, save the draft, then submit again.',
+  INVALID_ASSET:
+    'The selected image is unavailable. Upload it again or remove it from the draft, then save and submit again.',
   SESSION_EXPIRED:
     'Your session expired. Your text is still here. Sign in again to save.',
   PROJECT_IDENTIFIER_TAKEN:
@@ -316,8 +324,8 @@ function renderEditor() {
  <div class="conflict" data-conflict hidden><h2>A newer draft exists</h2><p>Your typed text is preserved below. Compare with the latest saved draft before choosing to reload.</p>${button('Compare saved draft', 'data-compare')}${button('Reload saved draft and discard my unsaved text', 'data-reload', 'secondary')}<div data-conflict-comparison></div></div>
  <nav class="editor-sections" aria-label="Editing sections"><a href="#work-fields">Your work</a><a href="#image-fields">Image</a><a href="#experience-fields">Visitor experience</a><a href="#optional-fields">Links & detail</a><a href="#permission-fields">Review & submit</a></nav>
  <form data-editor-form><fieldset id="work-fields"><legend>Your work</legend><p class="field-help">You can save an unfinished draft. Complete the required fields before submitting for review.</p>${field('title', 'Project title', f.title || '', 120, false, true)}${field('maker', 'Public contributor name', f.maker || '', 100, false, true)}${field('invitation', 'Short invitation', f.invitation || '', 200, true, true)}${field('description', 'About the work', f.description || '', 2000, true, true)}</fieldset>
- <fieldset><legend>Main image</legend><label for="image-upload">Choose a main image</label><input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">PNG, JPEG or WebP, up to 5 MB. Convert HEIC before uploading. Uploading does not approve an image.</p><div data-image-state>${f.assetId ? '<p>An image is selected for this draft.</p>' : '<p>No image selected.</p>'}</div>${button('Remove image from draft', 'data-remove-image', 'secondary')}${field('alt', 'Image alternative text', f.alt || '', 300, true)}${field('credit', 'Image credit', f.credit || '', 200)}</fieldset>
- <fieldset><legend>Visitor experience</legend>${field('visitorAction', 'What visitors can do', f.visitorAction || '', 700, true, true)}<div class="checks">${['Look / listen', 'Participate'].map((v) => `<label><input type="checkbox" name="encounters" value="${v}" ${f.encounters?.includes(v as 'Participate') ? 'checked' : ''} />${v}</label>`).join('')}</div>${field('accessProposal', 'Proposed access or sensory correction', f.accessProposal || '', 700, true)}<p class="field-help">A proposal is reviewed before it changes confirmed public information.</p></fieldset>
+ <fieldset><legend>Main image</legend><label for="image-upload">Choose a main image</label><input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">PNG, JPEG or WebP, up to 5 MB. Convert HEIC before uploading. Uploading does not approve an image. If you select an image, alternative text and an image credit are required to submit. Describe what the image shows and credit its creator or rights holder.</p><div data-image-state>${f.assetId ? '<p>An image is selected for this draft.</p>' : '<p>No image selected.</p>'}</div>${button('Remove image from draft', 'data-remove-image', 'secondary')}${field('alt', 'Image alternative text', f.alt || '', 300, true, Boolean(f.assetId))}${field('credit', 'Image credit', f.credit || '', 200, false, Boolean(f.assetId))}</fieldset>
+ <fieldset><legend>Visitor experience</legend>${field('visitorAction', 'What visitors can do', f.visitorAction || '', 700, true, true)}<p id="encounters-help" class="field-help">Choose at least one visitor experience option to submit.</p><div class="checks">${['Look / listen', 'Participate'].map((v, i) => `<label><input id="encounter-${i}" type="checkbox" name="encounters" value="${v}" aria-describedby="encounters-help" ${f.encounters?.includes(v as 'Participate') ? 'checked' : ''} />${v}</label>`).join('')}</div>${field('accessProposal', 'Proposed access or sensory correction', f.accessProposal || '', 700, true)}<p class="field-help">A proposal is reviewed before it changes confirmed public information.</p></fieldset>
  <fieldset><legend>Links and optional detail</legend>${[0, 1, 2].map((i) => `${field(`link-label-${i}`, `Link ${i + 1} label`, f.links?.[i]?.label || '', 100)}<label for="link-url-${i}">Link ${i + 1} address (HTTPS)</label><input id="link-url-${i}" name="link-url-${i}" type="url" pattern="https://.*" maxlength="2000" value="${e(f.links?.[i]?.url || '')}" />`).join('')}${field('videoUrl', 'Public video link (HTTPS)', f.videoUrl || '', 2000)}${field('processNote', 'Behind the work', f.processNote || '', 800, true)}</fieldset>
  <div class="checks"><label><input name="permission" type="checkbox" ${f.permission ? 'checked' : ''} />I have permission to submit this text and image for public display, with the credit above. I understand this exact version will be reviewed before publication (public-profile-v1).</label></div>
  <div class="editor-actionbar" data-editor-actions><p data-editor-status>Loaded your saved draft.</p><div class="portal-actions">${button('Save draft', 'data-save-draft')}${button('Preview', 'data-preview-draft', 'secondary')}${button('Submit for review', 'data-submit', 'secondary')}</div><div data-submit-result></div></div></form></div><div data-draft-preview hidden class="detail section" tabindex="-1" aria-label="Draft preview"></div>`;
@@ -337,11 +345,26 @@ function renderEditor() {
     void act(save, true);
   });
   function updateCounts() {
+    for (const name of ['alt', 'credit']) {
+      const input = form.elements.namedItem(name) as
+        HTMLInputElement | HTMLTextAreaElement;
+      input.required = Boolean(draft?.fields.assetId);
+    }
     form.querySelectorAll<HTMLElement>('[data-count-for]').forEach((help) => {
       const input = document.getElementById(help.dataset.countFor!) as
         HTMLInputElement | HTMLTextAreaElement;
       help.textContent = `${input.required ? 'Required to submit. ' : ''}${input.value.length} of ${input.maxLength} characters`;
+      input.setCustomValidity(
+        input.required && !input.value.trim()
+          ? 'Complete this field before submitting.'
+          : '',
+      );
     });
+    $<HTMLInputElement>('#encounter-0').setCustomValidity(
+      form.querySelector('[name="encounters"]:checked')
+        ? ''
+        : 'Choose at least one visitor experience option before submitting.',
+    );
   }
   updateCounts();
   const editorIdentity = identity;
@@ -409,7 +432,18 @@ function renderEditor() {
   $('[data-submit]').onclick = () =>
     act(async () => {
       if (!form.reportValidity()) {
-        say('Complete the highlighted required field before submitting.', true);
+        const invalid = form.querySelector<
+          HTMLInputElement | HTMLTextAreaElement
+        >('input:invalid, textarea:invalid');
+        const label = invalid?.labels?.[0]?.textContent?.trim();
+        say(
+          invalid?.name === 'encounters'
+            ? 'In Visitor experience, choose Look / listen, Participate, or both before submitting.'
+            : label
+              ? `Check “${label}” before submitting. ${invalid?.validationMessage || ''}`
+              : 'Complete the highlighted required field before submitting.',
+          true,
+        );
         return;
       }
       if (!readFields().permission) {
@@ -458,6 +492,7 @@ function renderEditor() {
     });
   $('[data-remove-image]').onclick = () => {
     draft!.fields.assetId = null;
+    updateCounts();
     dirty = true;
     $('[data-image-state]').textContent =
       'Image removed from this draft. Save to keep this change.';
@@ -493,6 +528,7 @@ function renderEditor() {
         return;
       }
       draft!.fields.assetId = reserved.assetId;
+      updateCounts();
       dirty = true;
       const image = document.createElement('img');
       image.src = urlFor(file);
