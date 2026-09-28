@@ -255,7 +255,7 @@ function readFields(): ParticipantFields {
         label: text(`link-label-${i}`),
         url: text(`link-url-${i}`).trim(),
       }))
-      .filter((l) => l.url || l.label),
+      .filter((l) => l.url || l.label.trim()),
     videoUrl: text('videoUrl').trim() || null,
     processNote: text('processNote'),
     accessProposal: text('accessProposal'),

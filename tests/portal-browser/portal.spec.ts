@@ -670,6 +670,7 @@ test('link and video validation focuses the correct row and permits correction a
   const h = await harness(page);
   try {
     await page.goto(`/participant/editor/?project=${PA}`);
+    await page.getByLabel('Link 1 label', { exact: true }).fill('   ');
     await page
       .getByLabel('Link 3 address (HTTPS)', { exact: true })
       .fill('https://example.com/work');
@@ -713,6 +714,10 @@ test('link and video validation focuses the correct row and permits correction a
       .fill('https://example.com/video');
     await page.getByRole('button', { name: 'Save draft', exact: true }).click();
     await expect(page.getByRole('status')).toContainText('Draft saved');
+    await asUser(h.db, A);
+    expect((await rpc(h.db, 'get_project_draft', [PA])).fields.links).toEqual([
+      { label: 'My work', url: 'https://example.com/work' },
+    ]);
     await page
       .getByRole('button', { name: 'Submit for review', exact: true })
       .click();
