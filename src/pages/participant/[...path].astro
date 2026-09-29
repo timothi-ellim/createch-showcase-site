@@ -1,6 +1,15 @@
 ---
 import PortalShell from '../../components/PortalShell.astro';
+import { event, isPreview } from '../../data/catalogue';
 export function getStaticPaths() {
+  if (
+    !isPreview &&
+    event.participantWorkspaceUrl &&
+    event.publicSiteUrl &&
+    new URL(event.participantWorkspaceUrl).origin !==
+      new URL(event.publicSiteUrl).origin
+  )
+    return [];
   return [
     { path: undefined, surface: 'dashboard', title: 'Your projects' },
     { path: 'login', surface: 'login', title: 'Participant sign in' },
