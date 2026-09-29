@@ -1,0 +1,107 @@
+/* Art and reading surfaces stay still. These ornaments are never essential content. */
+.ambient-mark {
+  display: inline-block;
+  flex: 0 0 auto;
+  line-height: 1;
+  transform-origin: center;
+}
+.ambient-star {
+  font-size: 1.65rem;
+}
+.ambient-orbit {
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  position: relative;
+}
+.ambient-orbit::after {
+  content: '';
+  position: absolute;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: currentColor;
+  top: -0.17rem;
+  left: calc(50% - 0.175rem);
+}
+.ambient-discovery {
+  color: var(--lime, #d5ff47);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  margin-bottom: 1rem;
+}
+.motion-utility {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 0.45rem;
+}
+.motion-toggle {
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 100px;
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.3rem 0.65rem;
+  min-height: 28px;
+  cursor: pointer;
+}
+.motion-toggle[hidden] {
+  display: none;
+}
+.motion-toggle:disabled {
+  cursor: default;
+}
+.motion-toggle:focus-visible {
+  outline: 3px solid var(--lime, #d5ff47);
+  outline-offset: 3px;
+}
+.window-heading > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.tile-top > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.footer-statement > .ambient-mark {
+  display: inline-block;
+  font-size: 0.75em;
+  margin-left: 0.3em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-loop-motion] [data-ambient] {
+    animation: ambient-turn 24s linear infinite;
+    animation-play-state: paused;
+  }
+  html[data-loop-motion] .ambient-discovery {
+    animation-name: ambient-sway;
+    animation-duration: 9s;
+    animation-timing-function: ease-in-out;
+  }
+  html[data-loop-motion] .ambient-orbit {
+    animation-duration: 18s;
+  }
+  html[data-loop-motion='running'] [data-ambient][data-in-view='true'] {
+    animation-play-state: running;
+  }
+  html:has(dialog[open]) [data-ambient] {
+    animation-play-state: paused;
+  }
+}
+@keyframes ambient-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes ambient-sway {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(8deg);
+  }
+}

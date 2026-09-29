@@ -7,7 +7,12 @@ const opening = projects.find((project) => project.media);
 {opening?.media && (
   <aside class="exhibition-window" aria-label="A window into the exhibition">
     <div class="window-heading">
-      <span>Inside the showcase</span>
+      <span>
+        <i class="ambient-mark ambient-star" data-ambient aria-hidden="true">
+          ✳
+        </i>
+        Inside the showcase
+      </span>
       <span>{projects.length} projects ↗</span>
     </div>
     <a

@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import '../styles/redesign.css';
 import '../styles/exhibition.css';
+import '../styles/ambient-motion.css';
 import ArtworkViewer from '../components/ArtworkViewer.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { motionLevel } from '../lib/motion/config';
@@ -76,7 +77,11 @@ const path = Astro.url.pathname;
     </main>
     <footer class="site-footer wrap">
       <p class="footer-statement" aria-hidden="true">
-        Stay curious.<span>Code becomes culture ↗</span>
+        Stay curious.
+        <i class="ambient-mark ambient-star" data-ambient>
+          ✳
+        </i>
+        <span>Code becomes culture ↗</span>
       </p>
       <div>
         <a class="brand" href="/">
@@ -113,6 +118,7 @@ const path = Astro.url.pathname;
     </script>}
     <script>
       import '../lib/motion/boot';
+      import '../scripts/ambient-motion';
     </script>
   </body>
 </html>

@@ -109,7 +109,14 @@ const featured = themes
             }
           >
             <span class="tile-top">
-              {theme.number}
+              <span>
+                {theme.number}
+                <i
+                  class="ambient-mark ambient-orbit"
+                  data-ambient
+                  aria-hidden="true"
+                ></i>
+              </span>
               <span aria-hidden="true">↗</span>
             </span>
             <h3>
@@ -123,6 +130,13 @@ const featured = themes
     </section>
   }
   <section class="wrap discovery-break">
+    <span
+      class="ambient-mark ambient-discovery"
+      data-ambient
+      aria-hidden="true"
+    >
+      ✳
+    </span>
     {projects.length > 0 ? (
       <>
         <p>
