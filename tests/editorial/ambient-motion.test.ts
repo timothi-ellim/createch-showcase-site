@@ -1,15 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { stripTypeScriptTypes } from 'node:module';
+import { transpileModule, ScriptTarget } from 'typescript';
 import { runInNewContext } from 'node:vm';
 
-const source = stripTypeScriptTypes(
+const source = transpileModule(
   readFileSync(
     new URL('../../src/scripts/ambient-motion.ts', import.meta.url),
     'utf8',
   ),
-);
+  { compilerOptions: { target: ScriptTarget.ES2022 } },
+).outputText;
 function mount(
   options: { reduced?: boolean; saved?: string; storageFails?: boolean } = {},
 ) {
