@@ -421,6 +421,13 @@ if (filters) {
     sortCards();
     applyFilters();
   }
+  document
+    .querySelector('[data-browse-all]')
+    ?.addEventListener('click', (event) => {
+      event.preventDefault();
+      reset();
+      viewResults();
+    });
   filters.addEventListener('reset', (event) => {
     event.preventDefault();
     reset();
