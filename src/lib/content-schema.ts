@@ -298,11 +298,8 @@ export function releaseBlockers(snapshot: PublicSnapshot): string[] {
     blockers.push('approved project media');
   if (snapshot.event.participantEditingRoute !== 'supabase-portal')
     blockers.push('verified participant editing route');
-  if (
-    snapshot.projects.some(
-      (project) => !project.room || !project.schedule || !project.accessNotes,
-    )
-  )
-    blockers.push('confirmed project location, timing and public access notes');
+  // Approved profiles may precede organiser placement and access confirmation.
+  // Keep unknown facts null: the shared renderer labels them as unconfirmed.
+  // Approval, public-only data, media and event requirements still apply above.
   return blockers;
 }
