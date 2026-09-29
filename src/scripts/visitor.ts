@@ -111,6 +111,7 @@ function renderSaved() {
   document.querySelector<HTMLElement>('[data-shortlist-undo]')!.hidden =
     undoSaved === null;
   updateProjectLinks();
+  document.dispatchEvent(new CustomEvent('createch:shortlist-changed'));
 }
 function updateProjectLinks() {
   if (!shortlist && !document.querySelector('#filters')) return;
@@ -127,6 +128,8 @@ function updateProjectLinks() {
   }
 }
 function focusShortlist() {
+  if (document.querySelector<HTMLDialogElement>('[data-artwork-viewer]')?.open)
+    return;
   const nextButton = [
     ...document.querySelectorAll<HTMLButtonElement>('#shortlist [data-save]'),
   ].find((item) => !item.closest<HTMLElement>('[data-project-card]')!.hidden);

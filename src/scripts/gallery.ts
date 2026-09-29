@@ -92,6 +92,22 @@ if (viewer && typeof viewer.showModal === 'function') {
       });
   };
   document.addEventListener('createch:filters-changed', updateAvailability);
+  document.addEventListener('createch:shortlist-changed', () => {
+    updateAvailability();
+    if (!viewer.open || !document.querySelector('#shortlist')) return;
+    const current = selection[index];
+    selection = available();
+    if (!selection.length) {
+      viewer.close();
+      return;
+    }
+    const retained = selection.indexOf(current);
+    index = retained >= 0 ? retained : Math.min(index, selection.length - 1);
+    render();
+    if (retained < 0) {
+      selection[index].querySelector<HTMLElement>('[data-save]')?.focus();
+    }
+  });
   updateAvailability();
   previous.addEventListener('click', () => move(-1));
   next.addEventListener('click', () => move(1));
