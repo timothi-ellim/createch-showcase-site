@@ -87,7 +87,7 @@
   html[data-loop-motion='running'] [data-ambient][data-in-view='true'] {
     animation-play-state: running;
   }
-  html:has(dialog[open]) [data-ambient] {
+  html[data-loop-motion]:has(dialog[open]) [data-ambient][data-in-view] {
     animation-play-state: paused;
   }
 }
