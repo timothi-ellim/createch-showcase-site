@@ -17,8 +17,13 @@ function announce(message: string) {
   if (!status) return;
   clearTimeout(timer);
   status.textContent = message;
+  const viewerStatus = document.querySelector<HTMLElement>(
+    '[data-viewer-feedback]',
+  );
+  if (viewerStatus) viewerStatus.textContent = message;
   timer = setTimeout(() => {
     status.textContent = '';
+    if (viewerStatus) viewerStatus.textContent = '';
   }, 6500);
 }
 function readStorage() {
@@ -355,6 +360,61 @@ if (filters) {
         ? `View ${count} ${count === 1 ? 'project' : 'projects'} ↓`
         : 'See no-results advice ↓';
     document.querySelector<HTMLElement>('#no-results')!.hidden = count > 0;
+    const activeFilters = filters!.querySelector<HTMLElement>(
+      '[data-active-filters]',
+    );
+    const active: [string, () => void][] = [];
+    if (theme !== 'all')
+      active.push([
+        `Theme: ${theme}`,
+        () => {
+          theme = 'all';
+        },
+      ]);
+    if (encounter !== 'all')
+      active.push([
+        encounter,
+        () => {
+          encounter = 'all';
+        },
+      ]);
+    if (search.value.trim())
+      active.push([
+        `Search: ${search.value.trim()}`,
+        () => {
+          search.value = '';
+        },
+      ]);
+    if (sort.value !== 'featured')
+      active.push([
+        `Sort: ${sort.options[sort.selectedIndex].text}`,
+        () => {
+          sort.value = 'featured';
+          sortCards();
+        },
+      ]);
+    const summary = filters!.querySelector('[data-filter-summary]');
+    if (summary)
+      summary.textContent = active.length
+        ? `${active.length} active`
+        : 'No filters applied';
+    if (activeFilters) {
+      activeFilters.replaceChildren();
+      activeFilters.hidden = active.length === 0;
+      for (const [label, remove] of active) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'filter-chip';
+        button.textContent = `${label} ×`;
+        button.setAttribute('aria-label', `Remove ${label}`);
+        button.addEventListener('click', () => {
+          remove();
+          applyFilters();
+          search.focus();
+        });
+        activeFilters.append(button);
+      }
+    }
     const url = new URL(location.href);
     for (const [key, value] of [
       ['theme', theme],

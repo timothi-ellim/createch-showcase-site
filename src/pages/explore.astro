@@ -55,95 +55,110 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
               </button>
             </div>
           </div>
-          <fieldset>
-            <legend>Theme</legend>
-            <div class="filter-options">
-              <button
-                type="button"
-                aria-label="All themes"
-                data-theme-filter="all"
-                aria-pressed="true"
-              >
-                All themes
-              </button>
-              {themes
-                .filter((theme) =>
-                  projects.some((project) => project.theme === theme.id),
-                )
-                .map((theme) => (
+          <details class="filter-drawer">
+            <summary>
+              Filters &amp; sort{' '}
+              <span data-filter-summary>No filters applied</span>
+              <span aria-hidden="true">＋</span>
+            </summary>
+            <div class="filter-drawer-body">
+              <fieldset>
+                <legend>Theme</legend>
+                <div class="filter-options">
                   <button
                     type="button"
-                    aria-label={theme.name}
-                    data-theme-filter={theme.id}
-                    aria-pressed="false"
+                    aria-label="All themes"
+                    data-theme-filter="all"
+                    aria-pressed="true"
                   >
-                    {theme.name}
+                    All themes
                   </button>
-                ))}
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend>Encounter</legend>
-            <div class="filter-options">
-              <button
-                type="button"
-                aria-label="All encounters"
-                data-encounter-filter="all"
-                aria-pressed="true"
-              >
-                All encounters
-              </button>
-              {projects.some((project) =>
-                project.encounters.includes('Look / listen'),
-              ) && (
-                <button
-                  type="button"
-                  aria-label="Look / listen"
-                  data-encounter-filter="Look / listen"
-                  aria-pressed="false"
-                >
-                  Look / listen
+                  {themes
+                    .filter((theme) =>
+                      projects.some((project) => project.theme === theme.id),
+                    )
+                    .map((theme) => (
+                      <button
+                        type="button"
+                        aria-label={theme.name}
+                        data-theme-filter={theme.id}
+                        aria-pressed="false"
+                      >
+                        {theme.name}
+                      </button>
+                    ))}
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend>Encounter</legend>
+                <div class="filter-options">
+                  <button
+                    type="button"
+                    aria-label="All encounters"
+                    data-encounter-filter="all"
+                    aria-pressed="true"
+                  >
+                    All encounters
+                  </button>
+                  {projects.some((project) =>
+                    project.encounters.includes('Look / listen'),
+                  ) && (
+                    <button
+                      type="button"
+                      aria-label="Look / listen"
+                      data-encounter-filter="Look / listen"
+                      aria-pressed="false"
+                    >
+                      Look / listen
+                    </button>
+                  )}
+                  {projects.some((project) =>
+                    project.encounters.includes('Participate'),
+                  ) && (
+                    <button
+                      type="button"
+                      aria-label="Participate"
+                      data-encounter-filter="Participate"
+                      aria-pressed="false"
+                    >
+                      Participate
+                    </button>
+                  )}
+                </div>
+              </fieldset>
+              <div class="filter-tools">
+                <label class="sort-control">
+                  Sort projects
+                  <select id="sort">
+                    <option value="featured">Featured</option>
+                    <option value="title">A–Z</option>
+                    <option value="maker">Participant</option>
+                  </select>
+                </label>
+                <button type="reset" class="text-button">
+                  Clear all filters
                 </button>
-              )}
-              {projects.some((project) =>
-                project.encounters.includes('Participate'),
-              ) && (
-                <button
-                  type="button"
-                  aria-label="Participate"
-                  data-encounter-filter="Participate"
-                  aria-pressed="false"
-                >
-                  Participate
+              </div>
+              <div class="filter-actions">
+                <button type="button" class="button outline" data-surprise>
+                  Surprise me ↗
                 </button>
-              )}
+                <a
+                  class="button lime results-jump"
+                  href="#result-count"
+                  data-view-results
+                >
+                  View results ↓
+                </a>
+              </div>
             </div>
-          </fieldset>
-          <div class="filter-tools">
-            <label class="sort-control">
-              Sort projects
-              <select id="sort">
-                <option value="featured">Featured</option>
-                <option value="title">A–Z</option>
-                <option value="maker">Participant</option>
-              </select>
-            </label>
-            <button type="reset" class="text-button">
-              Clear all filters
-            </button>
-          </div>
-          <div class="filter-actions">
-            <button type="button" class="button outline" data-surprise>
-              Surprise me ↗
-            </button>
-            <a
-              class="button lime results-jump"
-              href="#result-count"
-              data-view-results
-            >
-              View results ↓
-            </a>
-          </div>
+          </details>
+          <div
+            class="active-filters"
+            data-active-filters
+            hidden
+            aria-label="Active filters"
+          ></div>
         </form>
         <noscript>
           <p class="notice">
@@ -151,9 +166,14 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
             or save a shortlist.
           </p>
         </noscript>
-        <p id="result-count" tabindex="-1" role="status" aria-live="polite">
-          {projects.length} {isSynthetic ? 'sample projects' : 'projects'}
-        </p>
+        <div class="results-heading">
+          <p id="result-count" tabindex="-1" role="status" aria-live="polite">
+            {projects.length} {isSynthetic ? 'sample projects' : 'projects'}
+          </p>
+          <button hidden type="button" class="button dark" data-open-gallery>
+            Enter artwork viewer <span aria-hidden="true">⤢</span>
+          </button>
+        </div>
         <div id="project-results" class="project-grid explore-grid">
           {projects.map((project) => (
             <ProjectCard project={project} />

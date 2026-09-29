@@ -4,7 +4,13 @@ import EventFacts from '../components/EventFacts.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import ParticipantRoster from '../components/ParticipantRoster.astro';
 import ProgrammePreview from '../components/ProgrammePreview.astro';
+import ExhibitionWindow from '../components/ExhibitionWindow.astro';
 import { event, projects, themes, isSynthetic } from '../data/catalogue';
+const featured = themes
+  .flatMap(
+    (theme) => projects.find((project) => project.theme === theme.id) ?? [],
+  )
+  .slice(0, 3);
 ---
 
 <Layout>
@@ -48,46 +54,33 @@ import { event, projects, themes, isSynthetic } from '../data/catalogue';
         </a>
       </div>
     </div>
-    <div class="poster-margin" aria-hidden="true">
-      <div class="poster-registration">
-        <span>CT / 26</span>
-        <span>↗</span>
-      </div>
-      <div class="poster-object">
-        <span>{'{'}</span>
-        <span class="poster-star">✳</span>
-        <span>{'}'}</span>
-      </div>
-      <p class="poster-annotation">
-        A meeting point
-        <br />
-        for the unexpected.
-      </p>
-      <div class="poster-registration">
-        <span>Art ↔ Technology</span>
-        <span>＋</span>
-      </div>
-    </div>
+    <ExhibitionWindow />
   </section>
-  <section class="curatorial-intro light-section">
-    <div class="wrap section">
-      <p class="discipline-line">
-        <span>Art</span>
-        <span>Technology</span>
-        <span>People</span>
-        <span>Culture</span>
-      </p>
-      <h2 data-motion-reveal>
-        Ideas, experiences and people
-        <br />
-        <em>in conversation.</em>
-      </h2>
-      <a class="text-link" href="/about/">
-        About the showcase <span aria-hidden="true">↗</span>
-      </a>
-    </div>
-  </section>
-  <ParticipantRoster />
+  {projects.length > 0 && (
+    <section class="light-section">
+      <div class="wrap section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Inside the showcase</p>
+            <h2>Start anywhere.</h2>
+          </div>
+          <a class="text-link" href="/explore/">
+            Explore all projects <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <p class="section-intro">
+          {isSynthetic
+            ? 'Sample entries show how the guide will work. The approved programme is still to come.'
+            : 'Discover a few starting points, then explore the full showcase.'}
+        </p>
+        <div class="project-grid featured-grid">
+          {featured.map((project) => (
+            <ProjectCard project={project} headingLevel="h3" />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
   {
     <section class="section wrap">
       <div class="section-heading">
@@ -129,31 +122,6 @@ import { event, projects, themes, isSynthetic } from '../data/catalogue';
       </div>
     </section>
   }
-  {projects.length > 0 && (
-    <section class="light-section">
-      <div class="wrap section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">A first look</p>
-            <h2>Meet the possibilities.</h2>
-          </div>
-          <a class="text-link" href="/explore/">
-            Explore all projects <span aria-hidden="true">↗</span>
-          </a>
-        </div>
-        <p class="section-intro">
-          {isSynthetic
-            ? 'Sample entries show how the guide will work. The approved programme is still to come.'
-            : 'Discover a few starting points, then explore the full showcase.'}
-        </p>
-        <div class="project-grid featured-grid">
-          {projects.slice(0, 3).map((project) => (
-            <ProjectCard project={project} headingLevel="h3" />
-          ))}
-        </div>
-      </div>
-    </section>
-  )}
   <section class="wrap discovery-break">
     {projects.length > 0 ? (
       <>
@@ -186,7 +154,8 @@ import { event, projects, themes, isSynthetic } from '../data/catalogue';
       </>
     )}
   </section>
-  <ProgrammePreview />
+  {projects.some((project) => project.schedule) && <ProgrammePreview />}
+  <ParticipantRoster />
   <section class="light-section">
     <div class="visit-banner wrap section">
       <div>

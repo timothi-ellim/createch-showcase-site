@@ -1,9 +1,11 @@
 ---
-import { event } from '../data/catalogue';
+import { event, projects } from '../data/catalogue';
 const path = Astro.url.pathname;
 const nav = [
   ['/explore/', 'Explore'],
-  ['/programme/', 'Programme'],
+  ...(projects.some((project) => project.schedule)
+    ? [['/programme/', 'Programme']]
+    : []),
   ['/visit/', 'Visit'],
   ['/about/', 'About'],
 ];

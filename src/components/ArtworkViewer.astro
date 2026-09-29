@@ -1,0 +1,99 @@
+---
+import { projects } from '../data/catalogue';
+const artworks = projects.filter((project) => project.media);
+---
+
+{artworks.length > 0 && (
+  <dialog
+    class="artwork-viewer"
+    data-artwork-viewer
+    aria-label="Artwork viewer"
+  >
+    <header class="viewer-toolbar">
+      <p class="eyebrow">CreaTech / A closer look</p>
+      <button type="button" class="viewer-control" data-viewer-close autofocus>
+        Close <span aria-hidden="true">×</span>
+      </button>
+    </header>
+    <div class="viewer-stage">
+      {artworks.map((project) => (
+        <article data-artwork={project.id} hidden aria-label={project.title}>
+          <figure class="viewer-image">
+            <img
+              src={project.media!.src}
+              alt={project.media!.alt}
+              width="960"
+              height="640"
+              loading="lazy"
+            />
+            <p class="viewer-image-state" data-viewer-image-state hidden>
+              Loading artwork…
+            </p>
+            <figcaption>{project.media!.credit}</figcaption>
+          </figure>
+          <div class="viewer-story">
+            <p class={`theme-label ${project.theme}`}>
+              Code becomes {project.theme}
+            </p>
+            <h2>{project.title}</h2>
+            <p class="viewer-maker">{project.maker}</p>
+            <p class="viewer-invitation">{project.invitation}</p>
+            <div class="viewer-actions">
+              <a
+                class="button lime"
+                href={`/projects/${project.slug}/`}
+                data-viewer-project
+              >
+                Read the project ↗
+              </a>
+              <button
+                hidden
+                class="button viewer-control"
+                data-save={project.id}
+                data-title={project.title}
+                aria-pressed="false"
+                aria-label={`Save ${project.title} to my visit`}
+              >
+                Save to my visit
+              </button>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+    <footer class="viewer-navigation">
+      <button
+        class="viewer-control"
+        type="button"
+        data-viewer-previous
+        aria-label="Previous artwork"
+      >
+        ← <span>Previous</span>
+      </button>
+      <p
+        data-viewer-position
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      ></p>
+      <button
+        class="viewer-control"
+        type="button"
+        data-viewer-next
+        aria-label="Next artwork"
+      >
+        <span>Next</span> →
+      </button>
+    </footer>
+    <p class="viewer-hint">Use ← → to explore. Esc to close.</p>
+    <p
+      class="viewer-feedback"
+      data-viewer-feedback
+      role="status"
+      aria-live="polite"
+    ></p>
+  </dialog>
+)}
+<script>
+  import '../scripts/gallery';
+</script>

@@ -1,0 +1,47 @@
+---
+import { projects } from '../data/catalogue';
+import { responsiveMedia } from '../lib/responsive-media';
+const opening = projects.find((project) => project.media);
+---
+
+{opening?.media && (
+  <aside class="exhibition-window" aria-label="A window into the exhibition">
+    <div class="window-heading">
+      <span>Inside the showcase</span>
+      <span>{projects.length} projects ↗</span>
+    </div>
+    <a
+      class="window-artwork"
+      href={`/projects/${opening.slug}/`}
+      aria-label={`Discover ${opening.title}`}
+    >
+      <img
+        src={opening.media.src}
+        srcset={responsiveMedia(opening.media.src)}
+        sizes="(max-width: 767px) 100vw, 45vw"
+        alt={opening.media.alt}
+        width="960"
+        height="640"
+        fetchpriority="high"
+      />
+      <span class="window-corner" aria-hidden="true">
+        ↗
+      </span>
+    </a>
+    <div class="window-caption">
+      <p>
+        {opening.title}
+        <span>{opening.maker}</span>
+      </p>
+      <span class="notation">
+        01 / {String(projects.length).padStart(2, '0')}
+      </span>
+    </div>
+    <button class="button lime" hidden data-open-gallery>
+      Enter artwork viewer <span aria-hidden="true">⤢</span>
+    </button>
+    <p class="window-note">
+      Take a closer look. Move between the works at your own pace.
+    </p>
+  </aside>
+)}

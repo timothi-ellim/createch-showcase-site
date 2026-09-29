@@ -1,6 +1,8 @@
 ---
 import '../styles/global.css';
 import '../styles/redesign.css';
+import '../styles/exhibition.css';
+import ArtworkViewer from '../components/ArtworkViewer.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { motionLevel } from '../lib/motion/config';
 import {
@@ -105,6 +107,7 @@ const path = Astro.url.pathname;
       aria-live="polite"
       aria-atomic="true"
     ></div>
+    {!privatePage && <ArtworkViewer />}
     {!privatePage && <script>
       import '../scripts/visitor';
     </script>}

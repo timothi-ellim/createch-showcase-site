@@ -23,15 +23,27 @@ const { project, saved = false, headingLevel: Heading = 'h2' } = Astro.props;
   data-search={`${project.title} ${project.maker} ${project.invitation} ${project.theme} ${project.encounters.join(' ')}`.toLowerCase()}
   hidden={saved}
 >
-  <a
-    class="card-media-link"
-    href={`/projects/${project.slug}/`}
-    data-project-media-link
-    tabindex="-1"
-    aria-label={`View ${project.title}`}
-  >
-    <ProjectMedia project={project} />
-  </a>
+  <div class="card-artwork">
+    <a
+      class="card-media-link"
+      href={`/projects/${project.slug}/`}
+      data-project-media-link
+      tabindex="-1"
+      aria-label={`View ${project.title}`}
+    >
+      <ProjectMedia project={project} />
+    </a>
+    {project.media && (
+      <button
+        hidden
+        class="artwork-peek"
+        data-open-artwork={project.id}
+        aria-label={`View artwork for ${project.title}`}
+      >
+        View artwork <span aria-hidden="true">⤢</span>
+      </button>
+    )}
+  </div>
   <div class="card-copy">
     {isSynthetic && (
       <p class="fixture-label">Synthetic fixture · Not an announced work</p>
