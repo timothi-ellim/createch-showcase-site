@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from './ArrowIcon.astro';
 import type { PublicProject } from '../data/catalogue';
 import { isSynthetic } from '../data/catalogue';
 import ProjectMedia from './ProjectMedia.astro';
@@ -55,7 +56,7 @@ const { project, saved = false, headingLevel: Heading = 'h2' } = Astro.props;
       <a data-project-link href={`/projects/${project.slug}/`}>
         {project.title}
         <span class="card-arrow" aria-hidden="true">
-          ↗
+          <ArrowIcon />
         </span>
       </a>
     </Heading>

@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from '../components/ArrowIcon.astro';
 import Layout from '../layouts/Layout.astro';
 import EventFacts from '../components/EventFacts.astro';
 import { projects, isSynthetic } from '../data/catalogue';
@@ -51,7 +52,9 @@ const rooms = [
               <p class="programme-time">{project.schedule}</p>
               <div>
                 <h3>
-                  <a href={`/projects/${project.slug}/`}>{project.title} ↗</a>
+                  <a href={`/projects/${project.slug}/`}>
+                    {project.title} <ArrowIcon />
+                  </a>
                 </h3>
                 <p>{project.maker}</p>
                 <p class="small">
@@ -89,10 +92,10 @@ const rooms = [
           </p>
           <div class="actions">
             <a class="button dark" href="/explore/">
-              Explore the showcase ↗
+              Explore the showcase <ArrowIcon />
             </a>
             <a class="text-link" href="/visit/">
-              Plan your visit ↗
+              Plan your visit <ArrowIcon />
             </a>
           </div>
         </div>

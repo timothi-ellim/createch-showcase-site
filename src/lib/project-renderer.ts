@@ -1,3 +1,4 @@
+import { arrowIconMarkup } from './arrow-icon.ts';
 import type { PublicProject } from './content-schema.ts';
 import { responsiveMedia } from './responsive-media.ts';
 
@@ -72,9 +73,9 @@ export function renderProjectBody(
     ${section(options.synthetic ? 'About this sample' : 'About the project', prose(project.description))}
     ${project.processNote ? section('Behind the work', prose(project.processNote)) : ''}
     ${project.processMedia.length ? section('Process gallery', `<div class="process-gallery">${project.processMedia.map((item) => media(item)).join('')}</div>`) : ''}
-    ${project.videoUrl ? section('Watch more', `<a class="text-link" href="${publicLink(project.videoUrl)}" rel="noopener noreferrer">Watch the project video ↗</a><p class="small">Opens the contributor’s chosen video website. Playback starts there.</p>`) : ''}
-    ${project.links.length ? section('From the contributor', `<ul class="artist-links">${project.links.map((link) => `<li><a href="${publicLink(link.url)}" rel="noopener noreferrer">${e(link.label)} ↗</a></li>`).join('')}</ul>`) : ''}
-    ${options.related?.length ? section('Keep exploring', `<p>Related works selected for this project.</p><ul class="artist-links">${options.related.map((item) => `<li><a href="/projects/${e(item.slug)}/">${e(item.title)} ↗</a></li>`).join('')}</ul>`) : ''}`;
+    ${project.videoUrl ? section('Watch more', `<a class="text-link" href="${publicLink(project.videoUrl)}" rel="noopener noreferrer">Watch the project video ${arrowIconMarkup}</a><p class="small">Opens the contributor’s chosen video website. Playback starts there.</p>`) : ''}
+    ${project.links.length ? section('From the contributor', `<ul class="artist-links">${project.links.map((link) => `<li><a href="${publicLink(link.url)}" rel="noopener noreferrer">${e(link.label)} ${arrowIconMarkup}</a></li>`).join('')}</ul>`) : ''}
+    ${options.related?.length ? section('Keep exploring', `<p>Related works selected for this project.</p><ul class="artist-links">${options.related.map((item) => `<li><a href="/projects/${e(item.slug)}/">${e(item.title)} ${arrowIconMarkup}</a></li>`).join('')}</ul>`) : ''}`;
   const actions = !options.privatePreview
     ? `<div class="detail-actions"><button hidden class="button lime" data-save="${e(project.id)}" data-title="${e(project.title)}" aria-pressed="false" aria-label="Save ${e(project.title)} to my visit">Save to my visit</button>
        <button hidden class="button secondary" data-copy-link>Copy project link</button></div>
@@ -90,5 +91,5 @@ export function renderProjectBody(
     <div class="detail-reading">${reading}</div>
     <aside class="reading-panel"><p class="eyebrow">Plan an encounter</p><h2>At a glance</h2>
     <dl class="detail-facts">${facts.map(([label, value]) => `<div><dt>${e(label)}</dt><dd>${e(value)}</dd></div>`).join('')}</dl>
-    ${options.privatePreview ? '<a class="text-link" href="/participants/">Participant help ↗</a>' : '<a class="text-link" href="/visit/">Visit information ↗</a>'}</aside></div>`;
+    ${options.privatePreview ? `<a class="text-link" href="/participants/">Participant help ${arrowIconMarkup}</a>` : `<a class="text-link" href="/visit/">Visit information ${arrowIconMarkup}</a>`}</aside></div>`;
 }

@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from '../components/ArrowIcon.astro';
 import Layout from '../layouts/Layout.astro';
 import EventDescription from '../components/EventDescription.astro';
 import { eventIntroduction } from '../lib/discovery';
@@ -35,7 +36,7 @@ import { event, themes } from '../data/catalogue';
           are themes to explore, not room assignments.
         </p>
         <a class="button dark" href="/explore/">
-          Explore the showcase ↗
+          Explore the showcase <ArrowIcon />
         </a>
       </div>
     </div>
@@ -54,7 +55,7 @@ import { event, themes } from '../data/catalogue';
     </div>
     {event.designCredit && <p class="identity-credit">{event.designCredit}</p>}
     <a class="text-link" href="/visit/">
-      Event details & contact ↗
+      Event details & contact <ArrowIcon />
     </a>
   </div>
 </Layout>

@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from './ArrowIcon.astro';
 import { event, projects } from '../data/catalogue';
 const participants = [...event.participants].sort((a, b) =>
   a.name.localeCompare(b.name, 'en'),
@@ -45,7 +46,7 @@ const participants = [...event.participants].sort((a, b) =>
                     <span class="roster-project">{project.title}</span>
                   </span>
                   <span class="roster-arrow" aria-hidden="true">
-                    ↗
+                    <ArrowIcon />
                   </span>
                 </a>
               ) : (

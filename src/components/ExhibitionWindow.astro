@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from './ArrowIcon.astro';
 import { projects, themes } from '../data/catalogue';
 import { responsiveMedia } from '../lib/responsive-media';
 const opening =
@@ -23,7 +24,9 @@ const glimpses = themes
         </i>
         A glimpse inside
       </span>
-      <span>{projects.length} projects ↗</span>
+      <span>
+        {projects.length} projects <ArrowIcon />
+      </span>
     </div>
     <a
       class="window-artwork"
@@ -40,7 +43,7 @@ const glimpses = themes
         fetchpriority="high"
       />
       <span class="window-corner" aria-hidden="true">
-        ↗
+        <ArrowIcon />
       </span>
     </a>
     <div class="window-caption">
@@ -65,7 +68,9 @@ const glimpses = themes
               />
               <span>
                 {project.maker}
-                <span aria-hidden="true">↗</span>
+                <span aria-hidden="true">
+                  <ArrowIcon />
+                </span>
               </span>
             </a>
           ),

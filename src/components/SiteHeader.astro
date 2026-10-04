@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from './ArrowIcon.astro';
 import { event, projects } from '../data/catalogue';
 const path = Astro.url.pathname;
 const nav = [
@@ -74,7 +75,9 @@ const nav = [
           0{index + 1}
         </span>
         {label}
-        <span aria-hidden="true">↗</span>
+        <span aria-hidden="true">
+          <ArrowIcon />
+        </span>
       </a>
     ))}
     <a
@@ -82,7 +85,9 @@ const nav = [
       aria-current={path === '/my-visit/' ? 'page' : undefined}
     >
       My visit <span data-saved-count aria-hidden="true"></span>
-      <span aria-hidden="true">↗</span>
+      <span aria-hidden="true">
+        <ArrowIcon />
+      </span>
     </a>
   </nav>
   <p class="small">

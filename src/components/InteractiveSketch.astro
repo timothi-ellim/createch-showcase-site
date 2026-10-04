@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from './ArrowIcon.astro';
 import { projects } from '../data/catalogue';
 import { restingPose, sketchPaths } from '../lib/interactive-sketch';
 const paths = sketchPaths(restingPose);
@@ -50,7 +51,10 @@ const paths = sketchPaths(restingPose);
           projects.map((project) => `/projects/${project.slug}/`),
         )}
       >
-        Surprise me <span aria-hidden="true">↗</span>
+        Surprise me{' '}
+        <span aria-hidden="true">
+          <ArrowIcon />
+        </span>
       </button>
     )}
   </div>

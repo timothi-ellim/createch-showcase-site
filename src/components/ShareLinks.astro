@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from './ArrowIcon.astro';
 import { event, isPreview } from '../data/catalogue';
 import { shareText } from '../lib/discovery';
 import type { PublicProject } from '../lib/content-schema';
@@ -57,7 +58,9 @@ const channels = [
 >
   <div class="share-invitation">
     <p class="share-eyebrow">
-      <span aria-hidden="true">↗</span>{' '}
+      <span aria-hidden="true">
+        <ArrowIcon />
+      </span>{' '}
       {project ? 'Share this project' : 'Share the showcase'}
     </p>
     <h2 id={`${id}-heading`}>
@@ -107,7 +110,7 @@ const channels = [
         </svg>
         Share…{' '}
         <span class="share-action-arrow" aria-hidden="true">
-          ↗
+          <ArrowIcon />
         </span>
       </button>
       <button class="share-action share-copy" data-share-copy hidden>
@@ -124,7 +127,7 @@ const channels = [
         </svg>
         Copy link{' '}
         <span class="share-action-arrow" aria-hidden="true">
-          ↗
+          <ArrowIcon />
         </span>
       </button>
     </div>
@@ -149,7 +152,9 @@ const channels = [
             <path d={channel.icon} />
           </svg>
           {channel.name}
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true">
+            <ArrowIcon />
+          </span>
         </a>
       ))}
     </div>

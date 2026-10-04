@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from './ArrowIcon.astro';
 import type { PublicProject } from '../data/catalogue';
 import { responsiveMedia } from '../lib/responsive-media';
 interface Props {
@@ -22,11 +23,13 @@ const { project } = Astro.props;
     ) : (
       <>
         <span class="placeholder-symbol" aria-hidden="true">
-          {project.theme === 'image'
-            ? '◉'
-            : project.theme === 'world'
-              ? '↗'
-              : '⤫'}
+          {project.theme === 'image' ? (
+            '◉'
+          ) : project.theme === 'world' ? (
+            <ArrowIcon />
+          ) : (
+            '⤫'
+          )}
         </span>
         <span class="placeholder-caption">Project image not supplied</span>
       </>

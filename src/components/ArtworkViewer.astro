@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from './ArrowIcon.astro';
 import { projects } from '../data/catalogue';
 const artworks = projects.filter((project) => project.media);
 ---
@@ -44,7 +45,7 @@ const artworks = projects.filter((project) => project.media);
                 href={`/projects/${project.slug}/`}
                 data-viewer-project
               >
-                Read the project ↗
+                Read the project <ArrowIcon />
               </a>
               <button
                 hidden

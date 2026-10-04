@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from '../components/ArrowIcon.astro';
 import Layout from '../layouts/Layout.astro';
 import EventFacts from '../components/EventFacts.astro';
 import ProjectCard from '../components/ProjectCard.astro';
@@ -51,7 +52,9 @@ const featured = themes
       <div class="actions">
         <a class="button lime" href="/explore/">
           Explore the projects
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true">
+            <ArrowIcon />
+          </span>
         </a>
         <a class="button outline" href="/visit/">
           Plan your visit
@@ -83,7 +86,10 @@ const featured = themes
           </h2>
           <p class="home-about-note">Explore. Test. Discuss. Experience.</p>
           <a class="text-link" href="/about/">
-            More about the showcase <span aria-hidden="true">↗</span>
+            More about the showcase{' '}
+            <span aria-hidden="true">
+              <ArrowIcon />
+            </span>
           </a>
         </div>
         <EventDescription />
@@ -100,7 +106,7 @@ const featured = themes
         <span>Browse projects and follow your curiosity.</span>
       </span>
       <span class="path-arrow" aria-hidden="true">
-        ↗
+        <ArrowIcon />
       </span>
     </a>
     <a href="#participants">
@@ -124,7 +130,7 @@ const featured = themes
         <span>Find the venue and plan your visit.</span>
       </span>
       <span class="path-arrow" aria-hidden="true">
-        ↗
+        <ArrowIcon />
       </span>
     </a>
   </nav>
@@ -139,7 +145,10 @@ const featured = themes
             </h2>
           </div>
           <a class="text-link" href="/explore/">
-            Explore all projects <span aria-hidden="true">↗</span>
+            Explore all projects{' '}
+            <span aria-hidden="true">
+              <ArrowIcon />
+            </span>
           </a>
         </div>
         <p class="section-intro">
@@ -166,7 +175,10 @@ const featured = themes
           <h2>Follow a thread.</h2>
         </div>
         <a class="text-link" href="/explore/">
-          Browse all <span aria-hidden="true">↗</span>
+          Browse all{' '}
+          <span aria-hidden="true">
+            <ArrowIcon />
+          </span>
         </a>
       </div>
       <p class="section-intro">
@@ -192,7 +204,9 @@ const featured = themes
                   aria-hidden="true"
                 ></i>
               </span>
-              <span aria-hidden="true">↗</span>
+              <span aria-hidden="true">
+                <ArrowIcon />
+              </span>
             </span>
             <h3>
               <span>Code becomes</span>
@@ -220,7 +234,10 @@ const featured = themes
         <EventFacts />
       </div>
       <a class="button dark" href="/visit/">
-        Plan your visit <span aria-hidden="true">↗</span>
+        Plan your visit{' '}
+        <span aria-hidden="true">
+          <ArrowIcon />
+        </span>
       </a>
     </div>
   </section>
