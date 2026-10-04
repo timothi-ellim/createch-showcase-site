@@ -60,9 +60,11 @@ const { project, saved = false, headingLevel: Heading = 'h2' } = Astro.props;
       </a>
     </Heading>
     <p class="maker">{project.maker}</p>
-    <p>{project.invitation}</p>
+    {project.invitation && <p>{project.invitation}</p>}
     <div class="card-bottom">
-      <span class="tag">{project.encounters.join(' · ')}</span>
+      {project.encounters.length > 0 && (
+        <span class="tag">{project.encounters.join(' · ')}</span>
+      )}
       <button
         hidden
         data-save={project.id}

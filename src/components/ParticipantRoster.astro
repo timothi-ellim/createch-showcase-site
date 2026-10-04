@@ -13,8 +13,12 @@ import { event, projects } from '../data/catalogue';
         {event.participants.length} practices. <em>One exhibition.</em>
       </h2>
       <p class="section-intro">
-        Discover the artists, designers and researchers taking part. Project
-        pages will appear here as they are ready.
+        Discover the artists, designers and researchers taking part.
+        {event.participants.every((participant) =>
+          projects.some((project) => project.id === participant.projectId),
+        )
+          ? ' Explore their project pages below.'
+          : ' Project pages will appear here as they are ready.'}
       </p>
       <ul class="participant-roster">
         {event.participants.map((participant) => {
