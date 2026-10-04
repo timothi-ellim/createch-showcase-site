@@ -1,0 +1,254 @@
+---
+import { projects } from '../data/catalogue';
+import { restingPose, sketchPaths } from '../lib/interactive-sketch';
+const paths = sketchPaths(restingPose);
+---
+
+<section
+  class="interactive-sketch wrap"
+  id="play"
+  aria-labelledby="play-heading"
+  data-sketch
+>
+  <div class="sketch-copy">
+    <p class="eyebrow">A little space to play</p>
+    <h2 id="play-heading">
+      Your curiosity.
+      <br />
+      <em>In motion.</em>
+    </h2>
+    <p>
+      Small gestures. Unexpected possibilities. Play with a little code, then
+      explore what our researchers are creating.
+    </p>
+    <p class="sketch-instructions" data-sketch-instructions hidden>
+      Move your pointer across the sculpture. Try a shape, or use Turn to see
+      another angle.
+    </p>
+    <div class="sketch-controls" data-sketch-controls hidden>
+      <div class="shape-options" role="group" aria-label="Sculpture shape">
+        {['Orbit', 'Wave', 'Bloom'].map((name, index) => (
+          <button
+            type="button"
+            data-sketch-shape={index}
+            aria-pressed={index === 0}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+      <button class="sketch-turn" type="button" data-sketch-turn>
+        Turn the sculpture <span aria-hidden="true">↻</span>
+      </button>
+    </div>
+    {projects.length > 0 && (
+      <button
+        class="text-link sketch-surprise"
+        hidden
+        data-home-surprise
+        data-project-paths={JSON.stringify(
+          projects.map((project) => `/projects/${project.slug}/`),
+        )}
+      >
+        Surprise me <span aria-hidden="true">↗</span>
+      </button>
+    )}
+  </div>
+  <div class="sketch-stage" data-sketch-stage>
+    <div class="sketch-stage-heading">
+      <span>Code / Play</span>
+      <span data-sketch-label>01 — Orbit</span>
+    </div>
+    <svg
+      viewBox="0 0 600 440"
+      aria-hidden="true"
+      focusable="false"
+      class="sketch-drawing"
+    >
+      <defs>
+        <linearGradient id="sketch-spectrum" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#fbfc7f" />
+          <stop offset=".45" stop-color="#d9ccff" />
+          <stop offset="1" stop-color="#ff9ad5" />
+        </linearGradient>
+      </defs>
+      <g
+        fill="none"
+        stroke="url(#sketch-spectrum)"
+        stroke-width="1.4"
+        stroke-linecap="round"
+      >
+        {paths.map((d) => (
+          <path d={d} data-sketch-line />
+        ))}
+      </g>
+      <circle
+        cx="300"
+        cy="220"
+        r="207"
+        fill="none"
+        stroke="#bfb3ff"
+        stroke-opacity=".25"
+        stroke-dasharray="2 10"
+      />
+      <path
+        d="M22 44V22h22 M556 22h22v22 M578 396v22h-22 M44 418H22v-22"
+        stroke="#fbfc7f"
+        fill="none"
+      />
+    </svg>
+    <div class="sketch-stage-footer">
+      <span>Interactive website sketch</span>
+      <span aria-hidden="true">✳</span>
+    </div>
+  </div>
+</section>
+<script>
+  import '../scripts/interactive-sketch';
+</script>
+
+<style>
+  .interactive-sketch {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(28px, 5vw, 72px);
+    align-items: center;
+    padding-block: var(--ct-space-section);
+    border-top: 1px solid var(--ct-line-light);
+  }
+  .sketch-copy h2 {
+    font-size: clamp(2.3rem, 4.5vw, 4.5rem);
+    line-height: 1.05;
+    margin-block: 20px 24px;
+  }
+  .sketch-copy h2 em {
+    color: var(--ct-lemon);
+  }
+  .sketch-copy > p:not(.eyebrow) {
+    max-width: 40ch;
+    line-height: 1.7;
+  }
+  .sketch-instructions {
+    font-size: 0.875rem;
+    color: #e2dcff;
+  }
+  .sketch-controls {
+    margin-top: 24px;
+  }
+  .shape-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .shape-options button,
+  .sketch-turn {
+    font: inherit;
+    font-size: 0.9rem;
+    min-height: 48px;
+    padding: 10px 22px;
+    border: 1px solid #ffffff88;
+    color: white;
+    background: transparent;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .shape-options button:hover,
+  .sketch-turn:hover {
+    background: #211067;
+  }
+  .shape-options button[aria-pressed='true'] {
+    color: #111217;
+    background: var(--ct-lemon);
+    border-color: var(--ct-lemon);
+  }
+  .sketch-turn {
+    margin-top: 12px;
+    padding-left: 0;
+    border: 0;
+    border-radius: 0;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
+  .sketch-turn span {
+    display: inline-block;
+    margin-left: 12px;
+    font-size: 1.3rem;
+  }
+  .sketch-surprise {
+    margin-top: 20px;
+    color: white;
+    background: none;
+    border: 0;
+    padding: 12px 0;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
+  .sketch-stage {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #9d8bea;
+    border-radius: 20px;
+    background-color: #130b35;
+    background-image: radial-gradient(#54427955 1px, transparent 1px);
+    background-size: 22px 22px;
+    box-shadow: 12px 12px 0 #1c0a90;
+  }
+  .sketch-stage-heading,
+  .sketch-stage-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 22px 24px;
+    font: 0.75rem var(--ct-font-pixel);
+    color: #ded7f5;
+  }
+  .sketch-stage-heading {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .sketch-stage-heading > span:first-child {
+    color: var(--ct-lemon);
+  }
+  .sketch-stage-footer {
+    padding-top: 0;
+  }
+  .sketch-stage-footer > span:last-child {
+    color: var(--ct-lemon);
+    font-size: 1.5rem;
+  }
+  .sketch-drawing {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  @media (max-width: 800px) {
+    .interactive-sketch {
+      grid-template-columns: 1fr;
+    }
+    .sketch-stage {
+      box-shadow: 6px 6px 0 #1c0a90;
+    }
+  }
+  @media (max-width: 400px) {
+    .sketch-stage-heading,
+    .sketch-stage-footer {
+      padding-inline: 16px;
+      font-size: 0.65rem;
+    }
+  }
+  @media print {
+    .sketch-controls,
+    .sketch-surprise,
+    .sketch-instructions {
+      display: none;
+    }
+    .sketch-stage {
+      box-shadow: none;
+    }
+  }
+</style>
