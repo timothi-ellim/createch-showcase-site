@@ -1,7 +1,17 @@
 ---
-import { projects } from '../data/catalogue';
+import { projects, themes } from '../data/catalogue';
 import { responsiveMedia } from '../lib/responsive-media';
-const opening = projects.find((project) => project.media);
+const opening =
+  projects.find((project) => project.media && project.theme === 'world') ??
+  projects.find((project) => project.media);
+const glimpses = themes
+  .filter((theme) => theme.id !== opening?.theme)
+  .flatMap(
+    (theme) =>
+      projects.find((project) => project.media && project.theme === theme.id) ??
+      [],
+  )
+  .slice(0, 2);
 ---
 
 {opening?.media && (
@@ -11,7 +21,7 @@ const opening = projects.find((project) => project.media);
         <i class="ambient-mark ambient-star" data-ambient aria-hidden="true">
           ✳
         </i>
-        Inside the showcase
+        A glimpse inside
       </span>
       <span>{projects.length} projects ↗</span>
     </div>
@@ -38,9 +48,28 @@ const opening = projects.find((project) => project.media);
         {opening.title}
         <span>{opening.maker}</span>
       </p>
-      <span class="notation">
-        01 / {String(projects.length).padStart(2, '0')}
-      </span>
+    </div>
+    <div class="window-glimpses">
+      {glimpses.map(
+        (project) =>
+          project.media && (
+            <a href={`/projects/${project.slug}/`}>
+              <img
+                src={project.media.src}
+                srcset={responsiveMedia(project.media.src)}
+                sizes="(max-width: 767px) 42vw, 20vw"
+                alt={project.media.alt}
+                width="320"
+                height="180"
+                loading="lazy"
+              />
+              <span>
+                {project.maker}
+                <span aria-hidden="true">↗</span>
+              </span>
+            </a>
+          ),
+      )}
     </div>
     <button class="button lime" hidden data-open-gallery>
       Enter artwork viewer <span aria-hidden="true">⤢</span>
@@ -50,3 +79,42 @@ const opening = projects.find((project) => project.media);
     </p>
   </aside>
 )}
+
+<style>
+  .window-artwork img {
+    aspect-ratio: 2.1;
+  }
+  .window-glimpses {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .window-glimpses a {
+    min-width: 0;
+    text-decoration: none;
+  }
+  .window-glimpses img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2.4;
+    object-fit: contain;
+    background: #0e0d14;
+  }
+  .window-glimpses a > span {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    padding-top: 8px;
+  }
+  .window-glimpses a:hover > span {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .window-glimpses span span {
+    color: var(--ct-lemon);
+  }
+</style>

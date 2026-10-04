@@ -3,6 +3,7 @@ import { event, projects } from '../data/catalogue';
 const path = Astro.url.pathname;
 const nav = [
   ['/explore/', 'Explore'],
+  ...(event.participants.length ? [['/#participants', 'Participants']] : []),
   ...(projects.some((project) => project.schedule)
     ? [['/programme/', 'Programme']]
     : []),
