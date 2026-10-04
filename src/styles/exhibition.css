@@ -1,4 +1,23 @@
 /* Exhibition interactions progressively enhance the ordinary reading routes. */
+.event-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(24px, 5vw, 72px);
+}
+.event-overview h2 { font-size: clamp(2rem, 4vw, 3.7rem); max-width: 12ch; }
+.event-description { max-width: 68ch; }
+.event-description p { font-size: 1.075rem; line-height: 1.75; }
+.event-description p:first-child { margin-top: 0; }
+.share-links { margin-top: 32px; padding-top: 24px; border-top: 1px solid currentColor; }
+.share-links h2 { font-size: 1.35rem; max-width: none; }
+.share-links .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-block: 16px; }
+.share-links .button { min-height: 48px; }
+.share-links details { margin-top: 16px; }
+.share-links summary { cursor: pointer; min-height: 44px; display: list-item; }
+.share-links input { display: block; width: 100%; max-width: 40rem; margin-block: 8px; }
+.share-feedback { min-height: 1.5em; }
+@media (max-width: 760px) { .event-overview { grid-template-columns: minmax(0, 1fr); } }
+@media print { .share-links { display: none; } }
 .hero {
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
   gap: clamp(24px, 5vw, 72px);
@@ -212,6 +231,9 @@
   height: auto;
   max-height: 70vh;
   object-fit: contain;
+}
+.detail .project-media .placeholder-caption {
+  color: var(--ct-white);
 }
 .detail .project-figure figcaption {
   font-size: 0.8rem;

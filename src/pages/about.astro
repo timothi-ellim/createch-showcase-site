@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import EventDescription from '../components/EventDescription.astro';
+import { eventIntroduction } from '../lib/discovery';
 import { event, themes } from '../data/catalogue';
 ---
 
@@ -9,9 +11,7 @@ import { event, themes } from '../data/catalogue';
       {'{'} Art · Technology · People · Culture {'}'}
     </p>
     <h1>{event.title}.</h1>
-    <p class="lead">
-      A meeting point for creative technology, art, design and research.
-    </p>
+    <p class="lead">{eventIntroduction(event)}</p>
     <div class="about-intro">
       <h2>
         Ideas, experiences
@@ -21,11 +21,15 @@ import { event, themes } from '../data/catalogue';
         <em>in conversation.</em>
       </h2>
       <div class="prose">
-        <p>
-          {event.series} brings creative practices together at{' '}
-          {event.venue.name} in {event.venue.city}. Explore the work, follow an
-          idea and shape your own visit.
-        </p>
+        {event.description ? (
+          <EventDescription />
+        ) : (
+          <p>
+            {event.series} brings creative practices together at{' '}
+            {event.venue.name} in {event.venue.city}. Explore the work, follow
+            an idea and shape your own visit.
+          </p>
+        )}
         <p>
           Image, World and Relation offer three ways into the exhibition. These
           are themes to explore, not room assignments.

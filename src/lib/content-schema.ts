@@ -36,7 +36,10 @@ const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 const httpsUrl = z
   .url()
   .max(2000)
-  .refine((value) => publicUrlIssue(value) === null, 'Public HTTPS URL required');
+  .refine(
+    (value) => publicUrlIssue(value) === null,
+    'Public HTTPS URL required',
+  );
 export const mediaSchema = z
   .object({
     src: z.string().regex(/^\/media\/[a-f0-9]{64}\.(?:png|jpg|webp)$/),
@@ -101,6 +104,14 @@ export const eventSchema = z
   .object({
     title: plain(150),
     series: plain(100),
+    // Optional without defaults, to preserve historic immutable snapshot hashes.
+    description: plain(6000).optional(),
+    shortDescription: plain(350).optional(),
+    textOnlyProjectIds: z
+      .array(idSchema)
+      .max(500)
+      .refine((ids) => new Set(ids).size === ids.length)
+      .optional(),
     date: z.iso.date(),
     dateLabel: plain(80),
     startTime: z.string().regex(/^\d{2}:\d{2}$/),
@@ -294,7 +305,13 @@ export function releaseBlockers(snapshot: PublicSnapshot): string[] {
     'publicSiteUrl',
   ] as const)
     if (!snapshot.event[key]) blockers.push(key);
-  if (snapshot.projects.some((project) => !project.media))
+  if (
+    snapshot.projects.some(
+      (project) =>
+        !project.media &&
+        !snapshot.event.textOnlyProjectIds?.includes(project.id),
+    )
+  )
     blockers.push('approved project media');
   if (snapshot.event.participantEditingRoute !== 'supabase-portal')
     blockers.push('verified participant editing route');

@@ -1,0 +1,10 @@
+---
+import { event } from '../data/catalogue';
+import { eventParagraphs } from '../lib/discovery';
+---
+
+<div class="prose event-description">
+  {eventParagraphs(event).map((paragraph) => (
+    <p>{paragraph}</p>
+  ))}
+</div>

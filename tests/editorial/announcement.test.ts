@@ -68,11 +68,15 @@ test('approved profiles can publish with explicitly unconfirmed practical detail
 
 test('an explicit roster announcement can launch while project approvals remain pending', () => {
   const snapshot = announcement();
-  assert.equal(snapshot.event.participants.length, 13);
+  assert.equal(snapshot.event.participants.length, 12);
   assert(
+    snapshot.event.participants.some((person) => person.name === 'Qilin Zhang'),
+  );
+  assert.equal(
     snapshot.event.participants.some(
-      (person) => person.name === 'Savannah Irving',
+      (person) => person.projectId === 'savannah-irving',
     ),
+    false,
   );
   assert.deepEqual(releaseBlockers(snapshot), []);
   assert.equal(snapshot.projects.length, 0);
@@ -127,5 +131,35 @@ test('a roster cannot carry private contact fields or duplicate assignments', ()
         ],
       },
     }),
+  );
+});
+
+test('text-only permission applies only to the explicitly approved project', () => {
+  const { revision: _, ...payload } = announcement();
+  const project = {
+    ...fixture,
+    id: 'text-only',
+    slug: 'text-only',
+    title: 'Reviewed text page',
+    maker: 'Review test maker',
+    approvedRevision: 'a'.repeat(64),
+    media: null,
+    relatedIds: [],
+  };
+  const snapshot = freezeSnapshot({
+    ...payload,
+    event: { ...payload.event, textOnlyProjectIds: ['text-only'] },
+    projects: [project],
+  });
+  assert.deepEqual(releaseBlockers(snapshot), []);
+  assert(
+    releaseBlockers({
+      ...snapshot,
+      event: { ...snapshot.event, textOnlyProjectIds: ['another-project'] },
+    }).includes('approved project media'),
+  );
+  assert.match(
+    renderProjectBody(snapshot.projects[0]),
+    /Project image not supplied/,
   );
 });

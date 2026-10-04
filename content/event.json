@@ -44,10 +44,6 @@
       "name": "Zohreh Baghban"
     },
     {
-      "projectId": "savannah-irving",
-      "name": "Savannah Irving"
-    },
-    {
       "projectId": "where-a-tool-ends",
       "name": "Atsushi Yang"
     },
@@ -79,5 +75,8 @@
       "projectId": "social-xr",
       "name": "Timothi Lim"
     }
-  ]
+  ],
+  "description": "Discover the future of creative technologies at Canopy in Leicester. This exhibition brings together innovative work by doctoral researchers from De Montfort University, revealing the breadth of ideas, practices and technologies being developed across DMU’s CreaTech research community.\n\nVisitors are invited to explore, test, discuss and experience research in progress, from immersive media, artificial intelligence and creative computing to digital performance, interactive storytelling, inclusive design and emerging forms of artistic practice. The exhibition offers a rare opportunity to encounter doctoral research beyond the page: as experiments, prototypes, installations and experiences that invite participation, reflection and conversation.\n\nJoin us to meet the researchers, engage with their work and discover how creative technologies are being used to ask new questions, challenge conventions and imagine different cultural, social and technological futures.",
+  "shortDescription": "Explore creative technologies and doctoral research from De Montfort University at Canopy in Leicester.",
+  "textOnlyProjectIds": ["eyeballs"]
 }

@@ -49,7 +49,7 @@ export function renderProjectBody(
   };
   const mainImage = project.media
     ? media(project.media, true)
-    : `<figure class="project-figure"><div class="project-media ${e(project.theme)}"><span class="placeholder-symbol" aria-hidden="true">◉</span><span class="placeholder-caption">Image pending approval</span></div></figure>`;
+    : `<figure class="project-figure"><div class="project-media ${e(project.theme)}"><span class="placeholder-symbol" aria-hidden="true">◉</span><span class="placeholder-caption">Project image not supplied</span></div></figure>`;
   const facts = [
     [
       'Encounter',

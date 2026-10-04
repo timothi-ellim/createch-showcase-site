@@ -1,3 +1,4 @@
+import { addEventCopyEditor } from './event-copy-editor';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { escapeHtml as e, renderProjectBody } from '../lib/project-renderer';
 import { checkPortalEnvironment, draftView } from '../lib/portal-contract';
@@ -1033,6 +1034,19 @@ async function showAdministration(projects: ProjectSummary[], people: any[]) {
           1000,
         ),
     );
+  addEventCopyEditor(panel, admin.event.config, (config) => {
+    void act(async () => {
+      await rpc('record_event_config', {
+        p_expected_version: admin.event.version,
+        p_config: config,
+        p_themes: admin.event.themes,
+      });
+      await showPeople();
+      say(
+        'Event description and participant list saved for review. The public website has not changed.',
+      );
+    });
+  });
   panel.querySelectorAll<HTMLElement>('[data-revoke-asset]').forEach(
     (b) =>
       (b.onclick = () =>

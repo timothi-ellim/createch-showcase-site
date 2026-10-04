@@ -1365,3 +1365,63 @@ test('owner creates a private project and assigns an existing account without se
     await h.close();
   }
 });
+
+test('organiser event copy preserves event facts and records an explicit roster and text-only choice', async ({
+  page,
+}) => {
+  const h = await harness(page, true);
+  try {
+    await asUser(h.db, O, 'authenticated', 'aal2');
+    const before = (await rpc(h.db, 'get_event_administration')).event;
+    const people = [
+      { projectId: 'synthetic-keep', name: 'Synthetic Keep' },
+      { projectId: 'synthetic-remove', name: 'Synthetic Remove' },
+    ];
+    await rpc(h.db, 'record_event_config', [
+      before.version,
+      { ...before.config, participants: people },
+      before.themes,
+    ]);
+    const original = (await rpc(h.db, 'get_event_administration')).event;
+    await page.goto('/organiser/people/');
+    await page
+      .getByText('Event description and public participant list', {
+        exact: true,
+      })
+      .click();
+    await page
+      .getByLabel('Main event description', { exact: true })
+      .fill('Public exhibition description.');
+    await page
+      .getByLabel('Short event summary for sharing', { exact: true })
+      .fill('Public sharing summary.');
+    await page
+      .locator('[data-roster-person][value="synthetic-remove"]')
+      .uncheck();
+    await page
+      .getByLabel('Allow a text-only page for Synthetic Keep', { exact: true })
+      .check();
+    await page
+      .getByRole('button', {
+        name: 'Save description and participant list for review',
+        exact: true,
+      })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'public website has not changed',
+    );
+    await asUser(h.db, O, 'authenticated', 'aal2');
+    const after = (await rpc(h.db, 'get_event_administration')).event;
+    expect(after.version).toBe(original.version + 1);
+    expect(after.config).toEqual({
+      ...original.config,
+      description: 'Public exhibition description.',
+      shortDescription: 'Public sharing summary.',
+      participants: [people[0]],
+      textOnlyProjectIds: ['synthetic-keep'],
+    });
+    expect(after.themes).toEqual(original.themes);
+  } finally {
+    await h.close();
+  }
+});

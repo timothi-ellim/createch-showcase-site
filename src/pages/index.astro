@@ -5,6 +5,9 @@ import ProjectCard from '../components/ProjectCard.astro';
 import ParticipantRoster from '../components/ParticipantRoster.astro';
 import ProgrammePreview from '../components/ProgrammePreview.astro';
 import ExhibitionWindow from '../components/ExhibitionWindow.astro';
+import EventDescription from '../components/EventDescription.astro';
+import ShareLinks from '../components/ShareLinks.astro';
+import { eventIntroduction } from '../lib/discovery';
 import { event, projects, themes, isSynthetic } from '../data/catalogue';
 const featured = themes
   .flatMap(
@@ -39,10 +42,7 @@ const featured = themes
           </span>
         ))}
       </h1>
-      <p class="hero-intro">
-        A meeting point for creative technology, art, design and research.
-        Explore ideas, encounter projects and shape your own visit.
-      </p>
+      <p class="hero-intro">{eventIntroduction(event)}</p>
       <EventFacts />
       <div class="actions">
         <a class="button lime" href="/explore/">
@@ -56,6 +56,23 @@ const featured = themes
     </div>
     <ExhibitionWindow />
   </section>
+  {event.description && (
+    <section class="light-section" aria-labelledby="event-description-heading">
+      <div class="wrap section event-overview">
+        <div>
+          <p class="eyebrow">About the exhibition</p>
+          <h2 id="event-description-heading">Research beyond the page.</h2>
+          <a class="text-link" href="/visit/">
+            Plan your visit ↗
+          </a>
+        </div>
+        <div>
+          <EventDescription />
+          <ShareLinks />
+        </div>
+      </div>
+    </section>
+  )}
   {projects.length > 0 && (
     <section class="light-section">
       <div class="wrap section">

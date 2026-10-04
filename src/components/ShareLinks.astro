@@ -1,0 +1,93 @@
+---
+import { event, isPreview } from '../data/catalogue';
+import { shareText } from '../lib/discovery';
+import type { PublicProject } from '../lib/content-schema';
+interface Props {
+  project?: PublicProject;
+}
+const { project } = Astro.props;
+const path = project ? `/projects/${project.slug}/` : '/';
+// Preview links stay local: never imply that newly previewed copy is already live.
+const url = new URL(path, isPreview ? Astro.url.origin : event.publicSiteUrl!)
+  .href;
+const title = project
+  ? `${project.title} | ${event.series}`
+  : `${event.title} | ${event.series}`;
+const text = shareText(event, project);
+const id = project ? 'share-project' : 'share-event';
+---
+
+<section
+  class="share-links"
+  aria-labelledby={`${id}-heading`}
+  data-share-links
+  data-share-url={url}
+  data-share-title={title}
+  data-share-text={text}
+>
+  <h2 id={`${id}-heading`}>
+    {project ? 'Share this project' : 'Share the showcase'}
+  </h2>
+  <div class="actions">
+    <button class="button secondary" data-native-share hidden>
+      Share…
+    </button>
+    <button class="button secondary" data-share-copy hidden>
+      Copy link
+    </button>
+    <a
+      class="button secondary"
+      href={`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${text}\n\n${url}`)}`}
+    >
+      Share by email
+    </a>
+    {!isPreview && (
+      <a
+        class="button secondary"
+        href={`https://wa.me/?text=${encodeURIComponent(`${text}\n\n${url}`)}`}
+        rel="noopener noreferrer"
+      >
+        WhatsApp
+      </a>
+    )}
+    {!isPreview && (
+      <a
+        class="button secondary"
+        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`}
+        rel="noopener noreferrer"
+      >
+        Facebook
+      </a>
+    )}
+    {!isPreview && (
+      <a
+        class="button secondary"
+        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`}
+        rel="noopener noreferrer"
+      >
+        LinkedIn
+      </a>
+    )}
+  </div>
+  <details data-share-fallback>
+    <summary>Get the {project ? 'project' : 'event'} link</summary>
+    <label for={`${id}-url`}>Copy this address to share</label>
+    <input id={`${id}-url`} type="url" value={url} readonly />
+  </details>
+  {isPreview && (
+    <p class="small">
+      This is a local preview link. Public sharing will use the published
+      website address.
+    </p>
+  )}
+  <p
+    class="small share-feedback"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    data-share-feedback
+  ></p>
+</section>
+<script>
+  import '../scripts/share';
+</script>
