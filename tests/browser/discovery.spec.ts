@@ -132,7 +132,7 @@ test('event and project sharing metadata, keyboard controls and narrow reading l
         'content',
         `/social/projects/${path.split('/')[2]}.png`,
       );
-      const summary = page.getByText('Get the project link', { exact: true });
+      const summary = page.locator('[data-share-fallback] summary');
       await summary.focus();
       await page.keyboard.press('Enter');
       await expect(page.getByLabel('Copy this address to share')).toBeVisible();
