@@ -1,10 +1,243 @@
 ---
 import { event } from '../data/catalogue';
 import { eventParagraphs } from '../lib/discovery';
+const paragraphs = eventParagraphs(event);
+const names = ['Discover', 'Experience', 'Join us'];
+const highlights = [
+  'explore, test, discuss and experience',
+  'experiments, prototypes, installations and experiences',
+  'ask new questions, challenge conventions and imagine different cultural, social and technological futures',
+];
+function parts(text: string) {
+  const expression = new RegExp(`(${highlights.join('|')})`, 'g');
+  return text
+    .split(expression)
+    .map((value) => ({ value, emphasis: highlights.includes(value) }));
+}
 ---
 
-<div class="prose event-description">
-  {eventParagraphs(event).map((paragraph) => (
-    <p>{paragraph}</p>
-  ))}
+<div class="event-description" data-event-reader>
+  <div class="reading-toolbar">
+    <nav aria-label="Read the event introduction" class="reading-chapters">
+      {paragraphs.map((_, index) => (
+        <a href={`#event-paragraph-${index + 1}`}>
+          <span aria-hidden="true">0{index + 1}</span>
+          {names[index] ?? `Part ${index + 1}`}
+        </a>
+      ))}
+    </nav>
+    <button
+      type="button"
+      class="reading-size"
+      data-reading-size
+      aria-pressed="false"
+      hidden
+    >
+      <span aria-hidden="true">Aa</span> Larger text
+    </button>
+  </div>
+  <div class="reading-passages">
+    {paragraphs.map((paragraph, index) => {
+      const opening =
+        index === 0 ? paragraph.match(/^(.+?[.!?])(\s+)([\s\S]*)$/) : null;
+      return (
+        <div
+          class:list={['reading-passage', { 'reading-opening': index === 0 }]}
+          id={`event-paragraph-${index + 1}`}
+          tabindex="-1"
+          data-reading-passage
+        >
+          <span class="passage-number" aria-hidden="true">
+            0{index + 1}
+          </span>
+          <p data-event-paragraph>
+            {opening ? (
+              <>
+                <span class="opening-sentence">{opening[1]}</span>
+                {opening[2]}
+                <span class="opening-detail">{opening[3]}</span>
+              </>
+            ) : (
+              parts(paragraph).map(({ value, emphasis }) =>
+                emphasis ? <strong>{value}</strong> : value,
+              )
+            )}
+          </p>
+        </div>
+      );
+    })}
+  </div>
 </div>
+<script>
+  import '../scripts/event-reader';
+</script>
+
+<style>
+  .event-description {
+    max-width: none;
+    min-width: 0;
+    --reader-size: clamp(1.15rem, 1.65vw, 1.45rem);
+  }
+  .reading-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #c8c2d2;
+  }
+  @media (min-width: 901px) {
+    .reading-toolbar {
+      position: sticky;
+      top: 108px;
+      z-index: 3;
+      padding-top: 12px;
+      background: var(--reader-paper, var(--ct-paper));
+    }
+  }
+  .reading-chapters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+  .reading-chapters a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding-block: 12px;
+    min-height: 44px;
+    text-decoration: none;
+    color: #4f475b;
+    font-size: 0.875rem;
+    border-bottom: 2px solid transparent;
+  }
+  .reading-chapters a span {
+    font: 0.65rem var(--ct-font-pixel);
+  }
+  .reading-chapters a:hover,
+  .reading-chapters a[aria-current='location'] {
+    color: var(--ct-blue);
+    border-bottom-color: var(--ct-blue);
+  }
+  .reading-size {
+    display: inline-flex;
+    gap: 9px;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 15px;
+    border: 1px solid #a59bad;
+    border-radius: 30px;
+    background: transparent;
+    color: #201932;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .reading-size > span {
+    font:
+      1.15rem Georgia,
+      'Times New Roman',
+      serif;
+  }
+  .reading-size[aria-pressed='true'] {
+    background: var(--ct-blue);
+    color: white;
+    border-color: var(--ct-blue);
+  }
+  .reading-size[hidden] {
+    display: none;
+  }
+  .reading-passage {
+    position: relative;
+    padding: 36px 0 36px 30px;
+    border-bottom: 1px solid #d4cedc;
+    scroll-margin-top: 120px;
+  }
+  .reading-passage::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 42px;
+    bottom: 38px;
+    width: 3px;
+    background: #d9d3e5;
+  }
+  .reading-passage[data-reading-current]::before,
+  .reading-passage:target::before {
+    background: var(--ct-blue);
+  }
+  .reading-passage:focus-visible {
+    outline: 2px solid var(--ct-blue);
+    outline-offset: 8px;
+  }
+  .passage-number {
+    display: block;
+    color: #675878;
+    font: 0.7rem var(--ct-font-pixel);
+    margin-bottom: 18px;
+  }
+  .event-description .reading-passage p {
+    margin: 0;
+    font-size: var(--reader-size);
+    line-height: 1.8;
+    color: #272132;
+    max-width: 62ch;
+    text-wrap: pretty;
+  }
+  .event-description .reading-passage .opening-sentence {
+    display: block;
+    font:
+      400 clamp(2rem, 3.3vw, 3.25rem)/1.2 Georgia,
+      'Times New Roman',
+      serif;
+    letter-spacing: -0.04em;
+    color: #2e177f;
+    max-width: 30ch;
+    margin-bottom: 24px;
+    text-wrap: pretty;
+  }
+  .opening-detail {
+    display: block;
+  }
+  .reading-passage strong {
+    font-weight: 500;
+    color: #28115e;
+    background: linear-gradient(transparent 60%, #eeefa0 60%);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .event-description[data-large-text] {
+    --reader-size: clamp(1.35rem, 2vw, 1.7rem);
+  }
+  .event-description[data-large-text] .opening-sentence {
+    font-size: clamp(2.25rem, 3.7vw, 3.5rem);
+  }
+  @media (max-width: 600px) {
+    .reading-passage {
+      padding: 28px 0 28px 18px;
+    }
+    .reading-passage::before {
+      top: 34px;
+      bottom: 28px;
+    }
+    .reading-chapters {
+      gap: 8px 14px;
+    }
+    .reading-chapters a {
+      font-size: 0.8rem;
+    }
+    .reading-toolbar {
+      gap: 4px;
+      padding-bottom: 16px;
+    }
+  }
+  @media print {
+    .reading-toolbar {
+      display: none;
+    }
+    .reading-passage {
+      padding-block: 20px;
+      break-inside: avoid;
+    }
+  }
+</style>
