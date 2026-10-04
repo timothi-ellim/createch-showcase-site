@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { publicUrlIssue } from './participant-validation.ts';
+import { validateWindows } from './presence.ts';
 
 // Strict, public-only schemas are shared by editorial export and Astro. Errors name
 // fields; they never repeat the rejected input, which may contain private material.
@@ -114,6 +115,10 @@ export const projectSchema = profileSchema
   .safeExtend({
     ...organiserSchema.shape,
     approvedRevision: digestSchema.nullable(),
+    invigilationWindows: z
+      .array(z.object({ start: z.string(), end: z.string() }).strict())
+      .max(96)
+      .optional(),
   })
   .strict();
 export type PublicProject = z.infer<typeof projectSchema>;
@@ -131,7 +136,7 @@ export const eventSchema = z
   .object({
     title: plain(150),
     series: plain(100),
-    // Optional without defaults, to preserve historic immutable snapshot hashes.
+    // Optional, without defaults: historic immutable snapshot hashes stay valid.
     description: plain(6000).optional(),
     shortDescription: plain(350).optional(),
     textOnlyProjectIds: z
@@ -144,6 +149,7 @@ export const eventSchema = z
     startTime: z.string().regex(/^\d{2}:\d{2}$/),
     endTime: z.string().regex(/^\d{2}:\d{2}$/),
     timeZone: z.literal('Europe/London'),
+    presenceSlotMinutes: z.number().int().min(15).max(60).optional(),
     venue: z
       .object({
         name: plain(100),
@@ -225,7 +231,7 @@ export const eventSchema = z
   });
 export const snapshotPayloadSchema = z
   .object({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.union([z.literal(1), z.literal(2)]),
     publicationStatus: z.enum(['synthetic-local-only', 'approved-public']),
     event: eventSchema,
     themes: z.array(themeSchema).length(3),
@@ -251,6 +257,18 @@ export const snapshotPayloadSchema = z
         message: 'Duplicate theme',
       });
     for (const project of data.projects) {
+      if (project.invigilationWindows !== undefined) {
+        try {
+          if (data.schemaVersion !== 2) throw new Error();
+          validateWindows(data.event, project.invigilationWindows);
+        } catch {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['projects', project.id, 'invigilationWindows'],
+            message: 'Invalid approved event hours',
+          });
+        }
+      }
       if (project.relatedIds.includes(project.id))
         ctx.addIssue({
           code: 'custom',

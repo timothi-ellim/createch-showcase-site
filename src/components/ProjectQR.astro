@@ -1,0 +1,96 @@
+---
+import type { PublicProject } from '../lib/content-schema';
+import { qrPaths } from '../lib/project-url';
+interface Props {
+  project: PublicProject;
+  url: string;
+  synthetic: boolean;
+}
+const { project, url, synthetic } = Astro.props;
+const paths = qrPaths(project.slug);
+---
+
+<dialog
+  class="project-qr-dialog"
+  aria-labelledby="project-qr-title"
+  data-qr-dialog
+>
+  <form method="dialog">
+    <button class="button secondary" autofocus aria-label="Close QR code">
+      Close ×
+    </button>
+  </form>
+  <p class="eyebrow">Project QR code</p>
+  <h2 id="project-qr-title">{project.title}</h2>
+  <p>{project.maker}</p>
+  {synthetic && (
+    <p class="notice">
+      Synthetic preview. This QR does not open a live exhibition profile.
+    </p>
+  )}
+  <img
+    src={paths.svg}
+    width="240"
+    height="240"
+    alt={`QR code linking to ${project.title}. The same link is provided below.`}
+  />
+  <p>Scan to open this project profile.</p>
+  <a class="qr-address" href={url}>
+    {url}
+  </a>
+  <div class="actions">
+    <a class="button dark" href={paths.png} download>
+      Download PNG
+    </a>
+    <a class="button secondary" href={paths.svg} download>
+      Download SVG
+    </a>
+    <button class="button secondary" data-qr-copy data-url={url}>
+      Copy link
+    </button>
+    <button hidden class="button secondary" data-qr-share>
+      Share
+    </button>
+  </div>
+  <p role="status" data-qr-status></p>
+</dialog>
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-qr-dialog]');
+  const trigger = document.querySelector<HTMLAnchorElement>('[data-open-qr]');
+  if (dialog && trigger && typeof dialog.showModal === 'function') {
+    trigger.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      dialog.showModal();
+    });
+    dialog.addEventListener('close', () => trigger.focus());
+    const status = dialog.querySelector<HTMLElement>('[data-qr-status]')!;
+    const copy = dialog.querySelector<HTMLButtonElement>('[data-qr-copy]')!;
+    copy.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(copy.dataset.url!);
+        status.textContent = 'Project link copied.';
+      } catch {
+        status.textContent =
+          'Copy was unavailable. Select the project address above and use your browser’s copy command.';
+      }
+    };
+    const share = dialog.querySelector<HTMLButtonElement>('[data-qr-share]')!;
+    if (navigator.share) {
+      share.hidden = false;
+      share.onclick = async () => {
+        try {
+          await navigator.share({
+            title: dialog.querySelector('h2')!.textContent!,
+            url: copy.dataset.url,
+          });
+          status.textContent = 'Share window opened.';
+        } catch (err) {
+          status.textContent =
+            (err as Error).name === 'AbortError'
+              ? 'Sharing cancelled.'
+              : 'Sharing is unavailable. Copy the address or download the QR instead.';
+        }
+      };
+    }
+  }
+</script>

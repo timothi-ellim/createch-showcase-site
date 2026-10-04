@@ -10,7 +10,7 @@ import { renderProjectBody } from '../../src/lib/project-renderer.ts';
 import { releaseBlockers } from '../../src/lib/content-schema.ts';
 
 test('owner text publication is exact, MFA-bound, media-free and never declares participant permission', async () => {
-  const db = await database();
+  const db = await database('presence-last');
   try {
     await asUser(db, A);
     const original = {

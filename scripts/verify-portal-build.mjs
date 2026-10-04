@@ -9,8 +9,10 @@ const expectedPages = [
   'index.html', '404.html', 'participants/index.html',
   'participant/index.html', 'participant/login/index.html',
   'participant/editor/index.html', 'participant/preview/index.html',
+  'participant/presence/index.html', 'participant/qr/index.html',
   'organiser/index.html', 'organiser/review/index.html',
   'organiser/releases/index.html', 'organiser/people/index.html',
+  'organiser/presence/index.html', 'organiser/presence-review/index.html', 'organiser/signage/index.html',
 ];
 async function walk(directory, prefix = '') {
   const result = [];

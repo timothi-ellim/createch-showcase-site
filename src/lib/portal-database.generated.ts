@@ -66,6 +66,21 @@ export interface Database {
         };
         Returns: string;
       };
+      decide_presence: {
+        Args: {
+          p_revision: string;
+          p_digest: string;
+          p_expected_version: number;
+          p_decision: string;
+          p_selection: Json;
+          p_feedback: string;
+          p_reason: string;
+          p_note: string;
+          p_confirmed: boolean;
+          p_request: string;
+        };
+        Returns: number;
+      };
       decide_revision: {
         Args: {
           p_revision: string;
@@ -80,15 +95,28 @@ export interface Database {
       get_event_administration: { Args: {}; Returns: Json };
       get_my_projects: { Args: {}; Returns: Json };
       get_people: { Args: {}; Returns: Json };
+      get_presence: { Args: { p_project: string }; Returns: Json };
+      get_presence_overview: { Args: {}; Returns: Json };
+      get_presence_review: { Args: { p_project: string }; Returns: Json };
       get_project_draft: { Args: { p_project: string }; Returns: Json };
+      get_project_signage: { Args: { p_project: string }; Returns: Json };
       get_releases: { Args: {}; Returns: Json };
       get_review_queue: { Args: {}; Returns: Json };
       get_revision_preview: { Args: { p_revision: string }; Returns: Json };
+      get_signage_catalogue: { Args: {}; Returns: Json };
       invitation_receipt: { Args: { p_request: string }; Returns: boolean };
       portal_context: { Args: {}; Returns: Json };
       portal_storage_access: {
         Args: { bucket: string; obj: string; writing: boolean };
         Returns: boolean;
+      };
+      prepare_presence_release: {
+        Args: {
+          p_source_commit: string;
+          p_revisions: string[];
+          p_presence: Json;
+        };
+        Returns: Json;
       };
       prepare_release: {
         Args: { p_source_commit: string; p_revisions: string[] };
@@ -108,6 +136,15 @@ export interface Database {
       };
       retry_job: { Args: { p_job: string }; Returns: undefined };
       revoke_asset: { Args: { p_asset: string }; Returns: undefined };
+      save_presence_draft: {
+        Args: {
+          p_project: string;
+          p_expected_version: number;
+          p_event_version: number;
+          p_selection: Json;
+        };
+        Returns: Json;
+      };
       save_project_draft: {
         Args: { p_project: string; p_expected_version: number; p_fields: Json };
         Returns: Json;
@@ -130,6 +167,14 @@ export interface Database {
           p_project: string;
           p_expected_version: number;
           p_metadata_version: number;
+          p_request: string;
+        };
+        Returns: Json;
+      };
+      submit_presence: {
+        Args: {
+          p_project: string;
+          p_expected_version: number;
           p_request: string;
         };
         Returns: Json;

@@ -28,6 +28,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Install the pinned print browser
+        run: npx playwright install --with-deps chromium
       - name: Remove expired sign-in attempt state
         if: vars.CREATECH_PARTICIPANT_AUTH_V2_ENABLED == 'true'
         run: node scripts/participant-auth-cleanup.ts

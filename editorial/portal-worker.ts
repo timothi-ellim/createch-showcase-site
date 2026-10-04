@@ -95,10 +95,7 @@ export async function runValidation(
     p_job: job.jobId,
     p_attempt: job.attemptId,
   });
-  subject.authorisation = await adapter.rpc('worker_revision_authorisation', {
-    p_job: job.jobId,
-    p_attempt: job.attemptId,
-  });
+  subject.authorisation = await adapter.rpc('worker_revision_authorisation', { p_job: job.jobId, p_attempt: job.attemptId });
   const prepared = await preparePortalRevision(subject, (path) =>
     adapter.download('source-uploads', path),
   );
@@ -119,6 +116,8 @@ export async function buildPortalCandidate(
   receipt: { approvedAt: string; approvedBy: string },
 ) {
   const snapshot = snapshotFromManifest(manifest);
+  if (manifest.schemaVersion === 2 && manifest.signageVersion !== 1) throw new ContentError('SIGNAGE_VERSION_REQUIRED');
+  if (manifest.environment !== 'local' && new URL(snapshot.event.publicSiteUrl ?? '').origin !== manifest.targetOrigin) throw new ContentError('RELEASE_TARGET_OR_SOURCE_MISMATCH');
   if (manifest.environment !== 'local' && releaseBlockers(snapshot).length)
     throw new ContentError('RELEASE_CONTENT_BLOCKED');
   const directory = resolve('.build-candidates', randomUUID());

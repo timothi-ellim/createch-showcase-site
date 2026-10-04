@@ -16,7 +16,7 @@ test('reading layout preserves contributor paragraphs and escapes each one', () 
   );
   assert.ok(!html.includes('<script>alert(1)</script>'));
   assert.ok(html.indexOf('<h1>') < html.indexOf('<figure'));
-  assert.ok(html.indexOf('What you’ll do') < html.indexOf('At a glance'));
+  assert.ok(html.indexOf('At a glance') < html.indexOf('What you’ll do'));
 });
 
 test('private preview keeps public gallery, save and share actions unavailable', () => {

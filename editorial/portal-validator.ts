@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { scheduleIdentity, validateWindows } from '../src/lib/presence.ts';
 import {
   profileSchema,
   projectSchema,
@@ -118,7 +119,8 @@ export async function preparePortalRevision(
   return { snapshot, digest: digest(snapshot), derived };
 }
 export interface PortalManifest {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
+  signageVersion?: 1;
   releaseId: string;
   sourceCommit: string;
   environment: 'local' | 'staging' | 'production';
@@ -136,6 +138,13 @@ export interface PortalManifest {
     digest: string;
     decisionId: number;
     snapshot: PublicProject;
+    presence?: {
+      decisionId: number;
+      revisionId: string;
+      digest: string;
+      scheduleKey: string;
+      windows: { start: string; end: string }[];
+    } | null;
     media: { src: string; path: string; sha256: string }[];
   }[];
 }
@@ -146,6 +155,7 @@ export function snapshotFromManifest(manifest: PortalManifest): PublicSnapshot {
     const project = validate(projectSchema, item.snapshot);
     if (
       digest(project) !== item.digest ||
+      project.invigilationWindows !== undefined ||
       project.approvedRevision !== null ||
       manifest.excludedProjects.includes(project.id)
     )
@@ -158,11 +168,32 @@ export function snapshotFromManifest(manifest: PortalManifest): PublicSnapshot {
       )
     )
       throw new ContentError('MEDIA_MANIFEST_MISMATCH');
-    return { ...project, approvedRevision: item.digest };
+    if (item.presence) {
+      if (
+        manifest.schemaVersion !== 2 ||
+        item.presence.scheduleKey !== scheduleIdentity(manifest.event) ||
+        !/^[a-f0-9]{64}$/.test(item.presence.digest) ||
+        !Number.isSafeInteger(item.presence.decisionId) ||
+        item.presence.decisionId < 1
+      )
+        throw new ContentError('INVALID_PRESENCE_BINDING');
+      try {
+        validateWindows(manifest.event, item.presence.windows);
+      } catch {
+        throw new ContentError('INVALID_PRESENCE_BINDING');
+      }
+    }
+    return {
+      ...project,
+      approvedRevision: item.digest,
+      ...(item.presence?.windows.length
+        ? { invigilationWindows: item.presence.windows }
+        : {}),
+    };
   });
   const ids = new Set(projects.map((p) => p.id));
   return freezeSnapshot({
-    schemaVersion: 1,
+    schemaVersion: manifest.schemaVersion,
     publicationStatus:
       manifest.environment === 'local'
         ? 'synthetic-local-only'

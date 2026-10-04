@@ -2,6 +2,8 @@ import { defineConfig } from 'astro/config';
 import { readFileSync, realpathSync, existsSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { readSnapshot, releaseBlockers } from './src/lib/content-schema.ts';
+import { freezeSnapshot } from './src/lib/content-schema.ts';
+import { fileURLToPath } from 'node:url';
 
 const isBuild = process.argv.includes('build');
 const mode = process.argv[process.argv.indexOf('--mode') + 1];
@@ -53,6 +55,19 @@ if (process.env.CREATECH_BUILD_DIR) {
 }
 export default defineConfig({
   integrations: [
+    {
+      name: 'createch-project-signage',
+      hooks: {
+        'astro:build:done': async ({ dir }) => {
+          const catalogue = JSON.parse(readFileSync('content/projects.json', 'utf8'));
+          const snapshot = process.env.CREATECH_SNAPSHOT
+            ? readSnapshot(JSON.parse(readFileSync(process.env.CREATECH_SNAPSHOT, 'utf8')))
+            : freezeSnapshot({ schemaVersion: 2, publicationStatus: 'synthetic-local-only', event: JSON.parse(readFileSync('content/event.json', 'utf8')), themes: catalogue.themes, projects: catalogue.projects });
+          const { generateSignage } = await import('./editorial/signage.ts');
+          await generateSignage(fileURLToPath(dir), snapshot);
+        },
+      },
+    },
     {
       name: 'createch-hosting-headers',
       hooks: {

@@ -1,6 +1,7 @@
 import { arrowIconMarkup } from './arrow-icon.ts';
 import type { PublicProject } from './content-schema.ts';
 import { responsiveMedia } from './responsive-media.ts';
+import { hoursLabel } from './presence.ts';
 
 // The static page and authenticated preview use this same escaped renderer.
 export const escapeHtml = (value: unknown): string =>
@@ -28,6 +29,9 @@ export function renderProjectBody(
     privatePreview?: boolean;
     related?: PublicProject[];
     mediaUrls?: ReadonlyMap<string, string>;
+    eventDateLabel?: string;
+    qrPath?: string;
+    canonicalUrl?: string;
   } = {},
 ): string {
   const e = escapeHtml;
@@ -78,7 +82,7 @@ export function renderProjectBody(
     ${options.related?.length ? section('Keep exploring', `<p>Related works selected for this project.</p><ul class="artist-links">${options.related.map((item) => `<li><a href="/projects/${e(item.slug)}/">${e(item.title)} ${arrowIconMarkup}</a></li>`).join('')}</ul>`) : ''}`;
   const actions = !options.privatePreview
     ? `<div class="detail-actions"><button hidden class="button lime" data-save="${e(project.id)}" data-title="${e(project.title)}" aria-pressed="false" aria-label="Save ${e(project.title)} to my visit">Save to my visit</button>
-       <button hidden class="button secondary" data-copy-link>Copy project link</button></div>
+       <button hidden class="button secondary" data-copy-link ${options.canonicalUrl ? `data-canonical-url="${e(options.canonicalUrl)}"` : ''}>Copy project link</button>${options.qrPath ? `<a class="button secondary" href="${e(options.qrPath)}" data-open-qr>QR code</a>` : ''}</div>
        <p class="small">Your shortlist stays in this browser. Saving is not a booking.</p>
        <div data-copy-fallback hidden><label for="project-url">Copy this project address</label><input id="project-url" type="url" readonly /><p class="small">Select the address and use your browser’s copy command.</p></div>
        <noscript><p>To share, copy the address from your browser. Enable JavaScript to save a shortlist.</p></noscript>`
@@ -88,8 +92,8 @@ export function renderProjectBody(
     <p class="theme-label ${e(project.theme)}">Code becomes ${e(project.theme)}</p>
     <h1>${e(project.title)}</h1><p class="maker">${e(project.maker)}</p>${project.invitation ? `<p class="lead">${e(project.invitation)}</p>` : ''}
     ${mainImage}${actions}</div>
-    <div class="detail-reading">${reading}</div>
     <aside class="reading-panel"><p class="eyebrow">Plan an encounter</p><h2>At a glance</h2>
+    ${project.invigilationWindows?.length ? `<section class="artist-hours"><h3>Meet the artist</h3><p class="small">Planned in-person hours${options.eventDateLabel ? ` · ${e(options.eventDateLabel)}` : ''} · UK time</p><p class="artist-hours-ranges">${e(hoursLabel(project.invigilationWindows))}</p><p class="small">These are planned hours and may change.</p></section>` : ''}
     <dl class="detail-facts">${facts.map(([label, value]) => `<div><dt>${e(label)}</dt><dd>${e(value)}</dd></div>`).join('')}</dl>
-    ${options.privatePreview ? `<a class="text-link" href="/participants/">Participant help ${arrowIconMarkup}</a>` : `<a class="text-link" href="/visit/">Visit information ${arrowIconMarkup}</a>`}</aside></div>`;
+    ${options.privatePreview ? `<a class="text-link" href="/participants/">Participant help ${arrowIconMarkup}</a>` : `<a class="text-link" href="/visit/">Visit information ${arrowIconMarkup}</a>`}</aside><div class="detail-reading">${reading}</div></div>`;
 }

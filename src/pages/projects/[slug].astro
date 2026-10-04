@@ -1,7 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { projects, isSynthetic, snapshot, event } from '../../data/catalogue';
+import ProjectQR from '../../components/ProjectQR.astro';
 import ShareLinks from '../../components/ShareLinks.astro';
-import { projects, isSynthetic } from '../../data/catalogue';
+import { projectUrl, snapshotOrigin, qrPaths } from '../../lib/project-url';
 import { renderProjectBody } from '../../lib/project-renderer';
 export function getStaticPaths() {
   return projects.map((project) => ({
@@ -10,6 +12,8 @@ export function getStaticPaths() {
   }));
 }
 const { project } = Astro.props;
+const qrEnabled = snapshot.schemaVersion === 2;
+const canonicalUrl = projectUrl(snapshotOrigin(snapshot), project.slug);
 const related = project.relatedIds
   .map((id) => projects.find((candidate) => candidate.id === id))
   .filter((candidate) => candidate !== undefined);
@@ -25,8 +29,17 @@ const related = project.relatedIds
       ← Back to all projects
     </a>
     <Fragment
-      set:html={renderProjectBody(project, { synthetic: isSynthetic, related })}
+      set:html={renderProjectBody(project, {
+        synthetic: isSynthetic,
+        related,
+        eventDateLabel: event.dateLabel,
+        qrPath: qrEnabled ? qrPaths(project.slug).svg : undefined,
+        canonicalUrl: isSynthetic ? undefined : canonicalUrl,
+      })}
     />
     <ShareLinks project={project} />
   </div>
+  {qrEnabled && (
+    <ProjectQR project={project} url={canonicalUrl} synthetic={isSynthetic} />
+  )}
 </Layout>

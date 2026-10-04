@@ -89,9 +89,36 @@ test('two-project approved SQL release builds real static files; pending draft a
         'PRIVATE_NOTE_CANARY',
       ]);
     }
-    const release = await rpc(db, 'prepare_release', [
+    await asUser(db, A);
+    await rpc(db, 'save_presence_draft', [
+      PA,
+      0,
+      1,
+      { mode: 'selected_slots', slots: [0, 1, 6] },
+    ]);
+    const hours = await rpc(db, 'submit_presence', [PA, 1, randomUUID()]);
+    await asUser(db, O, 'authenticated', 'aal2');
+    await rpc(db, 'decide_presence', [
+      hours.revisionId,
+      hours.digest,
+      0,
+      'approved',
+      null,
+      '',
+      '',
+      'PRIVATE_HOURS_NOTE_CANARY',
+      false,
+      randomUUID(),
+    ]);
+    const presence = (await rpc(db, 'get_presence', [PA])).approved;
+    const presenceSelection = [
+      { projectId: PA, decisionId: presence.id },
+      { projectId: PB, decisionId: null },
+    ];
+    const release = await rpc(db, 'prepare_presence_release', [
       'a'.repeat(40),
       revisions,
+      presenceSelection,
     ]);
     await asUser(db, A);
     await rpc(db, 'save_project_draft', [
@@ -116,6 +143,28 @@ test('two-project approved SQL release builds real static files; pending draft a
       approvedBy: O,
     });
     assert.equal(built.snapshot.projects.length, 2);
+    const withHours = built.snapshot.projects.find(
+      (p) => p.id === 'fixture-01',
+    )!;
+    assert.deepEqual(withHours.invigilationWindows, [
+      { start: '11:00', end: '12:00' },
+      { start: '14:00', end: '14:30' },
+    ]);
+    const projectHtml = await readFile(
+      join(built.site, 'projects', withHours.slug, 'index.html'),
+      'utf8',
+    );
+    const programme = await readFile(
+      join(built.site, 'programme/index.html'),
+      'utf8',
+    );
+    assert.match(projectHtml, /Meet the artist/);
+    assert.match(projectHtml, /11:00–12:00/);
+    assert.match(programme, /Meet the artists/);
+    assert.match(programme, /14:00–14:30/);
+    assert.ok(
+      built.files.some((f) => f.path === 'generated/signage/project-cards.pdf'),
+    );
     for (const file of built.files.filter((f) =>
       /\.(html|json|js|css|txt)$/.test(f.path),
     )) {
@@ -123,6 +172,7 @@ test('two-project approved SQL release builds real static files; pending draft a
       for (const marker of [
         'PRIVATE_ACCESS_CANARY',
         'PRIVATE_NOTE_CANARY',
+        'PRIVATE_HOURS_NOTE_CANARY',
         'PENDING_DRAFT_CANARY',
         'synthetic@example.invalid',
       ])
@@ -159,9 +209,10 @@ test('two-project approved SQL release builds real static files; pending draft a
     }
     await asUser(db, O, 'authenticated', 'aal2');
     await rpc(db, 'register_reviewed_source', ['b'.repeat(40)]);
-    const rebrand = await rpc(db, 'prepare_release', [
+    const rebrand = await rpc(db, 'prepare_presence_release', [
       'b'.repeat(40),
       revisions,
+      presenceSelection,
     ]);
     assert.deepEqual(rebrand.manifest.projects, release.manifest.projects);
     assert.notEqual(rebrand.digest, release.digest);

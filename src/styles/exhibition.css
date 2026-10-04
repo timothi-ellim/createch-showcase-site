@@ -248,6 +248,17 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+.artist-hours { border-bottom:1px solid var(--ct-line-dark); padding-block:8px 20px; margin-bottom:20px; }
+.artist-hours h3 { font-size:1.25rem; }
+.artist-hours-ranges { font-size:1.3rem; font-weight:700; color:var(--ct-cobalt); }
+.project-qr-dialog { width:min(560px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:24px; border:1px solid var(--ct-control-border); color:var(--ct-ink); background:var(--ct-paper); }
+.project-qr-dialog::backdrop { background:rgb(17 18 23 / 70%); }
+.project-qr-dialog form { display:flex; justify-content:flex-end; }
+.project-qr-dialog h2 { font-size:clamp(1.4rem,4vw,2rem); overflow-wrap:anywhere; }
+.project-qr-dialog img { display:block; width:min(240px,100%); height:auto; margin:20px auto; background:white; }
+.qr-address { display:block; overflow-wrap:anywhere; margin-block:16px; }
+.project-qr-dialog .actions { flex-wrap:wrap; gap:12px; }
+.artist-programme { margin-bottom:48px; }
 .detail-reading p {
   line-height: 1.8;
 }

@@ -567,10 +567,11 @@ if (location.hash.startsWith('#project-')) {
 const copyButton =
   document.querySelector<HTMLButtonElement>('[data-copy-link]');
 if (copyButton) {
+    const shareUrl = copyButton.dataset.canonicalUrl || location.origin + location.pathname;
   copyButton.hidden = false;
   copyButton.addEventListener('click', async () => {
     try {
-      await navigator.clipboard.writeText(location.origin + location.pathname);
+        await navigator.clipboard.writeText(shareUrl);
       announce(
         document.body.dataset.preview === 'true'
           ? 'Project link copied. This local preview link only works where the preview is running.'
@@ -580,7 +581,7 @@ if (copyButton) {
       document.querySelector<HTMLElement>('[data-copy-fallback]')!.hidden =
         false;
       const input = document.querySelector<HTMLInputElement>('#project-url')!;
-      input.value = location.origin + location.pathname;
+        input.value = shareUrl;
       input.focus();
       input.select();
       announce(

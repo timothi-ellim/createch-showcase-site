@@ -9,6 +9,7 @@ import {
 } from 'node:fs/promises';
 import { join, resolve, relative } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
+import { verifySignage } from './signage.ts';
 import { spawn } from 'node:child_process';
 import {
   ContentError,
@@ -95,6 +96,9 @@ export async function runAstroBuild(
     'PUBLIC_SUPABASE_URL',
     'PUBLIC_SUPABASE_PUBLISHABLE_KEY',
     'PUBLIC_PORTAL_ENVIRONMENT',
+    'PUBLIC_PROJECT_ASSET_ORIGIN',
+    'CHROME_PATH',
+    'PLAYWRIGHT_BROWSERS_PATH',
   ])
     if (process.env[key]) env[key] = process.env[key];
   Object.assign(env, {
@@ -154,6 +158,7 @@ export async function verifyOutput(
   snapshot: PublicSnapshot,
   privateValues: string[] = [],
 ) {
+  await verifySignage(directory, snapshot, privateValues);
   const manifest = (await readJson(
     join(directory, 'content-revision.json'),
   )) as { revision?: string; projectIds?: string[] };
@@ -198,7 +203,7 @@ export async function verifyOutput(
       )
     )
       throw new ContentError('PRIVATE_FILE_IN_OUTPUT');
-    if (/\.(?:html|js|json|css|txt)$/.test(file.path)) {
+    if (/\.(?:html|js|json|css|txt|svg)$/.test(file.path)) {
       const text = await readFile(join(directory, file.path), 'utf8');
       if (
         file.path.endsWith('.html') &&

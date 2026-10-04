@@ -8,7 +8,7 @@ export const PA = '10000000-0000-4000-8000-000000000001',
   PB = '10000000-0000-4000-8000-000000000002';
 // Real PostgreSQL execution in WASM. These auth/storage shims provide SQL
 // identities only; this suite does NOT claim JWT, Auth, HTTP or Storage API proof.
-export async function database() {
+export async function database(order: 'chronological' | 'presence-last' = 'chronological') {
   const db = new PGlite();
   await db.exec(`create role anon; create role authenticated; create role service_role; create role supabase_auth_admin;
     create schema auth; create schema storage;
@@ -25,7 +25,10 @@ export async function database() {
     grant select,insert,update,delete on storage.objects to authenticated;`);
   for (const name of (await readdir('supabase/migrations'))
     .filter((n) => n.endsWith('.sql'))
-    .sort()) {
+    .sort((a, b) => {
+      const late = (n: string) => order === 'presence-last' && /^20261004000[12]_/.test(n) ? 1 : 0;
+      return late(a) - late(b) || a.localeCompare(b);
+    })) {
     try {
       await db.exec(await readFile(`supabase/migrations/${name}`, 'utf8'));
     } catch (error) {

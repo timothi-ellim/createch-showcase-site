@@ -3,9 +3,11 @@ import ArrowIcon from '../components/ArrowIcon.astro';
 import Layout from '../layouts/Layout.astro';
 import EventFacts from '../components/EventFacts.astro';
 import { projects, isSynthetic } from '../data/catalogue';
+import { hoursLabel } from '../lib/presence';
 // Existing approved schedule text is authoritative. Do not infer clock times,
 // rooms, ordering or a live NOW state from free-form participant descriptions.
 const scheduled = projects.filter((project) => project.schedule);
+const present = projects.filter((project) => project.invigilationWindows?.length);
 const rooms = [
   ...new Set(
     scheduled.flatMap((project) => (project.room ? [project.room] : [])),
@@ -28,6 +30,7 @@ const rooms = [
     </div>
   </div>
   <div class="wrap section">
+    {present.length > 0 && <section aria-labelledby="meet-artists"><p class="eyebrow">Planned in-person hours</p><h2 id="meet-artists">Meet the artists</h2><p>Planned attendance during the showcase, in UK time. These hours may change.</p><ul class="programme-list artist-programme">{present.map(project => <li><p class="programme-time">{hoursLabel(project.invigilationWindows!)}</p><div><h3><a href={`/projects/${project.slug}/`}>{project.title} <ArrowIcon /></a></h3><p>{project.maker}</p></div></li>)}</ul></section>}
     {scheduled.length ? (
       <>
         <h2>{isSynthetic ? 'Sample programme' : 'Programme'}</h2>
@@ -52,9 +55,7 @@ const rooms = [
               <p class="programme-time">{project.schedule}</p>
               <div>
                 <h3>
-                  <a href={`/projects/${project.slug}/`}>
-                    {project.title} <ArrowIcon />
-                  </a>
+                  <a href={`/projects/${project.slug}/`}>{project.title} <ArrowIcon /></a>
                 </h3>
                 <p>{project.maker}</p>
                 <p class="small">
@@ -85,7 +86,7 @@ const rooms = [
         </span>
         <div>
           <p class="eyebrow">More to discover</p>
-          <h2>Programme publishing soon.</h2>
+          <h2>{present.length ? 'Further programme details coming soon.' : 'Programme publishing soon.'}</h2>
           <p>
             Project locations, timings and further visitor guidance will appear
             here when confirmed.

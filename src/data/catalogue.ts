@@ -11,7 +11,7 @@ const snapshotPath = process.env.CREATECH_SNAPSHOT;
 export const snapshot = snapshotPath
   ? readSnapshot(JSON.parse(readFileSync(snapshotPath, 'utf8')))
   : freezeSnapshot({
-      schemaVersion: 1,
+      schemaVersion: 2,
       publicationStatus: 'synthetic-local-only',
       event: eventRecord,
       themes: catalogue.themes,

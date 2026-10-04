@@ -2,6 +2,7 @@
 import ArrowIcon from './ArrowIcon.astro';
 import { projects } from '../data/catalogue';
 const scheduled = projects.filter((project) => project.schedule);
+const hasPresence = projects.some((project) => project.invigilationWindows?.length);
 ---
 
 <section
@@ -13,17 +14,14 @@ const scheduled = projects.filter((project) => project.schedule);
   </p>
   <div class="section-heading">
     <h2 id="programme-preview-title">
-      {scheduled.length ? 'Make a little time.' : 'A day of possibilities.'}
+      {scheduled.length || hasPresence ? 'Make a little time.' : 'A day of possibilities.'}
     </h2>
     <a class="text-link" href="/programme/">
-      View programme{' '}
-      <span aria-hidden="true">
-        <ArrowIcon />
-      </span>
+      View programme <span aria-hidden="true"><ArrowIcon /></span>
     </a>
   </div>
   <p class="section-intro">
-    {scheduled.length
+    {hasPresence ? 'Find planned artist hours and make time to meet the people behind the work.' : scheduled.length
       ? 'Find the published timings and plan an encounter.'
       : 'Programme publishing soon. Explore the participants while the details take shape.'}
   </p>

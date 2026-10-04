@@ -15,6 +15,9 @@ export function getStaticPaths() {
     { path: 'review', surface: 'review', title: 'Review this version' },
     { path: 'releases', surface: 'releases', title: 'Showcase releases' },
     { path: 'people', surface: 'people', title: 'People and access' },
+    { path: 'presence', surface: 'presence-overview', title: 'Artist hours' },
+    { path: 'presence-review', surface: 'presence-review', title: 'Review artist hours' },
+    { path: 'signage', surface: 'signage', title: 'QR and signage' },
   ].map(({ path, ...props }) => ({ params: { path }, props }));
 }
 ---

@@ -3,6 +3,9 @@ import { addEventCopyEditor } from './event-copy-editor';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { escapeHtml as e, renderProjectBody } from '../lib/project-renderer';
 import { checkPortalEnvironment, draftView } from '../lib/portal-contract';
+import { mountPresenceEditor, projectNav, showPresenceOverview, showPresenceReview } from './portal-presence';
+import { showProjectSignage, showSignageCatalogue } from './portal-signage';
+import { hoursLabel, type PresenceRecord } from '../lib/presence';
 import {
   participantFieldIssues,
   validationFailure,
@@ -37,6 +40,8 @@ let draft: PortalDraft | null = null,
 const objectUrls = new Set<string>();
 let tabStorageAvailable = true;
 let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
+let disposePresence: (() => void) | undefined;
+const workspaceAPI = { rpc, act, say, dirty: (value: boolean) => { dirty = value; }, busy: () => busy };
 function say(message: string, error = false) {
   status.textContent = message;
   status.dataset.error = String(error);
@@ -54,6 +59,8 @@ function say(message: string, error = false) {
   );
 }
 function clearPrivate() {
+  disposePresence?.();
+  disposePresence = undefined;
   clearTimeout(autosaveTimer);
   for (const url of objectUrls) URL.revokeObjectURL(url);
   objectUrls.clear();
@@ -73,6 +80,13 @@ function urlFor(blob: Blob) {
   return url;
 }
 const messages: Record<string, string> = {
+  INVALID_PRESENCE: 'Choose an attendance option and valid half-hour periods. Your current selection is still here.',
+  INVALID_PRESENCE_EVENT: 'The event hours need organiser attention before availability can be edited.',
+  PRESENCE_EVENT_CHANGED: 'The event hours changed. Keep a note of your selection, then reopen Your hours to select from the updated times.',
+  INVALID_PRESENCE_DECISION: 'Add participant feedback when requesting changes. Check the decision and try again.',
+  PRESENCE_REASON_REQUIRED: 'Explain why the public hours are being adjusted or removed.',
+  PRESENCE_CONFIRMATION_REQUIRED: 'Confirm that positive hours replacing an unsure or not-attending response were agreed separately.',
+  PRESENCE_SELECTION_REQUIRED: 'Select an exact artist-hours decision for each project, retaining live hours or explicitly removing them.',
   INVALID_TEXT_FIELD:
     'A text field contains unsupported symbols or exceeds its character limit. Check the highlighted fields, correct the text and save again.',
   INVALID_FIELDS:
@@ -137,9 +151,9 @@ async function rpc<T = any>(
   const timeout = setTimeout(() => controller.abort(), 30000);
   let result;
   const failure =
-    name === 'save_project_draft'
+    name === 'save_project_draft' || name === 'save_presence_draft'
       ? 'SAVE_UNCONFIRMED'
-      : name === 'submit_project_revision'
+      : name === 'submit_project_revision' || name === 'submit_presence'
         ? 'SUBMISSION_UNCONFIRMED'
         : name === 'reserve_upload'
           ? 'UPLOAD_FAILED'
@@ -203,7 +217,7 @@ async function act(fn: () => Promise<void>, saving = false) {
         '[data-editor-actions] button, [data-remove-image], #image-upload',
       )
       .forEach((b) => {
-        b.disabled = false;
+        b.disabled = b.hasAttribute('data-permanently-disabled');
       });
   }
 }
@@ -345,7 +359,7 @@ async function showDashboard() {
     );
     return;
   }
-  content.innerHTML = `<div class="reading-panel">${projects.length ? projects.map((p) => `<article class="portal-card"><h2>${e(p.title)}</h2><p class="badge">${p.withdrawn ? 'Withdrawal requested' : state(p.status)}</p>${p.liveRevision ? '<p>A previously verified version is published.</p>' : '<p>No verified public version yet.</p>'}${p.feedback ? `<p>${e(p.feedback)}</p>` : ''}<div class="portal-actions">${link('Edit project', `/participant/editor/?project=${p.id}`)}${p.latestRevision ? link('View submitted version', `/participant/preview/?revision=${p.latestRevision}`) : ''}</div></article>`).join('') : '<h2>No assigned projects</h2><p>You are signed in, but no project is assigned to this account. Use your existing organiser contact for help.</p>'}</div>`;
+  content.innerHTML = `<div class="reading-panel">${projects.length ? projects.map((p) => `<article class="portal-card"><h2>${e(p.title)}</h2><p class="badge">${p.withdrawn ? 'Withdrawal requested' : state(p.status)}</p>${p.liveRevision ? '<p>A previously verified version is published.</p>' : '<p>No verified public version yet.</p>'}${p.feedback ? `<p>${e(p.feedback)}</p>` : ''}<div class="portal-actions">${link('Edit project', `/participant/editor/?project=${p.id}`)}${link('Your hours', `/participant/presence/?project=${p.id}`)}${link('Project QR', `/participant/qr/?project=${p.id}`)}${p.latestRevision ? link('View submitted version', `/participant/preview/?revision=${p.latestRevision}`) : ''}</div></article>`).join('') : '<h2>No assigned projects</h2><p>You are signed in, but no project is assigned to this account. Use your existing organiser contact for help.</p>'}</div>`;
   say('Your assigned projects are up to date.');
 }
 async function navigateParticipant(path: string) {
@@ -358,13 +372,15 @@ async function navigateParticipant(path: string) {
     '/participant/': 'dashboard',
     '/participant/editor/': 'editor',
     '/participant/preview/': 'preview',
+    '/participant/presence/': 'presence',
+    '/participant/qr/': 'qr',
   };
   const surface = surfaces[url.pathname];
   if (url.origin !== location.origin || !surface)
     throw new Error('REQUEST_FAILED');
   history.replaceState(null, '', url);
   root.dataset.portal = surface;
-  const title =
+  const title = surface === 'presence' ? 'Your hours' : surface === 'qr' ? 'Your project QR' :
     surface === 'editor'
       ? 'Edit your project'
       : surface === 'preview'
@@ -379,7 +395,7 @@ function renderEditor() {
   if (!draft) return;
   const f = draft.fields,
     m = draft.metadata;
-  content.innerHTML = `<div class="reading-panel"><p class="metadata">Organiser-confirmed details: ${e(m.room || 'Location not confirmed')} · ${e(m.schedule || 'Timing not confirmed')}. Access notes: ${e(m.accessNotes || 'Not confirmed')}. These fields are read-only.</p>
+  content.innerHTML = `${projectNav(draft.projectId, 'editor')}<div class="reading-panel"><p class="metadata">Organiser-confirmed details: ${e(m.room || 'Location not confirmed')} · ${e(m.schedule || 'Timing not confirmed')}. Access notes: ${e(m.accessNotes || 'Not confirmed')}. These fields are read-only.</p>
  <div class="conflict" data-conflict hidden><h2>A newer draft exists</h2><p>Your typed text is preserved below. Compare with the latest saved draft before choosing to reload.</p>${button('Compare saved draft', 'data-compare')}${button('Reload saved draft and discard my unsaved text', 'data-reload', 'secondary')}<div data-conflict-comparison></div></div>
  <nav class="editor-sections" aria-label="Editing sections"><a href="#work-fields">Your work</a><a href="#image-fields">Image</a><a href="#experience-fields">Visitor experience</a><a href="#optional-fields">Links & detail</a><a href="#permission-fields">Review & submit</a></nav>
  <form data-editor-form><fieldset id="work-fields"><legend>Your work</legend><p class="field-help">You can save an unfinished draft. Complete the required fields before submitting for review.</p>${field('title', 'Project title', f.title || '', 120, false, true)}${field('maker', 'Public contributor name', f.maker || '', 100, false, true)}${field('invitation', 'Short invitation', f.invitation || '', 200, true, true)}${field('description', 'About the work', f.description || '', 2000, true, true)}</fieldset>
@@ -634,10 +650,7 @@ async function showPreview(review = false) {
   const preview = await rpc<RevisionPreview>('get_revision_preview', {
     p_revision: id,
   });
-  const body =
-    (preview.prepared?.publicationBasis === 'organiser-text'
-      ? '<p class="notice">Organiser-authorised text-only version. Participant permission has not been declared.</p>'
-      : '') + (await previewMarkup(preview));
+  const body = (preview.prepared?.publicationBasis === 'organiser-text' ? '<p class="notice">Organiser-authorised text-only version. Participant permission has not been declared.</p>' : '') + await previewMarkup(preview);
   const failed =
     preview.jobStatus === 'failed'
       ? validationFailure(preview.errorCode)
@@ -712,11 +725,21 @@ async function showQueue() {
 async function showReleases() {
   const releases = await rpc<any[]>('get_releases'),
     queue = await rpc<any[]>('get_review_queue');
+  const presence = await rpc<PresenceRecord[]>('get_presence_overview');
+  const hoursChoice = (row: any) => {
+    const p = presence.find(p => p.projectId === row.projectId);
+    if (!p) return '';
+    const options = new Map<string,string>();
+    if (!p.live?.windows.length) options.set('', 'No public hours');
+    if (p.live?.decisionId) options.set(String(p.live.decisionId), `Keep live hours: ${hoursLabel(p.live.windows) || 'none'}`);
+    if (p.approved?.scheduleKey === p.scheduleKey) options.set(String(p.approved.id), `Reviewed decision ${p.approved.version}: ${hoursLabel(p.approved.windows) || 'remove public hours'}`);
+    return `<label for="hours-${e(row.revisionId)}">Artist hours for this release</label><select id="hours-${e(row.revisionId)}" data-hours-for="${e(row.revisionId)}">${[...options].map(([value,label]) => `<option value="${value}" ${value === String(p.live?.decisionId ?? '') ? 'selected' : ''}>${e(label)}</option>`).join('')}</select>`;
+  };
   content.innerHTML = `<section class="reading-panel"><h2>Prepare a complete release</h2><p>Select every intended project. Previously live projects must remain selected unless explicitly withdrawn. A source-only release keeps the same approved content.</p><form data-release-form><label for="source-commit">Reviewed application version</label><select id="source-commit" required><option value="">Choose a reviewed version</option>${context.sources.map((s) => `<option value="${e(s)}">${e(s)}</option>`).join('')}</select><div class="checks">${queue
     .filter((r) => r.decision === 'approved')
     .map(
       (r) =>
-        `<label><input type="checkbox" name="revision" value="${e(r.revisionId)}" />${e(r.title)} · ${e(r.revisionId.slice(0, 8))}</label>`,
+        `<div class="release-project-choice"><label><input type="checkbox" name="revision" value="${e(r.revisionId)}" />${e(r.title)} · ${e(r.revisionId.slice(0, 8))}</label>${hoursChoice(r)}</div>`,
     )
     .join(
       '',
@@ -724,11 +747,11 @@ async function showReleases() {
   $<HTMLFormElement>('[data-release-form]').onsubmit = (event) => {
     event.preventDefault();
     void act(async () => {
-      await rpc('prepare_release', {
+      const selected = new FormData(event.currentTarget as HTMLFormElement).getAll('revision') as string[];
+      await rpc('prepare_presence_release', {
         p_source_commit: $<HTMLSelectElement>('#source-commit').value,
-        p_revisions: new FormData(
-          event.currentTarget as HTMLFormElement,
-        ).getAll('revision'),
+        p_revisions: selected,
+        p_presence: selected.map(id => ({ projectId: queue.find(r => r.revisionId === id)?.projectId, decisionId: Number(content.querySelector<HTMLSelectElement>(`[data-hours-for="${id}"]`)?.value) || null })),
       });
       await showReleases();
       say(
@@ -1038,30 +1061,19 @@ async function showAdministration(projects: ProjectSummary[], people: any[]) {
           1000,
         ),
     );
-  if (context.owner)
-    addOrganiserTextEditor(
-      panel,
-      projects,
-      (id) => rpc<PortalDraft>('get_project_draft', { p_project: id }),
-      (draft, request) => {
-        void act(async () => {
-          const version = await rpc<{ revisionId: string; jobId: string }>(
-            'submit_organiser_text_revision',
-            {
-              p_project: draft.projectId,
-              p_expected_version: draft.version,
-              p_metadata_version: draft.metadataVersion,
-              p_request: request,
-            },
-          );
-          await dispatch(version.jobId);
-          await showPeople();
-          say(
-            'Organiser-authorised text version prepared for review. Participant permission is unchanged. Open the review queue to check this version.',
-          );
+  if (context.owner) addOrganiserTextEditor(panel, projects,
+    (id) => rpc<PortalDraft>('get_project_draft', { p_project: id }),
+    (draft, request) => {
+      void act(async () => {
+        const version = await rpc<{ revisionId: string; jobId: string }>('submit_organiser_text_revision', {
+          p_project: draft.projectId, p_expected_version: draft.version,
+          p_metadata_version: draft.metadataVersion, p_request: request,
         });
-      },
-    );
+        await dispatch(version.jobId);
+        await showPeople();
+        say('Organiser-authorised text version prepared for review. Participant permission is unchanged. Open the review queue to check this version.');
+      });
+    });
   addEventCopyEditor(panel, admin.event.config, (config) => {
     void act(async () => {
       await rpc('record_event_config', {
@@ -1070,9 +1082,7 @@ async function showAdministration(projects: ProjectSummary[], people: any[]) {
         p_themes: admin.event.themes,
       });
       await showPeople();
-      say(
-        'Event description and participant list saved for review. The public website has not changed.',
-      );
+      say('Event description and participant list saved for review. The public website has not changed.');
     });
   });
   panel.querySelectorAll<HTMLElement>('[data-revoke-asset]').forEach(
@@ -1148,7 +1158,7 @@ async function load() {
     .forEach((el) => (el.hidden = !context.organiser));
   const surface = root.dataset.portal;
   if (
-    ['queue', 'review', 'releases', 'people'].includes(surface!) &&
+    ['queue', 'review', 'releases', 'people', 'presence-overview', 'presence-review', 'signage'].includes(surface!) &&
     !context.organiser
   ) {
     clearPrivate();
@@ -1161,11 +1171,37 @@ async function load() {
     $('[data-mfa]').hidden = aal?.currentLevel === 'aal2';
   }
   content.hidden = false;
-  if (draft && dirty) {
+  if ((draft || disposePresence) && dirty) {
+    if (disposePresence) await rpc('get_presence', { p_project: new URLSearchParams(location.search).get('project') });
     say('Signed in again. Your unsaved text is still here. Save when ready.');
     return;
   }
   switch (surface) {
+    case 'qr': {
+      const project = new URLSearchParams(location.search).get('project');
+      if (!project || !/^[a-f0-9-]{36}$/i.test(project)) throw new Error('INVALID_WORKSPACE_LINK');
+      await showProjectSignage(content, workspaceAPI, project);
+      break;
+    }
+    case 'signage':
+      await showSignageCatalogue(content, workspaceAPI);
+      break;
+    case 'presence': {
+      const project = new URLSearchParams(location.search).get('project');
+      if (!project || !/^[a-f0-9-]{36}$/i.test(project)) throw new Error('INVALID_WORKSPACE_LINK');
+      disposePresence?.();
+      disposePresence = await mountPresenceEditor(content, workspaceAPI, project);
+      break;
+    }
+    case 'presence-overview':
+      await showPresenceOverview(content, workspaceAPI);
+      break;
+    case 'presence-review': {
+      const query = new URLSearchParams(location.search), project = query.get('project');
+      if (!project || !/^[a-f0-9-]{36}$/i.test(project)) throw new Error('INVALID_WORKSPACE_LINK');
+      await showPresenceReview(content, workspaceAPI, project, query.get('revision'));
+      break;
+    }
     case 'login':
       await navigateParticipant('/participant/');
       return;
@@ -1197,7 +1233,7 @@ async function load() {
       await showPeople();
       break;
   }
-  if (surface !== 'editor') say('Workspace loaded.');
+  if (surface !== 'editor' && !content.querySelector('[data-retry-signage]')) say('Workspace loaded.');
 }
 async function start() {
   // Never accept or retain credentials or return destinations in browser URLs.
@@ -1251,7 +1287,7 @@ async function start() {
       const url = new URL(a.href);
       if (
         url.origin !== location.origin ||
-        !/^\/participant\/(?:editor\/|preview\/)?$/.test(url.pathname)
+        !/^\/participant\/(?:editor\/|preview\/|presence\/|qr\/)?$/.test(url.pathname)
       )
         return;
       event.preventDefault();
@@ -1261,6 +1297,8 @@ async function start() {
       )
         return;
       clearTimeout(autosaveTimer);
+      disposePresence?.();
+      disposePresence = undefined;
       draft = null;
       dirty = false;
       void act(() => navigateParticipant(url.href));
