@@ -53,7 +53,8 @@ export function renderProjectBody(
   const facts = [
     [
       'Encounter',
-      project.encounters.join(' · ') + (options.synthetic ? ' (example)' : ''),
+      (project.encounters.join(' · ') || 'Not confirmed') +
+        (options.synthetic ? ' (example)' : ''),
     ],
     ['Location', project.room ?? 'Not confirmed'],
     [
@@ -67,7 +68,7 @@ export function renderProjectBody(
         'Not yet supplied. Please check visit information before travelling.',
     ],
   ];
-  const reading = `${section('What you’ll do', prose(project.visitorAction))}
+  const reading = `${project.visitorAction ? section('What you’ll do', prose(project.visitorAction)) : ''}
     ${section(options.synthetic ? 'About this sample' : 'About the project', prose(project.description))}
     ${project.processNote ? section('Behind the work', prose(project.processNote)) : ''}
     ${project.processMedia.length ? section('Process gallery', `<div class="process-gallery">${project.processMedia.map((item) => media(item)).join('')}</div>`) : ''}
@@ -84,7 +85,7 @@ export function renderProjectBody(
   return `<div class="detail-grid" data-project-body><div class="detail-identity">
     ${options.synthetic ? '<p class="fixture-label">Synthetic fixture · Not an announced work</p>' : ''}
     <p class="theme-label ${e(project.theme)}">Code becomes ${e(project.theme)}</p>
-    <h1>${e(project.title)}</h1><p class="maker">${e(project.maker)}</p><p class="lead">${e(project.invitation)}</p>
+    <h1>${e(project.title)}</h1><p class="maker">${e(project.maker)}</p>${project.invitation ? `<p class="lead">${e(project.invitation)}</p>` : ''}
     ${mainImage}${actions}</div>
     <div class="detail-reading">${reading}</div>
     <aside class="reading-panel"><p class="eyebrow">Plan an encounter</p><h2>At a glance</h2>

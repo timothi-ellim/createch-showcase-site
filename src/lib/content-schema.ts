@@ -51,12 +51,11 @@ export const profileSchema = z
   .object({
     title: plain(220),
     maker: plain(160),
-    invitation: plain(350),
+    invitation: plain(350, 0),
     description: plain(6000),
-    visitorAction: plain(1600),
+    visitorAction: plain(1600, 0),
     encounters: z
       .array(z.enum(['Look / listen', 'Participate']))
-      .min(1)
       .max(2)
       .refine((v) => new Set(v).size === v.length),
     accessNotes: plain(1600).nullable(),
@@ -67,8 +66,36 @@ export const profileSchema = z
     processNote: plain(3000).nullable().default(null),
     processMedia: z.array(mediaSchema).max(6).default([]),
     videoUrl: httpsUrl.nullable().default(null),
+    publicationBasis: z.literal('organiser-text').optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((profile, ctx) => {
+    if (profile.publicationBasis === 'organiser-text') {
+      if (
+        profile.media ||
+        profile.processMedia.length ||
+        profile.videoUrl ||
+        profile.links.length
+      )
+        ctx.addIssue({
+          code: 'custom',
+          message:
+            'Organiser text pages cannot include media or external links',
+        });
+    } else {
+      for (const field of [
+        'invitation',
+        'visitorAction',
+        'encounters',
+      ] as const)
+        if (!profile[field].length)
+          ctx.addIssue({
+            code: 'custom',
+            path: [field],
+            message: 'Required for participant profiles',
+          });
+    }
+  });
 export const organiserSchema = z
   .object({
     id: idSchema,
@@ -84,7 +111,7 @@ export const organiserSchema = z
   })
   .strict();
 export const projectSchema = profileSchema
-  .extend({
+  .safeExtend({
     ...organiserSchema.shape,
     approvedRevision: digestSchema.nullable(),
   })
@@ -309,6 +336,7 @@ export function releaseBlockers(snapshot: PublicSnapshot): string[] {
     snapshot.projects.some(
       (project) =>
         !project.media &&
+        project.publicationBasis !== 'organiser-text' &&
         !snapshot.event.textOnlyProjectIds?.includes(project.id),
     )
   )

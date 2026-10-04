@@ -95,6 +95,10 @@ export async function runValidation(
     p_job: job.jobId,
     p_attempt: job.attemptId,
   });
+  subject.authorisation = await adapter.rpc('worker_revision_authorisation', {
+    p_job: job.jobId,
+    p_attempt: job.attemptId,
+  });
   const prepared = await preparePortalRevision(subject, (path) =>
     adapter.download('source-uploads', path),
   );

@@ -1425,3 +1425,69 @@ test('organiser event copy preserves event facts and records an explicit roster 
     await h.close();
   }
 });
+
+test('owner reviews saved text before creating a text-only revision without changing the participant draft', async ({
+  page,
+}) => {
+  const h = await harness(page, true);
+  try {
+    await asUser(h.db, A);
+    await rpc(h.db, 'save_project_draft', [
+      PA,
+      1,
+      {
+        ...fields,
+        permission: false,
+        invitation: '',
+        visitorAction: '',
+        encounters: [],
+      },
+    ]);
+    await page.goto('/organiser/people/');
+    await page
+      .getByText('Publish a text-only page with organiser approval', {
+        exact: true,
+      })
+      .click();
+    await page
+      .getByLabel('Text-only project', { exact: true })
+      .selectOption(PA);
+    await expect(page.locator('[data-organiser-text-preview]')).toContainText(
+      fields.description,
+    );
+    await expect(page.locator('[data-organiser-text-preview]')).toContainText(
+      'Participant permission has not been submitted.',
+    );
+    await page
+      .getByRole('button', {
+        name: 'Prepare text-only version for review',
+        exact: true,
+      })
+      .click();
+    await expect(
+      page.getByLabel(
+        'I authorise publication of this exact text as organiser',
+      ),
+    ).toBeFocused();
+    await page
+      .getByLabel('I authorise publication of this exact text as organiser')
+      .check();
+    await page
+      .getByRole('button', {
+        name: 'Prepare text-only version for review',
+        exact: true,
+      })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'Participant permission is unchanged',
+    );
+    await asUser(h.db, O, 'authenticated', 'aal2');
+    const draft = await rpc(h.db, 'get_project_draft', [PA]);
+    expect(draft.version).toBe(2);
+    expect(draft.fields.permission).toBe(false);
+    const queue = await rpc(h.db, 'get_review_queue');
+    expect(queue.length).toBe(1);
+  } finally {
+    await h.close();
+  }
+});

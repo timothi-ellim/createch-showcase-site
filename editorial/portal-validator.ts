@@ -20,7 +20,7 @@ export const participantSchema = z
     invitation: text(200).min(1),
     description: text(2000).min(1),
     visitorAction: text(700).min(1),
-    encounters: profileSchema.shape.encounters,
+    encounters: profileSchema.shape.encounters.min(1),
     assetId: z.uuid().nullable().optional(),
     alt: text(300).default(''),
     credit: text(200).default(''),
@@ -32,18 +32,36 @@ export const participantSchema = z
     termsVersion: z.literal('public-profile-v1'),
   })
   .strict();
+// This mode is selected only by server-side organiser authority evidence.
+const organiserTextSchema = participantSchema.extend({
+  invitation: text(200),
+  visitorAction: text(700),
+  encounters: profileSchema.shape.encounters,
+  permission: z.literal(false),
+  termsVersion: z.literal('organiser-text-v1'),
+  assetId: z.null(),
+  alt: z.literal(''),
+  credit: z.literal(''),
+  links: z.array(z.never()).max(0),
+  videoUrl: z.null(),
+  accessProposal: z.literal(''),
+});
 export async function preparePortalRevision(
   subject: {
     revisionId: string;
     publicId: string;
     slug: string;
     fields: unknown;
+    authorisation?: string;
     metadata: Record<string, unknown>;
     asset: { id: string; path: string; bytes: number; type: string } | null;
   },
   download: (path: string) => Promise<Buffer>,
 ) {
-  const f = validate(participantSchema, subject.fields),
+  const organiserText = subject.authorisation === 'organiser-text-v1';
+  const f = organiserText
+      ? validate(organiserTextSchema, subject.fields)
+      : validate(participantSchema, subject.fields),
     m = subject.metadata;
   let media: PublicProject['media'] = null;
   const derived: {
@@ -94,6 +112,7 @@ export async function preparePortalRevision(
     schedule: m.schedule ?? null,
     accessNotes: m.accessNotes ?? null,
     relatedIds: m.relatedIds ?? [],
+    ...(organiserText ? { publicationBasis: 'organiser-text' } : {}),
     approvedRevision: null,
   });
   return { snapshot, digest: digest(snapshot), derived };

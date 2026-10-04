@@ -125,6 +125,15 @@ export interface Database {
         Args: { p_project: string; p_withdrawn: boolean };
         Returns: undefined;
       };
+      submit_organiser_text_revision: {
+        Args: {
+          p_project: string;
+          p_expected_version: number;
+          p_metadata_version: number;
+          p_request: string;
+        };
+        Returns: Json;
+      };
       submit_project_revision: {
         Args: {
           p_project: string;
@@ -185,6 +194,10 @@ export interface Database {
       worker_recovery_unlock: {
         Args: { p_job: string; p_attempt: string; p_receipt: Json };
         Returns: undefined;
+      };
+      worker_revision_authorisation: {
+        Args: { p_job: string; p_attempt: string };
+        Returns: string;
       };
       worker_seed_local: {
         Args: {

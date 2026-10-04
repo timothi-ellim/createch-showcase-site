@@ -1,3 +1,4 @@
+import { addOrganiserTextEditor } from './organiser-text-editor';
 import { addEventCopyEditor } from './event-copy-editor';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { escapeHtml as e, renderProjectBody } from '../lib/project-renderer';
@@ -633,7 +634,10 @@ async function showPreview(review = false) {
   const preview = await rpc<RevisionPreview>('get_revision_preview', {
     p_revision: id,
   });
-  const body = await previewMarkup(preview);
+  const body =
+    (preview.prepared?.publicationBasis === 'organiser-text'
+      ? '<p class="notice">Organiser-authorised text-only version. Participant permission has not been declared.</p>'
+      : '') + (await previewMarkup(preview));
   const failed =
     preview.jobStatus === 'failed'
       ? validationFailure(preview.errorCode)
@@ -1033,6 +1037,30 @@ async function showAdministration(projects: ProjectSummary[], people: any[]) {
           admin.event.config.publicSiteUrl || '',
           1000,
         ),
+    );
+  if (context.owner)
+    addOrganiserTextEditor(
+      panel,
+      projects,
+      (id) => rpc<PortalDraft>('get_project_draft', { p_project: id }),
+      (draft, request) => {
+        void act(async () => {
+          const version = await rpc<{ revisionId: string; jobId: string }>(
+            'submit_organiser_text_revision',
+            {
+              p_project: draft.projectId,
+              p_expected_version: draft.version,
+              p_metadata_version: draft.metadataVersion,
+              p_request: request,
+            },
+          );
+          await dispatch(version.jobId);
+          await showPeople();
+          say(
+            'Organiser-authorised text version prepared for review. Participant permission is unchanged. Open the review queue to check this version.',
+          );
+        });
+      },
     );
   addEventCopyEditor(panel, admin.event.config, (config) => {
     void act(async () => {
