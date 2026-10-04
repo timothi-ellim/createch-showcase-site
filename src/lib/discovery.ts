@@ -73,7 +73,7 @@ export function shareText(event: Event, project?: PublicProject): string {
   return [
     project ? `${project.title} — ${project.maker}` : event.title,
     event.series,
-    project?.invitation ?? event.shortDescription,
+    project ? project.invitation || project.description : event.shortDescription,
     `${event.dateLabel}, ${event.startTime}–${event.endTime} (UK time).`,
     `${event.venue.name}, ${event.venue.streetAddress}, ${event.venue.city}, ${event.venue.postalCode}.`,
   ]

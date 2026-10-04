@@ -18,7 +18,7 @@ const related = project.relatedIds
 <Layout
   title={project.title}
   projectSlug={project.slug}
-  description={`${project.maker}: ${project.invitation}${isSynthetic ? ' Synthetic local fixture; not an announced work.' : ''}`}
+  description={`${project.maker}: ${project.invitation || project.description}${isSynthetic ? ' Synthetic local fixture; not an announced work.' : ''}`}
 >
   <div class="wrap section detail">
     <a class="text-link" href="/explore/" data-back-to-results>
