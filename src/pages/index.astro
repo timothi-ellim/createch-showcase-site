@@ -7,7 +7,7 @@ import ParticipantRoster from '../components/ParticipantRoster.astro';
 import ProgrammePreview from '../components/ProgrammePreview.astro';
 import ExhibitionWindow from '../components/ExhibitionWindow.astro';
 import EventDescription from '../components/EventDescription.astro';
-import ShareLinks from '../components/ShareLinks.astro';
+import PosterFeature from '../components/PosterFeature.astro';
 import InteractiveSketch from '../components/InteractiveSketch.astro';
 import { event, projects, themes, isSynthetic } from '../data/catalogue';
 const featured = themes
@@ -70,6 +70,7 @@ const featured = themes
       <a class="hero-play" href="#play">
         Play with a little code <span aria-hidden="true">↓</span>
       </a>
+      <a class="hero-reading" href="#poster">View and share the poster <span aria-hidden="true">↓</span></a>
     </div>
     <ExhibitionWindow />
   </section>
@@ -96,6 +97,7 @@ const featured = themes
       </div>
     </section>
   )}
+  <PosterFeature />
   <nav class="welcome-paths wrap" aria-label="Start exploring the showcase">
     <a href="/explore/">
       <span class="path-number" aria-hidden="true">
@@ -241,11 +243,6 @@ const featured = themes
       </a>
     </div>
   </section>
-  <div class="light-section">
-    <div class="wrap home-sharing">
-      <ShareLinks />
-    </div>
-  </div>
 </Layout>
 
 <style>

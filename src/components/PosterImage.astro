@@ -1,0 +1,12 @@
+---
+import { Image } from 'astro:assets';
+import { promotion, posterSource } from '../data/promotion';
+interface Props { large?: boolean }
+const { large = false } = Astro.props;
+---
+<Image src={posterSource} alt={promotion.alt} widths={[480, 720, 960]}
+  sizes={large ? '(max-width: 700px) 92vw, 720px' : '(max-width: 700px) 92vw, 440px'}
+  width={960} height={1200} format="webp" quality={90} loading="lazy" decoding="async" />
+<style>
+  img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; }
+</style>

@@ -5,8 +5,9 @@ import { shareText } from '../lib/discovery';
 import type { PublicProject } from '../lib/content-schema';
 interface Props {
   project?: PublicProject;
+  compact?: boolean;
 }
-const { project } = Astro.props;
+const { project, compact = false } = Astro.props;
 const path = project ? `/projects/${project.slug}/` : '/';
 // A preview always shares its local address, never an unpublished public URL.
 const url = new URL(path, isPreview ? Astro.url.origin : event.publicSiteUrl!)
@@ -49,7 +50,7 @@ const channels = [
 ---
 
 <section
-  class="share-links"
+  class:list={['share-links', { 'share-compact': compact }]}
   aria-labelledby={`${id}-heading`}
   data-share-links
   data-share-url={url}
@@ -95,7 +96,7 @@ const channels = [
     </div>
   </div>
   <div class="share-controls">
-    <p class="share-prompt">A good discovery deserves company.</p>
+    <p class="share-prompt">{compact ? 'Share the event link' : 'A good discovery deserves company.'}</p>
     <div class="share-primary">
       <button class="share-action share-native" data-native-share hidden>
         <svg
@@ -108,7 +109,7 @@ const channels = [
         >
           <path d="M12 16V3m-5 5 5-5 5 5M5 13v8h14v-8" />
         </svg>
-        Share…{' '}
+        {compact ? 'Share link…' : 'Share…'}{' '}
         <span class="share-action-arrow" aria-hidden="true">
           <ArrowIcon />
         </span>
@@ -187,6 +188,9 @@ const channels = [
   import '../scripts/share';
 </script>
 <style>
+  .share-links.share-compact { grid-template-columns: minmax(0, 1fr); padding: 24px; gap: 0; border-radius: 16px; margin-top: 24px; }
+  .share-compact .share-invitation { display: none; }
+  .share-compact .share-prompt { margin-bottom: 12px; }
   .share-links {
     grid-column: 1 / -1;
     display: grid;

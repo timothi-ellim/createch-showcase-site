@@ -1,0 +1,60 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PosterImage from '../components/PosterImage.astro';
+import EventFacts from '../components/EventFacts.astro';
+import ShareLinks from '../components/ShareLinks.astro';
+import { event } from '../data/catalogue';
+import { promotion } from '../data/promotion';
+---
+<Layout title="Event poster" description={`View and download the official ${event.series} poster. ${event.dateLabel}, ${event.venue.name}, ${event.venue.city}.`}>
+  <section class="poster-page wrap section">
+    <p class="eyebrow">Keep it. Share it. Come curious.</p>
+    <h1>The event poster.</h1>
+    <div class="poster-page-grid">
+      <figure>
+        <a href={promotion.poster} aria-label="Open the original full-size poster image"><PosterImage large /></a>
+        {event.designCredit && <figcaption>{event.designCredit}</figcaption>}
+      </figure>
+      <div class="poster-page-details">
+        <h2>{event.title}</h2>
+        <EventFacts />
+        <a class="button lime" href={promotion.poster} download={promotion.posterFileName}>Download poster · JPG · 1.9 MB</a>
+        <p>The poster’s participant list is being updated. <a href="/explore/">See the current projects and participants.</a></p>
+        <a class="text-link" href="/visit/">Plan your visit</a>
+        <details>
+          <summary>Read the poster introduction</summary>
+          <div class="poster-transcript">
+            <p>The CreaTech Research Community at De Montfort University brings together researchers, practitioners and partners exploring how emerging technologies can enrich creativity, culture, industry and society.</p>
+            <p>Our interdisciplinary community connects expertise across artificial intelligence, immersive media, virtual production, games, digital performance, haptics, robotics, creative computing and inclusive design.</p>
+          </div>
+        </details>
+        <div class="website-qr">
+          <img src="/campaign/website-qr.png" width="150" height="150" alt="QR code linking to the CreaTech Showcase website" loading="lazy" />
+          <div>
+            <h3>Share the website QR</h3>
+            <p><a href="/campaign/website-qr.png" download="CreaTech-Showcase-Website-QR.png">Download PNG</a> · <a href="/campaign/website-qr.svg" download="CreaTech-Showcase-Website-QR.svg">Download SVG</a></p>
+            <p>Scans open the <a href="/">showcase homepage</a>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ShareLinks />
+  </section>
+</Layout>
+<style>
+  .poster-page h1 { margin-bottom: 40px; }
+  .poster-page-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); align-items: start; }
+  figure { margin: 0; max-width: 720px; }
+  figure a { display: block; }
+  figcaption { margin-top: 14px; font-size: .85rem; }
+  .poster-page-details h2 { font-size: clamp(1.8rem, 3vw, 3rem); }
+  .poster-page-details > p { font-size: .9rem; line-height: 1.6; margin-block: 24px; }
+  .poster-page-details details { margin-top: 32px; }
+  summary { min-height: 48px; cursor: pointer; padding-block: 14px; }
+  .poster-transcript { line-height: 1.7; }
+  .website-qr { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; margin-top: 32px; }
+  .website-qr img { display: block; background: #fff; }
+  .website-qr h3 { font-size: 1.2rem; }
+  .website-qr p { font-size: .9rem; line-height: 1.6; }
+  @media (max-width: 850px) { .poster-page-grid { grid-template-columns: 1fr; } }
+</style>

@@ -7,6 +7,7 @@ export function GET() {
     '/explore/',
     '/programme/',
     '/about/',
+    '/poster/',
     '/visit/',
     ...projects.map((project) => `/projects/${project.slug}/`),
   ];

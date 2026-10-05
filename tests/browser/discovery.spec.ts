@@ -86,7 +86,7 @@ test('native share cancellation is quiet; errors reveal the selected link', asyn
     });
   });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Share…', exact: true }).click();
+  await page.getByRole('button', { name: 'Share link…', exact: true }).click();
   await expect(page.locator('[data-share-feedback]')).toBeEmpty();
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'share', {
@@ -95,7 +95,7 @@ test('native share cancellation is quiet; errors reveal the selected link', asyn
       },
     });
   });
-  await page.getByRole('button', { name: 'Share…', exact: true }).click();
+  await page.getByRole('button', { name: 'Share link…', exact: true }).click();
   await expect(page.getByLabel('Copy this address to share')).toBeFocused();
 });
 

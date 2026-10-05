@@ -1,0 +1,31 @@
+---
+import { getImage } from 'astro:assets';
+import { posterSource } from '../data/promotion';
+interface Props { compact?: boolean }
+const { compact = false } = Astro.props;
+const image = await getImage({ src: posterSource, width: 960, format: 'webp', quality: 95 });
+// Viewports display the supplied marks exactly, without redrawing or assigning
+// unconfirmed organisation names or sponsor relationships.
+const regions = [
+  { box: '0 1125 306 75', width: 306, label: 'LCB and Canopy' },
+  { box: '306 1125 257 75', width: 257, label: 'De Montfort University Leicester and the adjacent crest from the event poster' },
+  { box: '563 1125 397 75', width: 397, label: 'Additional campaign artwork from the event poster' },
+];
+---
+<div class:list={['poster-marks', { compact }]} role="group" aria-label="Logos and artwork from the official event poster">
+  <div class="poster-marks-inner wrap">
+    {regions.map((region) => (
+      <svg viewBox={region.box} width={region.width} height="75" role="img" aria-label={region.label} focusable="false">
+        <image href={image.src} width="960" height="1200" />
+      </svg>
+    ))}
+  </div>
+</div>
+<style>
+  .poster-marks { background: #f4f3f1; padding-block: 32px; border-block: 1px solid #cbc7d7; }
+  .poster-marks-inner { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 24px 32px; }
+  svg { display: block; max-width: 100%; height: auto; overflow: hidden; flex: 0 1 auto; }
+  .compact { padding-block: 24px; margin-top: 36px; }
+  .compact .wrap { padding-inline: 16px; }
+  @media (max-width: 700px) { .poster-marks-inner { flex-direction: column; gap: 24px; } }
+</style>

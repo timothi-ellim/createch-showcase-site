@@ -6,6 +6,7 @@ import '../styles/exhibition.css';
 import '../styles/ambient-motion.css';
 import ArtworkViewer from '../components/ArtworkViewer.astro';
 import SiteHeader from '../components/SiteHeader.astro';
+import LogoStrip from '../components/LogoStrip.astro';
 import {
   pageDescription,
   socialImagePath,
@@ -119,6 +120,7 @@ const structuredData =
     <main id="main" tabindex="-1">
       <slot />
     </main>
+    {!privatePage && <LogoStrip />}
     <footer class="site-footer wrap">
       <p class="footer-statement" aria-hidden="true">
         Stay curious.
@@ -141,6 +143,7 @@ const structuredData =
         <a href="/explore/">Browse all projects</a>
         <a href="/programme/">Programme</a>
         <a href="/about/">About</a>
+        <a href="/poster/">Event poster</a>
         <a href="/participants/">Participant help</a>
         <a href="/visit/">Plan your visit</a>
       </div>
