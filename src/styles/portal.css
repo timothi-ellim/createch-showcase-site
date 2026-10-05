@@ -7,6 +7,13 @@
 .project-workspace-nav a { color:var(--ct-ink); padding:12px 18px; border:1px solid currentColor; border-radius:4px; min-height:48px; text-decoration:none; }
 .project-workspace-nav a[aria-current] { color:var(--ct-ink); background:var(--ct-lemon); font-weight:700; }
 .presence-editor { max-width:820px; }
+.presence-explainer { background:var(--ct-info-bg); border-left:4px solid var(--ct-cobalt); padding:12px 16px; }
+.presence-shortcuts { display:flex; align-items:center; flex-wrap:wrap; gap:12px 20px; margin-block:16px; }
+.portal .presence-shortcuts button { min-height:48px; width:auto; font-size:.875rem; padding-inline:12px; }
+.portal .presence-slots { border:0; padding:0; margin-block:24px; }
+.portal .presence-slots legend { padding:0; margin-bottom:12px; }
+.presence-public-status { margin-top:24px; }
+.presence-public-status summary { cursor:pointer; min-height:48px; }
 .workspace-qr { display:block; max-width:100%; height:auto; margin-block:16px; background:white; }
 .portal .signage-card-preview { display:block; width:397px; max-width:100%; height:auto; max-height:none; margin-block:16px; border:1px solid var(--ct-line-dark); background:white; }
 .signage-project { border-top:1px solid var(--ct-line-dark); padding-block:24px; overflow-wrap:anywhere; }
@@ -41,6 +48,10 @@
 .presence-review-columns h3 { font-size:1rem; }
 @media(max-width:700px) { .hours-response dl { grid-template-columns:repeat(2,minmax(0,1fr)); } .presence-review-columns { grid-template-columns:1fr; } }
 @media(max-width:360px) { .presence-slot-grid,.hours-response dl { grid-template-columns:1fr; } }
+.presence-booth-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.presence-booth-grid .presence-choice { min-height:60px; white-space:normal; }
+.presence-booth-grid .presence-choice > span { font-variant-numeric:tabular-nums; line-height:1.35; }
+@media(max-width:360px) { .presence-booth-grid .presence-choice { padding:10px 8px; gap:6px; font-size:.85rem; } }
 .portal > h1 {
   margin-bottom: 12px;
   font-size: clamp(2rem, 4vw, 3rem);

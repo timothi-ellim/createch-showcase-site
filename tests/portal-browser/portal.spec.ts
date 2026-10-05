@@ -23,23 +23,37 @@ test('artist hours use keyboard controls, merge gaps, save privately and submit 
   const h = await harness(page);
   try {
     await page.goto(`/participant/presence/?project=${PA}`);
-    await expect(page.getByRole('radio')).toHaveCount(4);
-    await expect(page.getByRole('radio', { checked: true })).toHaveCount(0);
-    await page.getByRole('button', { name: 'Submit hours for review' }).click();
-    await expect(page.locator('#presence-error')).toContainText(
-      'Choose your planned attendance',
-    );
-    await expect(page.getByRole('radio').first()).toBeFocused();
-    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('radio')).toHaveCount(0);
+    await expect(page.getByRole('checkbox')).toHaveCount(10);
+    await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(0);
     await expect(
-      page.getByLabel('I plan to be here at selected times'),
-    ).toBeChecked();
-    await page.getByRole('button', { name: 'Submit hours for review' }).click();
+      page.getByText('Everyone is expected to attend in person.', {
+        exact: false,
+      }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Select all hours' }).click();
+    await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(10);
+    await expect(page.locator('[data-presence-total]')).toContainText(
+      '5 hr at your booth',
+    );
+    await page.getByRole('button', { name: 'Clear selection' }).click();
+    await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(0);
+    await page
+      .getByRole('button', { name: 'Submit booth times for review' })
+      .click();
+    await expect(page.locator('#presence-error')).toContainText(
+      'Select at least one time period',
+    );
     await expect(page.getByRole('checkbox').first()).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(page.getByRole('checkbox').first()).toBeChecked();
     for (const label of ['11:00–11:30', '11:30–12:00', '14:00–14:30'])
       await page.getByLabel(label, { exact: true }).check();
     await expect(page.locator('[data-presence-summary]')).toHaveText(
       '11:00–12:00, 14:00–14:30',
+    );
+    await expect(page.locator('[data-presence-total]')).toContainText(
+      '1 hr 30 min at your booth',
     );
     await page.getByRole('button', { name: 'Save draft', exact: true }).click();
     await expect(page.locator('[data-editor-status]')).toContainText(
@@ -48,13 +62,15 @@ test('artist hours use keyboard controls, merge gaps, save privately and submit 
     await expect(page.locator('[data-presence-draft]')).toContainText(
       'not submitted',
     );
-    await page.getByRole('button', { name: 'Submit hours for review' }).click();
+    await page
+      .getByRole('button', { name: 'Submit booth times for review' })
+      .click();
     await expect(page.locator('[data-presence-review]')).toHaveText(
       'Needs review',
     );
     await expect(page.locator('[data-presence-draft]')).toBeEmpty();
     await expect(page.locator('[data-presence-live]')).toContainText(
-      'No artist hours',
+      'No booth availability',
     );
     expect(
       (
@@ -64,6 +80,7 @@ test('artist hours use keyboard controls, merge gaps, save privately and submit 
       ).violations,
     ).toEqual([]);
     await mkdir('docs/evidence/presence-qr', { recursive: true });
+    await page.getByRole('heading', { name: 'Your booth availability', exact: true }).first().click();
     await page.screenshot({
       path: 'docs/evidence/presence-qr/participant-hours-390.png',
       fullPage: true,
@@ -108,6 +125,38 @@ test('artist hours use keyboard controls, merge gaps, save privately and submit 
   }
 });
 
+for (const selection of [
+  { mode: 'whole_event', slots: [] },
+  { mode: 'selected_slots', slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+  { mode: 'selected_slots', slots: [0, 1, 6] },
+  { mode: 'unsure', slots: [] },
+  { mode: 'not_attending', slots: [] },
+])
+  test(`booth hours restore ${selection.mode}/${selection.slots.length} without rewriting the saved response`, async ({
+    page,
+  }) => {
+    const h = await harness(page);
+    try {
+      await asUser(h.db, A);
+      await rpc(h.db, 'save_presence_draft', [PA, 0, 1, selection]);
+      await page.goto(`/participant/presence/?project=${PA}`);
+      await expect(page.getByRole('checkbox')).toHaveCount(10);
+      await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(
+        selection.mode === 'whole_event' ? 10 : selection.slots.length,
+      );
+      await expect(page.getByRole('radio')).toHaveCount(0);
+      // Let the autosave debounce elapse: opening an older response must not write.
+      await page.waitForTimeout(1500);
+      await asUser(h.db, A);
+      const record = await rpc(h.db, 'get_presence', [PA]);
+      expect(record.draft.version).toBe(1);
+      expect(record.draft.selection).toEqual(selection);
+      expect(record.latest).toBeNull();
+    } finally {
+      await h.close();
+    }
+  });
+
 test('hours save failure, session recovery and concurrent drafts preserve the local selection', async ({
   page,
 }) => {
@@ -115,7 +164,7 @@ test('hours save failure, session recovery and concurrent drafts preserve the lo
   try {
     await page.goto(`/participant/presence/?project=${PA}`);
     h.failSave(true);
-    await page.getByLabel('I plan to be here for the whole showcase').check();
+    await page.getByRole('button', { name: 'Select all hours' }).click();
     await page.getByRole('button', { name: 'Save draft', exact: true }).click();
     await expect(page.locator('[data-editor-status]')).toContainText(
       'could not be confirmed',
@@ -134,9 +183,7 @@ test('hours save failure, session recovery and concurrent drafts preserve the lo
     await page
       .getByRole('button', { name: 'Verify code', exact: true })
       .click();
-    await expect(
-      page.getByLabel('I plan to be here for the whole showcase'),
-    ).toBeChecked();
+    await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(10);
     await asUser(h.db, A);
     await rpc(h.db, 'save_presence_draft', [
       PA,
@@ -144,18 +191,25 @@ test('hours save failure, session recovery and concurrent drafts preserve the lo
       1,
       { mode: 'unsure', slots: [] },
     ]);
-    await page.getByRole('button', { name: 'Submit hours for review' }).click();
+    await page
+      .getByRole('button', { name: 'Submit booth times for review' })
+      .click();
     await expect(page.locator('[data-presence-conflict]')).toBeVisible();
     await page.getByRole('button', { name: 'Compare saved hours' }).click();
     await expect(page.locator('[data-presence-comparison]')).toContainText(
-      'Not sure yet',
+      'Earlier response: not sure yet',
     );
     await page
       .getByRole('button', {
         name: 'Reload saved hours and discard my selection',
       })
       .click();
-    await expect(page.getByLabel('I’m not sure yet')).toBeChecked();
+    await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(0);
+    await expect(
+      page.getByText('Your earlier response did not include booth times.', {
+        exact: false,
+      }),
+    ).toBeVisible();
     await expect(page.locator('[data-login]')).toBeHidden();
   } finally {
     page.on('dialog', (d) => d.accept());
@@ -196,9 +250,13 @@ test('hours and QR routes stay in the authenticated tab when session storage is 
     await page.evaluate(() => {
       (window as any).__presenceTabMarker = 'signed-in';
     });
-    await page.getByRole('link', { name: 'Your hours', exact: true }).click();
-    await page.getByLabel('I’m not sure yet').check();
-    await page.getByRole('button', { name: 'Submit hours for review' }).click();
+    await page
+      .getByRole('link', { name: 'Booth availability', exact: true })
+      .click();
+    await page.getByLabel('11:00–11:30', { exact: true }).check();
+    await page
+      .getByRole('button', { name: 'Submit booth times for review' })
+      .click();
     await expect(page.locator('[data-presence-review]')).toHaveText(
       'Needs review',
     );
@@ -1804,47 +1862,128 @@ test('owner creates a private project and assigns an existing account without se
   }
 });
 
-test('organiser event copy preserves event facts and records an explicit roster and text-only choice', async ({ page }) => {
+test('organiser event copy preserves event facts and records an explicit roster and text-only choice', async ({
+  page,
+}) => {
   const h = await harness(page, true);
   try {
     await asUser(h.db, O, 'authenticated', 'aal2');
     const before = (await rpc(h.db, 'get_event_administration')).event;
-    const people = [{ projectId: 'synthetic-keep', name: 'Synthetic Keep' }, { projectId: 'synthetic-remove', name: 'Synthetic Remove' }];
-    await rpc(h.db, 'record_event_config', [before.version, { ...before.config, participants: people }, before.themes]);
+    const people = [
+      { projectId: 'synthetic-keep', name: 'Synthetic Keep' },
+      { projectId: 'synthetic-remove', name: 'Synthetic Remove' },
+    ];
+    await rpc(h.db, 'record_event_config', [
+      before.version,
+      { ...before.config, participants: people },
+      before.themes,
+    ]);
     const original = (await rpc(h.db, 'get_event_administration')).event;
     await page.goto('/organiser/people/');
-    await page.getByText('Event description and public participant list', { exact: true }).click();
-    await page.getByLabel('Main event description', { exact: true }).fill('Public exhibition description.');
-    await page.getByLabel('Short event summary for sharing', { exact: true }).fill('Public sharing summary.');
-    await page.locator('[data-roster-person][value="synthetic-remove"]').uncheck();
-    await page.getByLabel('Allow a text-only page for Synthetic Keep', { exact: true }).check();
-    await page.getByRole('button', { name: 'Save description and participant list for review', exact: true }).click();
-    await expect(page.getByRole('status')).toContainText('public website has not changed');
+    await page
+      .getByText('Event description and public participant list', {
+        exact: true,
+      })
+      .click();
+    await page
+      .getByLabel('Main event description', { exact: true })
+      .fill('Public exhibition description.');
+    await page
+      .getByLabel('Short event summary for sharing', { exact: true })
+      .fill('Public sharing summary.');
+    await page
+      .locator('[data-roster-person][value="synthetic-remove"]')
+      .uncheck();
+    await page
+      .getByLabel('Allow a text-only page for Synthetic Keep', { exact: true })
+      .check();
+    await page
+      .getByRole('button', {
+        name: 'Save description and participant list for review',
+        exact: true,
+      })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'public website has not changed',
+    );
     await asUser(h.db, O, 'authenticated', 'aal2');
     const after = (await rpc(h.db, 'get_event_administration')).event;
     expect(after.version).toBe(original.version + 1);
-    expect(after.config).toEqual({ ...original.config, description: 'Public exhibition description.', shortDescription: 'Public sharing summary.', participants: [people[0]], textOnlyProjectIds: ['synthetic-keep'] });
+    expect(after.config).toEqual({
+      ...original.config,
+      description: 'Public exhibition description.',
+      shortDescription: 'Public sharing summary.',
+      participants: [people[0]],
+      textOnlyProjectIds: ['synthetic-keep'],
+    });
     expect(after.themes).toEqual(original.themes);
-  } finally { await h.close(); }
+  } finally {
+    await h.close();
+  }
 });
 
-test('owner reviews saved text before creating a text-only revision without changing the participant draft', async ({page}) => {
- const h=await harness(page,true);
- try {
-  await asUser(h.db,A);
-  await rpc(h.db,'save_project_draft',[PA,1,{...fields,permission:false,invitation:'',visitorAction:'',encounters:[]}]);
-  await page.goto('/organiser/people/');
-  await page.getByText('Publish a text-only page with organiser approval',{exact:true}).click();
-  await page.getByLabel('Text-only project',{exact:true}).selectOption(PA);
-  await expect(page.locator('[data-organiser-text-preview]')).toContainText(fields.description);
-  await expect(page.locator('[data-organiser-text-preview]')).toContainText('Participant permission has not been submitted.');
-  await page.getByRole('button',{name:'Prepare text-only version for review',exact:true}).click();
-  await expect(page.getByLabel('I authorise publication of this exact text as organiser')).toBeFocused();
-  await page.getByLabel('I authorise publication of this exact text as organiser').check();
-  await page.getByRole('button',{name:'Prepare text-only version for review',exact:true}).click();
-  await expect(page.getByRole('status')).toContainText('Participant permission is unchanged');
-  await asUser(h.db,O,'authenticated','aal2');
-  const draft=await rpc(h.db,'get_project_draft',[PA]);expect(draft.version).toBe(2);expect(draft.fields.permission).toBe(false);
-  const queue=await rpc(h.db,'get_review_queue');expect(queue.length).toBe(1);
- } finally {await h.close();}
+test('owner reviews saved text before creating a text-only revision without changing the participant draft', async ({
+  page,
+}) => {
+  const h = await harness(page, true);
+  try {
+    await asUser(h.db, A);
+    await rpc(h.db, 'save_project_draft', [
+      PA,
+      1,
+      {
+        ...fields,
+        permission: false,
+        invitation: '',
+        visitorAction: '',
+        encounters: [],
+      },
+    ]);
+    await page.goto('/organiser/people/');
+    await page
+      .getByText('Publish a text-only page with organiser approval', {
+        exact: true,
+      })
+      .click();
+    await page
+      .getByLabel('Text-only project', { exact: true })
+      .selectOption(PA);
+    await expect(page.locator('[data-organiser-text-preview]')).toContainText(
+      fields.description,
+    );
+    await expect(page.locator('[data-organiser-text-preview]')).toContainText(
+      'Participant permission has not been submitted.',
+    );
+    await page
+      .getByRole('button', {
+        name: 'Prepare text-only version for review',
+        exact: true,
+      })
+      .click();
+    await expect(
+      page.getByLabel(
+        'I authorise publication of this exact text as organiser',
+      ),
+    ).toBeFocused();
+    await page
+      .getByLabel('I authorise publication of this exact text as organiser')
+      .check();
+    await page
+      .getByRole('button', {
+        name: 'Prepare text-only version for review',
+        exact: true,
+      })
+      .click();
+    await expect(page.getByRole('status')).toContainText(
+      'Participant permission is unchanged',
+    );
+    await asUser(h.db, O, 'authenticated', 'aal2');
+    const draft = await rpc(h.db, 'get_project_draft', [PA]);
+    expect(draft.version).toBe(2);
+    expect(draft.fields.permission).toBe(false);
+    const queue = await rpc(h.db, 'get_review_queue');
+    expect(queue.length).toBe(1);
+  } finally {
+    await h.close();
+  }
 });

@@ -113,10 +113,10 @@ export const hoursLabel = (windows: PresenceWindow[]) =>
   windows.map((w) => `${w.start}–${w.end}`).join(', ');
 export const modeLabel = (mode?: string | null) =>
   ({
-    whole_event: 'Whole showcase',
-    selected_slots: 'Selected times',
-    not_attending: 'Not attending in person',
-    unsure: 'Not sure yet',
+    whole_event: 'At the booth for all hours',
+    selected_slots: 'Selected booth times',
+    not_attending: 'Earlier response: not attending in person',
+    unsure: 'Earlier response: not sure yet',
   })[mode ?? ''] ?? 'No response';
 
 export interface PresenceDecision {

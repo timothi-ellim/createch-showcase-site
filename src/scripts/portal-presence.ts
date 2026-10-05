@@ -4,7 +4,6 @@ import {
   hoursLabel,
   modeLabel,
   selectionWindows,
-  type AttendanceMode,
   type PresenceEvent,
   type PresenceRecord,
   type PresenceDecision,
@@ -21,7 +20,7 @@ export interface WorkspaceAPI {
 export const projectNav = (project: string, current: string) =>
   `<nav class="project-workspace-nav" aria-label="This project">${[
     ['editor', 'Project profile'],
-    ['presence', 'Your hours'],
+    ['presence', 'Booth availability'],
     ['qr', 'Project QR'],
   ]
     .map(
@@ -29,47 +28,67 @@ export const projectNav = (project: string, current: string) =>
         `<a href="/participant/${route}/?project=${encodeURIComponent(project)}" ${current === route ? 'aria-current="page"' : ''}>${label}</a>`,
     )
     .join('')}</nav>`;
-const modeChoices: [AttendanceMode, string][] = [
-  ['whole_event', 'I plan to be here for the whole showcase'],
-  ['selected_slots', 'I plan to be here at selected times'],
-  ['not_attending', 'I will not be at the installation in person'],
-  ['unsure', 'I’m not sure yet'],
-];
+// Keep historical responses intact. The new interface edits booth time slots;
+// the existing whole_event representation remains compatible with saved records.
+function boothSelection(
+  event: PresenceEvent,
+  selection: PresenceSelection | null,
+): PresenceSelection {
+  if (
+    selection?.mode === 'whole_event' ||
+    (selection?.mode === 'selected_slots' &&
+      selection.slots.length === eventSlots(event).length)
+  )
+    return { mode: 'whole_event', slots: [] };
+  return {
+    mode: 'selected_slots',
+    slots:
+      selection?.mode === 'selected_slots'
+        ? [...selection.slots].sort((a, b) => a - b)
+        : [],
+  };
+}
 export function presenceControls(
   event: PresenceEvent,
   selection: PresenceSelection | null,
   prefix = 'presence',
 ): string {
-  return `<fieldset class="presence-modes"><legend>Choose your planned attendance</legend>${modeChoices.map(([value, label]) => `<label class="presence-choice"><input type="radio" name="${prefix}-mode" value="${value}" ${selection?.mode === value ? 'checked' : ''} aria-describedby="${prefix}-help" /> <span>${e(label)}</span></label>`).join('')}</fieldset>
- <fieldset class="presence-slots" data-slot-fieldset ${selection?.mode === 'selected_slots' ? '' : 'hidden'}><legend>Select your times</legend><p id="${prefix}-help" class="field-help">Choose the periods you can attend. All times are UK time. You can leave gaps.</p><div class="presence-slot-grid">${eventSlots(
-   event,
- )
-   .map(
-     (slot, i) =>
-       `<label class="presence-choice"><input type="checkbox" name="${prefix}-slot" value="${i}" ${selection?.slots.includes(i) ? 'checked' : ''}/><span>${slot.start}–${slot.end}</span></label>`,
-   )
-   .join('')}</div></fieldset>`;
+  return `<fieldset class="presence-slots" data-slot-fieldset><legend>Choose your booth times</legend><p id="${prefix}-help" class="field-help">Tick each ${event.presenceSlotMinutes ?? 30}-minute period you will be at your booth or installation. Leave breaks and time exploring unticked. All times are UK time.</p><div class="presence-shortcuts"><button type="button" class="button secondary" data-select-all-hours>Select all hours</button><button type="button" class="text-button" data-clear-hours>Clear selection</button></div><div class="presence-slot-grid presence-booth-grid">${eventSlots(
+    event,
+  )
+    .map(
+      (slot, i) =>
+        `<label class="presence-choice"><input type="checkbox" name="${prefix}-slot" value="${i}" ${selection?.mode === 'whole_event' || selection?.slots.includes(i) ? 'checked' : ''} aria-label="${slot.start}–${slot.end}" aria-describedby="${prefix}-help"/><span>${slot.start}<span aria-hidden="true"> – </span>${slot.end}</span></label>`,
+    )
+    .join('')}</div></fieldset>`;
 }
 function readSelection(
   form: HTMLElement,
   prefix = 'presence',
 ): PresenceSelection | null {
-  const mode = form.querySelector<HTMLInputElement>(
-    `input[name="${prefix}-mode"]:checked`,
-  )?.value as AttendanceMode | undefined;
-  return mode
-    ? {
-        mode,
-        slots:
-          mode === 'selected_slots'
-            ? [
-                ...form.querySelectorAll<HTMLInputElement>(
-                  `input[name="${prefix}-slot"]:checked`,
-                ),
-              ].map((x) => Number(x.value))
-            : [],
-      }
-    : null;
+  const inputs = [
+    ...form.querySelectorAll<HTMLInputElement>(`input[name="${prefix}-slot"]`),
+  ];
+  if (!inputs.length) return null;
+  const slots = inputs.filter((x) => x.checked).map((x) => Number(x.value));
+  return slots.length === inputs.length
+    ? { mode: 'whole_event', slots: [] }
+    : { mode: 'selected_slots', slots };
+}
+function bindShortcuts(form: HTMLElement) {
+  for (const [selector, checked] of [
+    ['[data-select-all-hours]', true],
+    ['[data-clear-hours]', false],
+  ] as const) {
+    form.querySelector<HTMLButtonElement>(selector)!.onclick = () => {
+      form
+        .querySelectorAll<HTMLInputElement>('input[name$="-slot"]')
+        .forEach((input) => {
+          input.checked = checked;
+        });
+      form.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+  }
 }
 const reviewLabel = (r: PresenceRecord) => {
   if (!r.latest)
@@ -84,7 +103,7 @@ const reviewLabel = (r: PresenceRecord) => {
 function publicStatus(r: PresenceRecord) {
   return r.live?.windows.length
     ? `Currently on the website: ${hoursLabel(r.live.windows)}. A new draft does not change these hours.`
-    : 'No artist hours are currently published for this project.';
+    : 'No booth availability is currently published for this project.';
 }
 export async function mountPresenceEditor(
   host: HTMLElement,
@@ -102,36 +121,52 @@ export async function mountPresenceEditor(
     submittedVersion = -1;
   const changedEvent =
     !!record.draft && record.draft.scheduleKey !== record.scheduleKey;
-  let saved = changedEvent ? null : (record.draft?.selection ?? null);
-  host.innerHTML = `${projectNav(project, 'presence')}<section class="reading-panel presence-editor"><p class="eyebrow">${e(record.title)}</p><h2>When will you be at your installation?</h2><p class="presence-event">${e(record.event.dateLabel)} · ${e(record.event.startTime)}–${e(record.event.endTime)} · UK time</p><p>Tell us when you expect to be available to speak with visitors. Your hours will be reviewed before appearing on the website.</p>${changedEvent ? '<p class="notice">The showcase hours changed. Please choose your hours again; your previous submission has been preserved.</p>' : ''}<p data-presence-review>${e(reviewLabel(record))}</p><p class="small" data-presence-live>${e(publicStatus(record))}</p>${record.latest?.decision?.feedback ? `<p class="notice">${e(record.latest.decision.feedback)}</p>` : ''}
- <form data-presence-form novalidate>${presenceControls(record.event, saved)}<p id="presence-error" class="presence-error" role="alert"></p><div class="presence-summary"><h3>Your planned hours</h3><p data-presence-summary aria-live="polite"></p><p class="small">Saving keeps a private draft. Submission sends this version for organiser review.</p></div><div data-presence-conflict hidden><h3>A newer draft exists</h3><p>Your selection is still here.</p><button type="button" class="button secondary" data-compare-presence>Compare saved hours</button><div data-presence-comparison></div></div><div data-editor-actions class="presence-actions"><p data-editor-status role="status">${saved ? 'Loaded your saved hours.' : 'Choose an option to begin.'}</p><div class="portal-actions"><button class="button dark" type="submit">Submit hours for review</button><button class="button secondary" type="button" data-save-presence>Save draft</button></div></div></form></section>`;
+  let saved = boothSelection(
+    record.event,
+    changedEvent ? null : (record.draft?.selection ?? null),
+  );
+  const legacyResponse =
+    !changedEvent &&
+    record.draft &&
+    ['not_attending', 'unsure'].includes(record.draft.selection.mode);
+  host.innerHTML = `${projectNav(project, 'presence')}<section class="reading-panel presence-editor"><p class="eyebrow">${e(record.title)}</p><h2>When can visitors find you at your booth?</h2><p class="presence-event">${e(record.event.dateLabel)} · ${e(record.event.startTime)}–${e(record.event.endTime)} · UK time</p><p>Everyone is expected to attend in person. Select when you will be at your booth or installation and available to talk with visitors.</p><p class="presence-explainer"><strong>Unticked times are for breaks or roaming.</strong> They do not mean you are absent from the showcase.</p>${changedEvent ? '<p class="notice">The showcase hours changed. Please choose your booth times again; your previous submission has been preserved.</p>' : ''}${legacyResponse ? '<p class="notice">Your earlier response did not include booth times. Select your availability below; your previous submission is preserved until you submit again.</p>' : ''}${record.latest?.decision?.feedback ? `<p class="notice">${e(record.latest.decision.feedback)}</p>` : ''}
+ <form data-presence-form novalidate>${presenceControls(record.event, saved)}<p id="presence-error" class="presence-error" role="alert"></p><div class="presence-summary"><h3>Your booth availability</h3><p data-presence-summary aria-live="polite"></p><p class="small" data-presence-total></p><p class="small">Your choices autosave privately. Submit them for organiser review before they can appear on your public project page.</p></div><div data-presence-conflict hidden><h3>A newer draft exists</h3><p>Your selection is still here.</p><button type="button" class="button secondary" data-compare-presence>Compare saved hours</button><div data-presence-comparison></div></div><div data-editor-actions class="presence-actions"><p data-editor-status role="status">${record.draft && !changedEvent ? 'Loaded your saved draft.' : 'Tick your booth times to begin.'}</p><div class="portal-actions"><button class="button dark" type="submit">Submit booth times for review</button><button class="button secondary" type="button" data-save-presence>Save draft</button></div></div></form><details class="presence-public-status"><summary>Submission and public status</summary><p data-presence-review>${e(reviewLabel(record))}</p><p class="small" data-presence-live>${e(publicStatus(record))}</p></details></section>`;
   const form = host.querySelector<HTMLFormElement>('[data-presence-form]')!,
     error = form.querySelector<HTMLElement>('#presence-error')!;
   const draftStatus = document.createElement('p');
   draftStatus.className = 'small';
   draftStatus.dataset.presenceDraft = '';
-  form.before(draftStatus);
+  form.querySelector('[data-editor-actions]')!.before(draftStatus);
   const showDraftStatus = () => {
     draftStatus.textContent =
       version > (record.latest?.draftVersion ?? 0)
-        ? 'New changes saved — not submitted. Your last submitted version is shown above.'
+        ? record.latest
+          ? 'New changes saved — not submitted. Your previous submission is unchanged.'
+          : 'Draft saved — not submitted for review.'
         : '';
   };
   showDraftStatus();
   function update() {
     const selection = readSelection(form);
-    form.querySelector<HTMLElement>('[data-slot-fieldset]')!.hidden =
-      selection?.mode !== 'selected_slots';
     const summary = selection
       ? hoursLabel(selectionWindows(record.event, selection, false))
       : '';
     form.querySelector<HTMLElement>('[data-presence-summary]')!.textContent =
-      summary ||
-      (selection?.mode === 'selected_slots'
-        ? 'Choose at least one period.'
-        : selection
-          ? modeLabel(selection.mode)
-          : 'No option chosen yet.');
+      summary || 'No booth times selected yet.';
+    const count = form.querySelectorAll(
+      'input[type="checkbox"]:checked',
+    ).length;
+    const total = count * (record.event.presenceSlotMinutes ?? 30);
+    const duration = [
+      Math.floor(total / 60) ? `${Math.floor(total / 60)} hr` : '',
+      total % 60 ? `${total % 60} min` : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    form.querySelector<HTMLElement>('[data-presence-total]')!.textContent =
+      count
+        ? `${count} of ${eventSlots(record.event).length} periods selected · ${duration} at your booth`
+        : 'Select at least one period. Contact the organiser if you need help arranging booth cover.';
     error.textContent = '';
     api.dirty(JSON.stringify(selection) !== JSON.stringify(saved));
   }
@@ -142,14 +177,9 @@ export async function mountPresenceEditor(
       selectionWindows(record.event, selection, complete);
       return selection;
     } catch {
-      error.textContent = selection
-        ? 'Select at least one time period.'
-        : 'Choose your planned attendance.';
-      form
-        .querySelector<HTMLInputElement>(
-          selection ? 'input[type="checkbox"]' : 'input[type="radio"]',
-        )
-        ?.focus();
+      error.textContent =
+        'Select at least one time period when visitors can find you at your booth.';
+      form.querySelector<HTMLInputElement>('input[type="checkbox"]')?.focus();
       throw new Error('FIELD_VALIDATION_SHOWN');
     }
   }
@@ -204,6 +234,7 @@ export async function mountPresenceEditor(
     api.say('Unsaved hours changes.');
     autosave();
   });
+  bindShortcuts(form);
   form.querySelector<HTMLButtonElement>('[data-save-presence]')!.onclick = () =>
     void performSave();
   form.onsubmit = (ev) => {
@@ -233,7 +264,7 @@ export async function mountPresenceEditor(
       host.querySelector<HTMLElement>('[data-presence-review]')!.textContent =
         reviewLabel(record);
       api.say(
-        'Hours submitted for review. Your current public page stays the same.',
+        'Booth times submitted for review. Your current public page stays the same until review and publication.',
       );
     });
   };
@@ -375,10 +406,7 @@ export async function showPresenceReview(
     form.before(history);
   }
   form.onsubmit = (ev) => ev.preventDefault();
-  form.onchange = () => {
-    form.querySelector<HTMLElement>('[data-slot-fieldset]')!.hidden =
-      readSelection(form, 'review')?.mode !== 'selected_slots';
-  };
+  bindShortcuts(form);
   let lastPayload = '',
     request = crypto.randomUUID();
   async function decide(decision: string, adjust = false) {

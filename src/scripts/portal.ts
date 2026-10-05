@@ -80,9 +80,9 @@ function urlFor(blob: Blob) {
   return url;
 }
 const messages: Record<string, string> = {
-  INVALID_PRESENCE: 'Choose an attendance option and valid half-hour periods. Your current selection is still here.',
+  INVALID_PRESENCE: 'Select valid booth time periods. Your current selection is still here.',
   INVALID_PRESENCE_EVENT: 'The event hours need organiser attention before availability can be edited.',
-  PRESENCE_EVENT_CHANGED: 'The event hours changed. Keep a note of your selection, then reopen Your hours to select from the updated times.',
+  PRESENCE_EVENT_CHANGED: 'The event hours changed. Keep a note of your selection, then reopen Booth availability to select from the updated times.',
   INVALID_PRESENCE_DECISION: 'Add participant feedback when requesting changes. Check the decision and try again.',
   PRESENCE_REASON_REQUIRED: 'Explain why the public hours are being adjusted or removed.',
   PRESENCE_CONFIRMATION_REQUIRED: 'Confirm that positive hours replacing an unsure or not-attending response were agreed separately.',
@@ -359,7 +359,7 @@ async function showDashboard() {
     );
     return;
   }
-  content.innerHTML = `<div class="reading-panel">${projects.length ? projects.map((p) => `<article class="portal-card"><h2>${e(p.title)}</h2><p class="badge">${p.withdrawn ? 'Withdrawal requested' : state(p.status)}</p>${p.liveRevision ? '<p>A previously verified version is published.</p>' : '<p>No verified public version yet.</p>'}${p.feedback ? `<p>${e(p.feedback)}</p>` : ''}<div class="portal-actions">${link('Edit project', `/participant/editor/?project=${p.id}`)}${link('Your hours', `/participant/presence/?project=${p.id}`)}${link('Project QR', `/participant/qr/?project=${p.id}`)}${p.latestRevision ? link('View submitted version', `/participant/preview/?revision=${p.latestRevision}`) : ''}</div></article>`).join('') : '<h2>No assigned projects</h2><p>You are signed in, but no project is assigned to this account. Use your existing organiser contact for help.</p>'}</div>`;
+  content.innerHTML = `<div class="reading-panel">${projects.length ? projects.map((p) => `<article class="portal-card"><h2>${e(p.title)}</h2><p class="badge">${p.withdrawn ? 'Withdrawal requested' : state(p.status)}</p>${p.liveRevision ? '<p>A previously verified version is published.</p>' : '<p>No verified public version yet.</p>'}${p.feedback ? `<p>${e(p.feedback)}</p>` : ''}<div class="portal-actions">${link('Edit project', `/participant/editor/?project=${p.id}`)}${link('Booth availability', `/participant/presence/?project=${p.id}`)}${link('Project QR', `/participant/qr/?project=${p.id}`)}${p.latestRevision ? link('View submitted version', `/participant/preview/?revision=${p.latestRevision}`) : ''}</div></article>`).join('') : '<h2>No assigned projects</h2><p>You are signed in, but no project is assigned to this account. Use your existing organiser contact for help.</p>'}</div>`;
   say('Your assigned projects are up to date.');
 }
 async function navigateParticipant(path: string) {
@@ -380,7 +380,7 @@ async function navigateParticipant(path: string) {
     throw new Error('REQUEST_FAILED');
   history.replaceState(null, '', url);
   root.dataset.portal = surface;
-  const title = surface === 'presence' ? 'Your hours' : surface === 'qr' ? 'Your project QR' :
+  const title = surface === 'presence' ? 'Your booth availability' : surface === 'qr' ? 'Your project QR' :
     surface === 'editor'
       ? 'Edit your project'
       : surface === 'preview'

@@ -92,7 +92,10 @@ test('project QR and practical information remain readable without JavaScript', 
       (await narrative.boundingBox())!.y,
     );
     await expect(
-      page.getByRole('heading', { name: 'Meet the artist', exact: true }),
+      page.getByRole('heading', {
+        name: 'Meet the artist at their installation',
+        exact: true,
+      }),
     ).toHaveCount(0);
   } finally {
     await context.close();
