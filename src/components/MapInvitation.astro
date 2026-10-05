@@ -9,7 +9,7 @@ const { saved = false } = Astro.props;
 ---
 
 {hasMapPreview && (
-  <a class="atlas-invitation" href={saved ? '/map/?saved=1' : '/map/'}>
+  <a class="atlas-invitation" href={saved ? '/explore/?mode=map&saved=1' : '/explore/?mode=map'}>
     <span class="atlas-invitation-symbol" aria-hidden="true">
       ⌑
     </span>

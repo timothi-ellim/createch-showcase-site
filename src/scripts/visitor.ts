@@ -483,6 +483,27 @@ if (filters) {
       reset();
       search.focus();
     });
+  window.addEventListener('popstate', () => {
+    const next = new URLSearchParams(location.search);
+    search.value = next.get('q') ?? '';
+    theme = ['image', 'world', 'relation'].includes(next.get('theme') ?? '')
+      ? next.get('theme')!
+      : 'all';
+    encounter = ['Look / listen', 'Participate'].includes(
+      next.get('encounter') ?? '',
+    )
+      ? next.get('encounter')!
+      : 'all';
+    sort.value = ['title', 'maker'].includes(next.get('sort') ?? '')
+      ? next.get('sort')!
+      : 'featured';
+    sortCards();
+    applyFilters();
+  });
+  document.addEventListener(
+    'createch:explore-view-changed',
+    updateProjectLinks,
+  );
   sortCards();
   applyFilters();
   document.querySelector('[data-surprise]')?.addEventListener('click', () => {
@@ -533,9 +554,10 @@ if (backLink) {
         backLink.textContent =
           target.pathname === '/my-visit/'
             ? '← Back to my visit'
-            : target.pathname === '/map/'
+            : target.pathname === '/map/' ||
+                target.searchParams.get('mode') === 'map'
               ? '← Back to the exhibition map'
-            : '← Back to your results';
+              : '← Back to your results';
       }
     }
   } catch {
@@ -551,11 +573,12 @@ if (location.hash.startsWith('#project-')) {
 const copyButton =
   document.querySelector<HTMLButtonElement>('[data-copy-link]');
 if (copyButton) {
-    const shareUrl = copyButton.dataset.canonicalUrl || location.origin + location.pathname;
+  const shareUrl =
+    copyButton.dataset.canonicalUrl || location.origin + location.pathname;
   copyButton.hidden = false;
   copyButton.addEventListener('click', async () => {
     try {
-        await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(shareUrl);
       announce(
         document.body.dataset.preview === 'true'
           ? 'Project link copied. This local preview link only works where the preview is running.'
@@ -565,7 +588,7 @@ if (copyButton) {
       document.querySelector<HTMLElement>('[data-copy-fallback]')!.hidden =
         false;
       const input = document.querySelector<HTMLInputElement>('#project-url')!;
-        input.value = shareUrl;
+      input.value = shareUrl;
       input.focus();
       input.select();
       announce(

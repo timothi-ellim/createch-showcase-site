@@ -70,5 +70,5 @@ export function mapPreviewEnabled(mode: string, publicationStatus?: string) {
 }
 
 export function mapProjectHref(projectId: string) {
-  return `/map/?project=${encodeURIComponent(projectId)}`;
+  return `/explore/?mode=map&project=${encodeURIComponent(projectId)}`;
 }

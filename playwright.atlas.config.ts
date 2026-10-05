@@ -4,6 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 // browser-local saves only; they never access or submit participant forms.
 export default defineConfig({
   testDir: './tests/atlas-browser',
+  outputDir: './.portal-test/atlas-browser-results',
   workers: 1,
   reporter: 'list',
   use: {

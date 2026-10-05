@@ -102,7 +102,10 @@ if (root) {
   }
   function stateUrl() {
     const url = new URL(location.href);
-    url.search = '';
+    url.pathname = '/explore/';
+    for (const key of ['room', 'project', 'landmark', 'saved', 'view', 'angle'])
+      url.searchParams.delete(key);
+    url.searchParams.set('mode', 'map');
     url.hash = '';
     if (room !== 'all') url.searchParams.set('room', room);
     if (committedProject) url.searchParams.set('project', committedProject);
@@ -235,7 +238,12 @@ if (root) {
         '[data-atlas-profile]',
       )!;
       const url = new URL(link.href);
-      const back = new URL('/map/', location.origin);
+      const back = new URL('/explore/', location.origin);
+      back.searchParams.set('mode', 'map');
+      for (const key of ['q', 'theme', 'encounter', 'sort']) {
+        const value = new URLSearchParams(location.search).get(key);
+        if (value) back.searchParams.set(key, value);
+      }
       back.searchParams.set('project', card.dataset.atlasProject!);
       if (savedToggle.checked) back.searchParams.set('saved', '1');
       if (view === '3d') back.searchParams.set('view', '3d');
@@ -515,6 +523,9 @@ if (root) {
       updateSaved();
   });
   window.addEventListener('popstate', fromUrl);
+  document.addEventListener('createch:explore-view-changed', () => {
+    if (!root.closest<HTMLElement>('[data-explore-panel]')?.hidden) fromUrl();
+  });
   window.addEventListener('pageshow', updateSaved);
   for (const img of all<HTMLImageElement>('.atlas-project-art img')) {
     const fail = () => {
