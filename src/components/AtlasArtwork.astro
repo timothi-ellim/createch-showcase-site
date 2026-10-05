@@ -1,0 +1,39 @@
+---
+import type { PublicProject } from '../lib/content-schema';
+import { responsiveMedia } from '../lib/responsive-media';
+interface Props {
+  project: PublicProject;
+  compact?: boolean;
+}
+const { project, compact = false } = Astro.props;
+const initials = project.maker
+  .split(/\s+/)
+  .filter(Boolean)
+  .map((word) => word[0])
+  .slice(0, 2)
+  .join('');
+---
+
+<span
+  class:list={[
+    'atlas-artwork',
+    `atlas-artwork-${project.theme}`,
+    !project.media && 'atlas-artwork-type',
+    compact && 'atlas-artwork-compact',
+  ]}
+  aria-hidden="true"
+>
+  {project.media ? (
+    <img
+      src={project.media.src}
+      srcset={responsiveMedia(project.media.src)}
+      sizes={compact ? '48px' : '160px'}
+      width="240"
+      height="160"
+      loading="lazy"
+      alt=""
+    />
+  ) : (
+    <span>{compact ? initials : project.title}</span>
+  )}
+</span>

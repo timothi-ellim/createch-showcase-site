@@ -3,6 +3,7 @@ import ArrowIcon from '../components/ArrowIcon.astro';
 import Layout from '../layouts/Layout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import ParticipantRoster from '../components/ParticipantRoster.astro';
+import MapInvitation from '../components/MapInvitation.astro';
 import { projects, themes, isSynthetic } from '../data/catalogue';
 ---
 
@@ -19,6 +20,7 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
     </p>
     {projects.length > 0 && (
       <>
+        <MapInvitation />
         <a class="text-link explore-skip" href="#result-count" data-browse-all>
           Browse all {projects.length} projects ↓
         </a>

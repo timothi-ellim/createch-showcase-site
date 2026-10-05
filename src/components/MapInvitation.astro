@@ -1,0 +1,32 @@
+---
+import { hasMapPreview } from '../data/exhibition-map';
+import ArrowIcon from './ArrowIcon.astro';
+import '../styles/exhibition-map.css';
+interface Props {
+  saved?: boolean;
+}
+const { saved = false } = Astro.props;
+---
+
+{hasMapPreview && (
+  <a class="atlas-invitation" href={saved ? '/map/?saved=1' : '/map/'}>
+    <span class="atlas-invitation-symbol" aria-hidden="true">
+      ⌑
+    </span>
+    <span>
+      <span class="atlas-kicker">
+        A different way to explore · Exhibition map
+      </span>
+      <strong>
+        {saved
+          ? 'See your saved projects in the space.'
+          : 'Step inside the showcase.'}
+      </strong>
+      <span>
+        Explore the Gallery, WS09 and WS10. Proposed positions, subject to
+        confirmation.
+      </span>
+    </span>
+    <ArrowIcon />
+  </a>
+)}

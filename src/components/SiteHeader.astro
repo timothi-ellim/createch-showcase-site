@@ -1,9 +1,11 @@
 ---
 import ArrowIcon from './ArrowIcon.astro';
 import { event, projects } from '../data/catalogue';
+import { hasMapPreview } from '../data/exhibition-map';
 const path = Astro.url.pathname;
 const nav = [
   ['/explore/', 'Explore'],
+  ...(hasMapPreview ? [['/map/', 'Map']] : []),
   ...(event.participants.length ? [['/#participants', 'Participants']] : []),
   ...(projects.some((project) => project.schedule)
     ? [['/programme/', 'Programme']]

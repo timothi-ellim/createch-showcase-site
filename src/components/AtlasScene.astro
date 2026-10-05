@@ -1,0 +1,158 @@
+---
+import { mapProjects } from '../data/exhibition-map';
+import { mapRooms } from '../lib/exhibition-map';
+import { projectAtlas, type SpaceId } from '../lib/atlas-geometry';
+import { atlasLandmarks } from '../lib/atlas-landmarks';
+import AtlasArtwork from './AtlasArtwork.astro';
+import AtlasLandmarkIcon from './AtlasLandmarkIcon.astro';
+import ArrowIcon from './ArrowIcon.astro';
+interface Props {
+  space: SpaceId;
+}
+const { space } = Astro.props;
+const overview = space === 'all';
+const scene = projectAtlas(space, '2d', 0, 720, 560);
+const entries = overview
+  ? mapRooms.map((room) => ({
+      key: room.id,
+      label: room.label,
+      href: `#directory-${room.id}`,
+    }))
+  : mapProjects
+      .filter((row) => row.roomId === space)
+      .map((row) => ({
+        key: row.marker,
+        label: row.project.maker,
+        href: `#installation-${row.projectId}`,
+      }));
+---
+
+<div
+  class:list={[
+    'atlas-scene',
+    overview ? 'atlas-overview' : `atlas-room-plan atlas-plan-${space}`,
+  ]}
+  data-atlas-scene={space}
+  data-overview={overview ? true : undefined}
+  data-room-plan={!overview ? space : undefined}
+  hidden={!overview}
+>
+  <svg
+    viewBox="0 0 720 560"
+    class="atlas-drawing"
+    role="img"
+    aria-label={
+      overview
+        ? 'Schematic plan of the Gallery, WS09 and WS10, connected through the lobby and passage, with the entrance on King Street.'
+        : `Schematic installation positions in ${space === 'gallery' ? 'the Gallery' : space.toUpperCase()}.`
+    }
+  >
+    <g data-scene-faces aria-hidden="true">
+      {scene.faces.map((face) => (
+        <polygon points={face.points} class={`atlas-face ${face.kind}`} />
+      ))}
+    </g>
+    <g data-scene-leaders aria-hidden="true"></g>
+    <g class="atlas-fallback-labels">
+      {overview && (
+        <text
+          class="atlas-street-fallback"
+          x={scene.anchors.street[0]}
+          y={scene.anchors.street[1]}
+          text-anchor="middle"
+        >
+          King Street
+        </text>
+      )}
+      {entries.map((entry) => (
+        <a href={entry.href} data-room-open={overview ? entry.key : undefined}>
+          <text
+            x={scene.anchors[entry.key][0]}
+            y={scene.anchors[entry.key][1]}
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            {entry.label}
+          </text>
+        </a>
+      ))}
+    </g>
+  </svg>
+  <div class="atlas-scene-labels">
+    {overview && (
+      <span class="atlas-street-label" data-scene-point="street">
+        King Street
+      </span>
+    )}
+    {overview ? (
+      <>
+        {mapRooms.map((room) => (
+          <a
+            class="atlas-room-hit"
+            href={`#directory-${room.id}`}
+            data-room-open={room.id}
+            data-scene-point={room.id}
+          >
+            <strong>{room.label}</strong>
+            <span>
+              {mapProjects.filter((row) => row.roomId === room.id).length} works
+            </span>
+            <span class="atlas-room-invite">
+              Explore <ArrowIcon />
+            </span>
+            <span
+              class="atlas-room-saved"
+              data-room-saved={room.id}
+              hidden
+            ></span>
+          </a>
+        ))}
+      </>
+    ) : (
+      mapProjects
+        .filter((row) => row.roomId === space)
+        .map((row) => (
+          <a
+            class="atlas-pin"
+            href={`#installation-${row.projectId}`}
+            data-map-pin={row.projectId}
+            data-marker={row.marker}
+            data-scene-point={row.marker}
+            aria-label={`Discover ${row.project.title} by ${row.project.maker}`}
+            aria-controls="atlas-details"
+          >
+            <AtlasArtwork project={row.project} compact />
+            <span class="atlas-pin-copy">
+              <strong>{row.project.maker}</strong>
+            </span>
+            <span class="atlas-pin-saved" aria-label="Saved" hidden>
+              ✓
+            </span>
+          </a>
+        ))
+    )}
+    {overview ? (
+      atlasLandmarks.map((landmark) => (
+        <a
+          class={`atlas-landmark atlas-landmark-${landmark.id}`}
+          href={`#landmark-${landmark.id}`}
+          data-landmark-open={landmark.id}
+          data-scene-point={landmark.id}
+        >
+          <AtlasLandmarkIcon icon={landmark.icon} />
+          <span>{landmark.shortLabel}</span>
+        </a>
+      ))
+    ) : (
+      <span
+        class="atlas-context-label atlas-entry-label"
+        data-scene-point="entrance"
+      >
+        Entrance
+      </span>
+    )}
+  </div>
+  <span class="atlas-scene-corner" aria-hidden="true">
+    {overview ? 'CANOPY' : mapRooms.find((room) => room.id === space)?.label}
+  </span>
+</div>

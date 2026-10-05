@@ -1,4 +1,5 @@
 import { isPreview, event, projects } from '../data/catalogue';
+import { hasMapPreview } from '../data/exhibition-map';
 export const prerender = true;
 export function GET() {
   const base = event.publicSiteUrl?.replace(/\/$/, '') ?? '';
@@ -9,6 +10,7 @@ export function GET() {
     '/about/',
     '/poster/',
     '/visit/',
+    ...(hasMapPreview ? ['/map/'] : []),
     ...projects.map((project) => `/projects/${project.slug}/`),
   ];
   const urls = isPreview

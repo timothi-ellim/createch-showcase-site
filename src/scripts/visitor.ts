@@ -1,4 +1,5 @@
-const KEY = 'createch-shortlist-v1';
+import { readShortlist, SHORTLIST_STORAGE_KEY } from '../lib/shortlist';
+const KEY = SHORTLIST_STORAGE_KEY;
 const sampleLabel = document.body.dataset.synthetic === 'true' ? 'sample ' : '';
 const buttons = [
   ...document.querySelectorAll<HTMLButtonElement>('[data-save]'),
@@ -27,29 +28,10 @@ function announce(message: string) {
   }, 6500);
 }
 function readStorage() {
-  notice = '';
-  storageAvailable = true;
-  try {
-    const raw = localStorage.getItem(KEY);
-    const parsed: unknown = raw === null ? [] : JSON.parse(raw);
-    if (
-      !Array.isArray(parsed) ||
-      !parsed.every((id) => typeof id === 'string') ||
-      parsed.length > 1000
-    )
-      throw new SyntaxError('Invalid shortlist');
-    saved = new Set(parsed);
-  } catch (error) {
-    saved = new Set();
-    if (error instanceof SyntaxError)
-      notice =
-        'Your saved list could not be read. No projects are shown as saved. Save a project or clear the list to start again.';
-    else {
-      storageAvailable = false;
-      notice =
-        'Browser storage is unavailable. Your shortlist cannot be loaded or saved. You can still browse every project.';
-    }
-  }
+  const state = readShortlist();
+  saved = state.saved;
+  storageAvailable = state.available;
+  notice = state.notice;
 }
 function renderSaved() {
   for (const button of buttons) {
@@ -545,12 +527,14 @@ if (backLink) {
       const target = new URL(source, location.origin);
       if (
         target.origin === location.origin &&
-        ['/explore/', '/my-visit/'].includes(target.pathname)
+        ['/explore/', '/my-visit/', '/map/'].includes(target.pathname)
       ) {
         backLink.href = target.pathname + target.search + target.hash;
         backLink.textContent =
           target.pathname === '/my-visit/'
             ? '← Back to my visit'
+            : target.pathname === '/map/'
+              ? '← Back to the exhibition map'
             : '← Back to your results';
       }
     }

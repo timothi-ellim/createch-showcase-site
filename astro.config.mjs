@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const isBuild = process.argv.includes('build');
 const mode = process.argv[process.argv.indexOf('--mode') + 1];
-const localMode = ['fixture-preview', 'editorial-preview'].includes(mode);
+const localMode = ['fixture-preview', 'editorial-preview', 'exhibition-preview'].includes(mode);
 let site;
 if (isBuild && !localMode) {
   if (
@@ -38,7 +38,7 @@ if (isBuild && !localMode) {
   }
   site = snapshot.event.publicSiteUrl;
 }
-if (isBuild && mode === 'editorial-preview' && !process.env.CREATECH_SNAPSHOT)
+if (isBuild && ['editorial-preview', 'exhibition-preview'].includes(mode) && !process.env.CREATECH_SNAPSHOT)
   throw new Error('An editorial preview requires an exported snapshot.');
 let outDir = localMode || !isBuild ? './local-dist' : './dist';
 if (process.env.CREATECH_BUILD_DIR) {

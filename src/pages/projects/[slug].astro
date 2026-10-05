@@ -3,6 +3,8 @@ import Layout from '../../layouts/Layout.astro';
 import { projects, isSynthetic, snapshot, event } from '../../data/catalogue';
 import ProjectQR from '../../components/ProjectQR.astro';
 import ShareLinks from '../../components/ShareLinks.astro';
+import { mapProjects } from '../../data/exhibition-map';
+import { mapProjectHref } from '../../lib/exhibition-map';
 import { projectUrl, snapshotOrigin, qrPaths } from '../../lib/project-url';
 import { renderProjectBody } from '../../lib/project-renderer';
 export function getStaticPaths() {
@@ -12,6 +14,7 @@ export function getStaticPaths() {
   }));
 }
 const { project } = Astro.props;
+const placement = mapProjects.find(row => row.projectId === project.id);
 const qrEnabled = snapshot.schemaVersion === 2;
 const canonicalUrl = projectUrl(snapshotOrigin(snapshot), project.slug);
 const related = project.relatedIds
@@ -37,6 +40,7 @@ const related = project.relatedIds
         canonicalUrl: isSynthetic ? undefined : canonicalUrl,
       })}
     />
+    {placement && <p class="notice">Proposed location: {placement.roomId === 'gallery' ? 'Gallery' : placement.roomId.toUpperCase()}. <a class="text-link" href={mapProjectHref(project.id)}>Find this installation on the map</a>. Final position to be confirmed.</p>}
     <ShareLinks project={project} />
   </div>
   {qrEnabled && (

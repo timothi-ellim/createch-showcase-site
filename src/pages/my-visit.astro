@@ -1,6 +1,7 @@
 ---
 import ArrowIcon from '../components/ArrowIcon.astro';
 import Layout from '../layouts/Layout.astro';
+import MapInvitation from '../components/MapInvitation.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import EventFacts from '../components/EventFacts.astro';
 import { projects } from '../data/catalogue';
@@ -22,6 +23,7 @@ import { projects } from '../data/catalogue';
         favourites.
       </p>
     </noscript>
+    <MapInvitation saved />
     <p id="storage-notice" role="status"></p>
     <button hidden data-remove-unavailable class="button secondary">
       Remove unavailable entries

@@ -1,0 +1,454 @@
+---
+import { mapProjects } from '../data/exhibition-map';
+import { mapRooms } from '../lib/exhibition-map';
+import { projects } from '../data/catalogue';
+import { hoursLabel } from '../lib/presence';
+import { responsiveMedia } from '../lib/responsive-media';
+import ArrowIcon from './ArrowIcon.astro';
+import AtlasScene from './AtlasScene.astro';
+import AtlasArtwork from './AtlasArtwork.astro';
+import AtlasLandmarkIcon from './AtlasLandmarkIcon.astro';
+import { atlasLandmarks } from '../lib/atlas-landmarks';
+import '../styles/exhibition-map.css';
+import '../styles/atlas-architecture.css';
+import '../styles/atlas-discovery.css';
+const unplaced = projects.filter(
+  (project) => !mapProjects.some((row) => row.project.id === project.id),
+);
+---
+
+<div class="atlas" data-exhibition-map>
+  <section class="atlas-find" aria-label="Find a work" hidden data-map-search>
+    <label for="atlas-search">Find an artist or artwork</label>
+    <div class="atlas-search-field">
+      <svg class="atlas-control-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="10" cy="10" r="6" />
+        <path d="m15 15 6 6" />
+      </svg>
+      <input
+        id="atlas-search"
+        type="search"
+        autocomplete="off"
+        placeholder="Try an artist’s name, a title or ‘XR’"
+        aria-controls="atlas-search-results"
+      />
+      <button type="button" data-search-clear hidden>
+        Clear
+      </button>
+    </div>
+    <p class="atlas-search-count" role="status" data-search-count></p>
+    <div id="atlas-search-results" class="atlas-search-results" hidden>
+      {mapProjects.map(({ project, roomId }) => (
+        <a
+          href={`#installation-${project.id}`}
+          data-select-project={project.id}
+          data-search-result
+          data-search-text={`${project.title} ${project.maker} ${project.invitation} ${project.encounters.join(' ')}`.toLocaleLowerCase()}
+        >
+          <AtlasArtwork project={project} />
+          <span>
+            <strong>{project.title}</strong>
+            <span>
+              {project.maker} ·{' '}
+              {mapRooms.find((room) => room.id === roomId)?.label}
+            </span>
+          </span>
+          <ArrowIcon />
+        </a>
+      ))}
+    </div>
+  </section>
+  <div class="atlas-toolbar" hidden data-map-controls>
+    <div class="atlas-room-switch" role="group" aria-label="Choose a space">
+      <button type="button" data-room="all" aria-pressed="true">
+        All spaces
+      </button>
+      {mapRooms.map((room) => (
+        <button type="button" data-room={room.id} aria-pressed="false">
+          {room.label}
+        </button>
+      ))}
+    </div>
+    <label class="atlas-saved-toggle">
+      <input type="checkbox" data-map-saved /> Highlight my saved projects
+    </label>
+  </div>
+  <p class="atlas-storage" role="status" data-map-storage></p>
+  <div class="atlas-breadcrumb" hidden data-map-breadcrumb>
+    <button type="button" data-map-overview>
+      <span aria-hidden="true">←</span> All spaces & landmarks
+    </button>
+    <span aria-hidden="true">/</span>
+    <span data-breadcrumb-room></span>
+    <span class="atlas-breadcrumb-hint">
+      Choose an artwork to discover more
+    </span>
+  </div>
+  <div class="atlas-workspace">
+    <section class="atlas-map-panel" aria-label="Exhibition layout">
+      <div class="atlas-map-heading">
+        <span class="atlas-kicker" data-map-label>
+          Canopy / Overview
+        </span>
+        <span class="atlas-scale" data-projection-label>
+          2D plan · Not to scale
+        </span>
+      </div>
+      <div class="atlas-view-bar" hidden data-view-controls>
+        <div class="atlas-view-switch" role="group" aria-label="Map view">
+          <button type="button" data-map-view="2d" aria-pressed="true">
+            <svg
+              class="atlas-control-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M4 4h16v16H4zM4 10h7V4M11 10v4h9" />
+            </svg>{' '}
+            2D plan
+          </button>
+          <button type="button" data-map-view="3d" aria-pressed="false">
+            <svg
+              class="atlas-control-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3ZM4 7.5l8 4.5 8-4.5M12 12v9" />
+            </svg>{' '}
+            3D space
+          </button>
+        </div>
+        <div
+          class="atlas-camera"
+          role="group"
+          aria-label="3D camera"
+          hidden
+          data-camera-controls
+        >
+          <button
+            type="button"
+            data-camera-turn="-1"
+            aria-label="Rotate 3D view left"
+          >
+            <svg
+              class="atlas-control-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M4 10a8 8 0 1 1 1 8M4 4v6h6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            data-camera-turn="1"
+            aria-label="Rotate 3D view right"
+          >
+            <svg
+              class="atlas-control-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M20 10a8 8 0 1 0-1 8M20 4v6h-6" />
+            </svg>
+          </button>
+          <button type="button" data-camera-reset>
+            Reset view
+          </button>
+        </div>
+      </div>
+      <AtlasScene space="all" />
+      {mapRooms.map((room) => (
+        <AtlasScene space={room.id} />
+      ))}
+      <div class="atlas-map-footer">
+        <span>
+          <i aria-hidden="true"></i>
+          <span data-map-hint>Choose a room to discover the work inside</span>
+        </span>
+        <span data-map-saved-summary></span>
+      </div>
+    </section>
+    <section
+      id="atlas-details"
+      class="atlas-detail-panel"
+      aria-label="Selected space or installation"
+    >
+      <div data-map-welcome>
+        <p class="atlas-kicker">Space to be curious</p>
+        <h2>
+          Find your way
+          <br />
+          into the work.
+        </h2>
+        <p>
+          {mapRooms.length} spaces. {mapProjects.length} different perspectives.
+          Follow an image, meet a maker, find something unexpected.
+        </p>
+        <button
+          class="atlas-discover-button"
+          type="button"
+          data-discover-work
+          hidden
+        >
+          Find a work for me <ArrowIcon />
+        </button>
+        <div class="atlas-room-list">
+          {mapRooms.map((room) => (
+            <a href={`#directory-${room.id}`} data-room-open={room.id}>
+              <span class="atlas-room-teaser">
+                {mapProjects
+                  .filter((row) => row.roomId === room.id)
+                  .slice(0, 3)
+                  .map((row) => (
+                    <AtlasArtwork project={row.project} />
+                  ))}
+              </span>
+              <span class="atlas-room-teaser-copy">
+                <strong>{room.label}</strong>
+                <span>
+                  {mapProjects.filter((row) => row.roomId === room.id).length}{' '}
+                  works to discover
+                </span>
+              </span>
+              <ArrowIcon />
+            </a>
+          ))}
+        </div>
+        <p class="atlas-small">
+          Tap a landmark to get your bearings, or use search to go straight to a
+          work.
+        </p>
+      </div>
+      {mapRooms.map((room) => (
+        <div data-room-detail={room.id} hidden>
+          <p class="atlas-kicker">Explore the work / Proposed layout</p>
+          <h2>{room.label}</h2>
+          <p>
+            {mapProjects.filter((row) => row.roomId === room.id).length} works
+            to discover. Choose an image to take a closer look.
+          </p>
+          <div class="atlas-installation-list">
+            {mapProjects
+              .filter((row) => row.roomId === room.id)
+              .map((row) => (
+                <a
+                  href={`#installation-${row.project.id}`}
+                  data-select-project={row.project.id}
+                >
+                  <AtlasArtwork project={row.project} />
+                  <span class="atlas-work-list-copy">
+                    <strong>{row.project.title}</strong>
+                    <span class="atlas-work-maker">{row.project.maker}</span>
+                    {row.project.encounters.length > 0 && (
+                      <span class="atlas-encounter">
+                        {row.project.encounters.join(' · ')}
+                      </span>
+                    )}
+                    <span class="atlas-work-invite">
+                      Discover the work <ArrowIcon />
+                    </span>
+                  </span>
+                  <span class="atlas-list-saved" hidden aria-label="Saved">
+                    ✓
+                  </span>
+                </a>
+              ))}
+          </div>
+        </div>
+      ))}
+      <div class="atlas-landmark-detail" data-landmark-detail hidden>
+        <div class="atlas-landmark-heading">
+          <AtlasLandmarkIcon icon="info" />
+          <p class="atlas-kicker">Around Canopy</p>
+        </div>
+        <h2 data-landmark-title></h2>
+        <p data-landmark-description></p>
+        <p class="atlas-small" data-landmark-note></p>
+        <a data-landmark-source hidden>
+          About the café <ArrowIcon />
+        </a>
+        <button class="atlas-discover-button" type="button" data-discover-work>
+          Discover a work <ArrowIcon />
+        </button>
+        <button class="atlas-landmark-back" type="button" data-map-overview>
+          Back to all spaces
+        </button>
+      </div>
+      <p
+        class="atlas-selection-status"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-map-status
+      ></p>
+    </section>
+  </div>
+  <section class="atlas-landmarks" aria-labelledby="atlas-landmarks-title">
+    <h2 id="atlas-landmarks-title">Around Canopy</h2>
+    <div class="atlas-landmark-links">
+      {atlasLandmarks.map((landmark) => (
+        <a href={`#landmark-${landmark.id}`} data-landmark-open={landmark.id}>
+          <AtlasLandmarkIcon icon={landmark.icon} />
+          {landmark.shortLabel}
+        </a>
+      ))}
+    </div>
+    <div class="atlas-landmark-notes">
+      {atlasLandmarks.map((landmark) => (
+        <details id={`landmark-${landmark.id}`}>
+          <summary>{landmark.label}</summary>
+          <p>{landmark.description}</p>
+          {'note' in landmark && <p>{landmark.note}</p>}
+          {'source' in landmark && (
+            <a href={landmark.source}>About the café at Canopy</a>
+          )}
+        </details>
+      ))}
+    </div>
+  </section>
+  <noscript>
+    <p class="notice">
+      Use the room links and directory below to explore every project.
+      JavaScript adds room selection and saved-project highlighting.
+    </p>
+  </noscript>
+  <section class="atlas-directory" aria-labelledby="atlas-directory-title">
+    <div class="atlas-directory-heading">
+      <div>
+        <p class="eyebrow">Every work, another way in</p>
+        <h2 id="atlas-directory-title">The room directory.</h2>
+      </div>
+      <p>
+        Proposed positions from the layout plan.
+        <br />
+        Final locations are still to be confirmed.
+      </p>
+    </div>
+    {mapRooms.map((room) => (
+      <section id={`directory-${room.id}`} class="atlas-directory-room">
+        <h3>{room.label}</h3>
+        <div class="atlas-directory-grid">
+          {mapProjects
+            .filter((row) => row.roomId === room.id)
+            .map(({ project, marker, roomId }) => (
+              <article
+                id={`installation-${project.id}`}
+                data-atlas-project={project.id}
+                data-atlas-room={roomId}
+                data-atlas-marker={marker}
+                class="atlas-project"
+              >
+                <div class="atlas-preview-bar" hidden data-preview-bar>
+                  <span data-preview-state>Preview</span>
+                  <button
+                    type="button"
+                    data-preview-close
+                    aria-label="Close artwork preview"
+                  >
+                    Close <span aria-hidden="true">×</span>
+                  </button>
+                </div>
+                <div class="atlas-project-art">
+                  {project.media ? (
+                    <figure>
+                      <img
+                        src={project.media.src}
+                        srcset={responsiveMedia(project.media.src)}
+                        sizes="(max-width: 760px) 90vw, 400px"
+                        alt={project.media.alt}
+                        loading="lazy"
+                        width="720"
+                        height="480"
+                      />
+                      <figcaption>{project.media.credit}</figcaption>
+                    </figure>
+                  ) : (
+                    <div class="atlas-type-art" aria-hidden="true">
+                      <span>{project.title}</span>
+                      <span>
+                        Code becomes
+                        <br />
+                        {project.theme}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div class="atlas-project-copy">
+                  <p class="atlas-kicker">{room.label} · Proposed position</p>
+                  <h3>{project.title}</h3>
+                  <p class="atlas-maker">{project.maker}</p>
+                  {project.invitation && <p>{project.invitation}</p>}
+                  {!project.media && (
+                    <p class="atlas-small">Text-only project profile</p>
+                  )}
+                  {project.invigilationWindows?.length ? (
+                    <p class="atlas-small">
+                      <strong>Planned artist availability</strong>
+                      <br />
+                      {hoursLabel(project.invigilationWindows)} · UK time. These
+                      planned times may change.
+                    </p>
+                  ) : null}
+                  <div class="atlas-project-actions">
+                    <a
+                      class="button dark"
+                      href={`/projects/${project.slug}/?from=${encodeURIComponent(`/map/?project=${project.id}`)}`}
+                      data-atlas-profile
+                    >
+                      Explore work & artist <ArrowIcon />
+                    </a>
+                    <button
+                      type="button"
+                      class="button secondary"
+                      data-save={project.id}
+                      data-title={project.title}
+                      hidden
+                      aria-pressed="false"
+                    >
+                      Save to my visit
+                    </button>
+                  </div>
+                  <button
+                    class="atlas-return"
+                    type="button"
+                    data-map-room-return={roomId}
+                    hidden
+                  >
+                    ← All works in {room.label}
+                  </button>
+                  <div class="atlas-work-next" hidden data-work-next>
+                    <button type="button" data-work-step="-1">
+                      <span aria-hidden="true">←</span> Previous work
+                    </button>
+                    <button type="button" data-work-step="1">
+                      Next work <span aria-hidden="true">→</span>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+        </div>
+      </section>
+    ))}
+    {unplaced.length > 0 && (
+      <section>
+        <h3>Location to be confirmed</h3>
+        <ul>
+          {unplaced.map((project) => (
+            <li>
+              <a href={`/projects/${project.slug}/`}>
+                {project.title} — {project.maker}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </section>
+</div>
+<script>
+  import '../scripts/exhibition-map';
+</script>
