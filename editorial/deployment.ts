@@ -99,3 +99,29 @@ export async function verifyDeployment(
     checkedFiles: candidate.files.length,
   };
 }
+
+// A new Pages deployment can briefly serve mixed static/worker versions.
+// Retry the entire ordinary-and-fresh verification, never just the failed file.
+export async function verifyDeploymentWithRetry(
+  value: unknown,
+  fetcher: typeof fetch = fetch,
+  wait: (milliseconds: number) => Promise<void> = (milliseconds) =>
+    new Promise((done) => setTimeout(done, milliseconds)),
+) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await verifyDeployment(value, fetcher);
+    } catch (error) {
+      if (
+        attempt >= 3 ||
+        !(error instanceof ContentError) ||
+        ![
+          'DEPLOYMENT_NOT_VERIFIED',
+          'DEPLOYED_FILE_MISMATCH',
+          'REMINDER_WORKER_NOT_VERIFIED',
+        ].includes(error.code)
+      ) throw error;
+      await wait(5000 * (attempt + 1));
+    }
+  }
+}

@@ -12,7 +12,7 @@ import {
   type PortalManifest,
 } from './portal-validator.ts';
 import { runAstroBuild, verifyOutput } from './publisher.ts';
-import { verifyDeployment } from './deployment.ts';
+import { verifyDeployment, verifyDeploymentWithRetry } from './deployment.ts';
 import { writeMediaDerivatives } from './media-derivatives.ts';
 import { prepareReminderLaunch } from './reminder-launch.ts';
 
@@ -363,7 +363,7 @@ export function cloudflareHosting(
     candidate: (d) => deploy(d, 'candidate'),
     production: (d) => deploy(d, env.CREATECH_PRODUCTION_BRANCH || 'main'),
     verify: (value, fetcher = fetch) =>
-      verifyDeployment(value, async (input, init) => {
+      verifyDeploymentWithRetry(value, async (input, init) => {
         const url = new URL(String(input));
         const headers = new Headers(init?.headers);
         if (
