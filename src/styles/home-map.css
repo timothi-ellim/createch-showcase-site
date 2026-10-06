@@ -178,7 +178,7 @@
 }
 .home-map .atlas-landmark {
   width: 88px;
-  min-height: 40px;
+  min-height: 48px;
   font-size: 0.62rem;
   padding: 7px;
   gap: 5px;
@@ -186,6 +186,14 @@
 .home-map .atlas-landmark-icon {
   width: 18px;
   height: 18px;
+}
+.home-map .atlas .atlas-facility {
+  width: 114px;
+  min-height: 48px;
+  font-size: 0.68rem;
+}
+.home-map .atlas .atlas-landmark-toilets {
+  width: 100px;
 }
 .home-map .atlas-room-hit.is-home-room-active {
   background: #f7fa87;

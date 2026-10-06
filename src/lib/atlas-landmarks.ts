@@ -31,11 +31,37 @@ export const atlasLandmarks = [
   },
   {
     id: 'toilets',
-    label: 'Toilets',
-    shortLabel: 'Toilets',
-    icon: 'wc',
+    label: 'Toilets near the lobby · stairs required',
+    shortLabel: 'Toilets · stairs',
+    icon: 'stairs',
+    facility: true,
+    location: 'Near the lobby / café',
     description:
-      'Shown beside the lobby on the supplied layout plan. Follow venue signs for the facilities.',
+      'Stairs are required to reach the toilets near the lobby and café. Two separate step-free WCs are also shown on the map.',
+  },
+  {
+    id: 'wc-gallery',
+    label: 'Step-free WC near the Gallery',
+    shortLabel: 'Step-free WC',
+    icon: 'wc',
+    facility: true,
+    location: 'Near Gallery',
+    description: 'A step-free WC beside the Gallery-side passage.',
+    note: 'Position is approximate. The schematic does not establish a continuous step-free route from the entrance.',
+  },
+  {
+    id: 'wc-ws10',
+    label: 'Step-free WC near WS10',
+    shortLabel: 'Step-free WC',
+    icon: 'wc',
+    facility: true,
+    location: 'Near WS10',
+    description:
+      'A separate step-free WC beside WS10, above the room in the 2D plan.',
+    note: 'Position is approximate. The schematic does not establish a continuous step-free route from the entrance.',
   },
 ] as const;
+export const atlasFacilities = atlasLandmarks.filter(
+  (item) => 'facility' in item,
+);
 export type LandmarkId = (typeof atlasLandmarks)[number]['id'];

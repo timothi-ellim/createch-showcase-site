@@ -310,6 +310,84 @@
   stroke-linejoin: round;
   flex-shrink: 0;
 }
+.atlas-landmark small {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 400;
+  margin-top: 3px;
+}
+.atlas-facility {
+  background: #f1f8f3;
+  border-color: #68907c;
+  color: #254d3a;
+}
+.atlas-landmark-toilets {
+  background: #fff5e6;
+  border-color: #ae8654;
+  color: #694419;
+}
+.atlas-face.step-free-wc {
+  fill: #cce2d5;
+  stroke: #537963;
+  stroke-width: 2;
+}
+.atlas-facility-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 176px;
+  padding: 12px;
+  border: 1px solid #84778e;
+  border-radius: 6px;
+  background: #fff;
+  color: #302347;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  font-weight: 400;
+  box-shadow: 0 5px 18px #21115120;
+  pointer-events: auto;
+}
+.atlas-facility:not(.is-tooltip-dismissed):focus-visible
+  > .atlas-facility-tooltip {
+  display: block;
+}
+@media (hover: hover) and (pointer: fine) {
+  .atlas-facility:not(.is-tooltip-dismissed):hover > .atlas-facility-tooltip {
+    display: block;
+  }
+}
+.atlas-facility:hover,
+.atlas-facility:focus-visible {
+  z-index: 8;
+}
+.atlas-facilities-finder {
+  color: #302347;
+  background: #f6f5f8;
+  border-block: 1px solid #d4ccdf;
+  padding: 0 18px;
+}
+.atlas-facilities-finder summary {
+  min-height: 48px;
+  padding: 12px 0;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.atlas-facilities-finder summary span {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+.is-finding-facilities .atlas-facility {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.atlas-landmark-detail {
+  scroll-margin-top: 100px;
+}
 .atlas-landmark-icon text {
   fill: currentColor;
   stroke: none;
@@ -743,4 +821,22 @@
   .atlas-landmarks {
     color: black;
   }
+}
+/* Keep facility names to two lines, including on the compact homepage map. */
+.atlas .atlas-facility {
+  width: 114px;
+  min-height: 48px;
+}
+.atlas .atlas-facility > span:not(.atlas-facility-tooltip) {
+  white-space: nowrap;
+}
+.atlas .atlas-facility .atlas-landmark-icon {
+  width: 16px;
+  height: 18px;
+}
+.atlas .atlas-landmark-toilets {
+  width: 100px;
+}
+.atlas .atlas-landmark-toilets > span:not(.atlas-facility-tooltip) {
+  white-space: normal;
 }

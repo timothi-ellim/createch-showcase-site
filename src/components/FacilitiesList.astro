@@ -1,0 +1,84 @@
+---
+import { atlasFacilities } from '../lib/atlas-landmarks';
+import AtlasLandmarkIcon from './AtlasLandmarkIcon.astro';
+interface Props {
+  inMap?: boolean;
+}
+const { inMap = false } = Astro.props;
+---
+
+<ul class="venue-facilities">
+  {atlasFacilities.map((facility) => (
+    <li>
+      <AtlasLandmarkIcon icon={facility.icon} />
+      <div>
+        <strong>{facility.label}</strong>
+        <p>{facility.description}</p>
+        <a
+          href={
+            inMap
+              ? `#landmark-${facility.id}`
+              : `/explore/?mode=map&landmark=${facility.id}&view=3d`
+          }
+          data-landmark-open={inMap ? facility.id : undefined}
+          aria-label={`Show on map: ${facility.label}`}
+        >
+          Show on map <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </li>
+  ))}
+</ul>
+<p class="facilities-note">
+  Locations are schematic. A step-free route from the entrance and detailed
+  facility specifications are not yet confirmed.
+</p>
+<style>
+  .venue-facilities {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+    display: grid;
+    gap: 16px;
+  }
+  .venue-facilities li {
+    display: flex;
+    align-items: start;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #76628c35;
+  }
+  .venue-facilities :global(svg) {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+  }
+  .venue-facilities :global(svg text) {
+    fill: currentColor;
+    stroke: none;
+    font:
+      bold 11px Arial,
+      sans-serif;
+  }
+  .venue-facilities strong {
+    font-size: 0.9rem;
+  }
+  .venue-facilities p,
+  .facilities-note {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 6px 0;
+  }
+  .venue-facilities a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: inherit;
+    text-underline-offset: 4px;
+  }
+</style>

@@ -183,6 +183,23 @@ export function projectAtlas(
   };
   if (space === 'all') {
     solid(circulation, 'passage', -6, 0);
+    // Approximate facility footprints from Jason's annotated plan; no route or door claims.
+    for (const [x, y] of [
+      [550, 235],
+      [585, 340],
+    ]) {
+      solid(
+        [
+          [x - 18, y - 14],
+          [x + 18, y - 14],
+          [x + 18, y + 14],
+          [x - 18, y + 14],
+        ],
+        'amenity step-free-wc',
+        -6,
+        0,
+      );
+    }
     solid(
       [
         [40, 160],
@@ -251,6 +268,8 @@ export function projectAtlas(
   anchors.lobby = project([115, 280, 0]);
   anchors.cafe = project([115, 440, 0]);
   anchors.toilets = project([110, 183, 0]);
+  anchors['wc-gallery'] = project([550, 235, 0]);
+  anchors['wc-ws10'] = project([585, 340, 0]);
   anchors.street = project([420, 596, -9]);
   anchors.entrance = project([...entrances[space], 0]);
   // A stable depth sort draws back faces before front faces in the 3D cutaway.

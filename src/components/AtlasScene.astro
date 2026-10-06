@@ -144,7 +144,8 @@ const entries = overview
     {overview ? (
       atlasLandmarks.map((landmark) => (
         <a
-          class={`atlas-landmark atlas-landmark-${landmark.id}`}
+          class={`atlas-landmark atlas-landmark-${landmark.id}${'facility' in landmark ? ' atlas-facility' : ''}`}
+          aria-label={landmark.label}
           href={
             discoveryLinks
               ? `/explore/?mode=map&landmark=${landmark.id}${initialView === '3d' ? '&view=3d' : ''}`
@@ -154,7 +155,17 @@ const entries = overview
           data-scene-point={landmark.id}
         >
           <AtlasLandmarkIcon icon={landmark.icon} />
-          <span>{landmark.shortLabel}</span>
+          <span>
+            {landmark.shortLabel}
+            {'location' in landmark && landmark.id !== 'toilets' && (
+              <small>{landmark.location}</small>
+            )}
+          </span>
+          {'facility' in landmark && (
+            <span class="atlas-facility-tooltip" aria-hidden="true">
+              {landmark.description}
+            </span>
+          )}
         </a>
       ))
     ) : (
@@ -170,3 +181,6 @@ const entries = overview
     {overview ? 'CANOPY' : mapRooms.find((room) => room.id === space)?.label}
   </span>
 </div>
+<script>
+  import '../scripts/atlas-facilities';
+</script>

@@ -8,6 +8,7 @@ import ArrowIcon from './ArrowIcon.astro';
 import AtlasScene from './AtlasScene.astro';
 import AtlasArtwork from './AtlasArtwork.astro';
 import AtlasLandmarkIcon from './AtlasLandmarkIcon.astro';
+import FacilitiesList from './FacilitiesList.astro';
 import { atlasLandmarks } from '../lib/atlas-landmarks';
 import '../styles/exhibition-map.css';
 import '../styles/atlas-architecture.css';
@@ -159,6 +160,12 @@ const unplaced = projects.filter(
           </button>
         </div>
       </div>
+      <details class="atlas-facilities-finder" data-facilities-finder>
+        <summary>
+          Find toilets <span>2 step-free WCs · lobby toilets via stairs</span>
+        </summary>
+        <FacilitiesList inMap />
+      </details>
       <AtlasScene space="all" />
       {mapRooms.map((room) => (
         <AtlasScene space={room.id} />
@@ -295,7 +302,7 @@ const unplaced = projects.filter(
       {atlasLandmarks.map((landmark) => (
         <a href={`#landmark-${landmark.id}`} data-landmark-open={landmark.id}>
           <AtlasLandmarkIcon icon={landmark.icon} />
-          {landmark.shortLabel}
+          {landmark.label}
         </a>
       ))}
     </div>

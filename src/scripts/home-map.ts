@@ -122,6 +122,14 @@ if (home) {
     }
   });
   controls.hidden = false;
+  home
+    .querySelector<HTMLDetailsElement>('[data-facilities-finder]')!
+    .addEventListener('toggle', (event) => {
+      drawing.classList.toggle(
+        'is-finding-facilities',
+        (event.currentTarget as HTMLDetailsElement).open,
+      );
+    });
   draw();
   new ResizeObserver(draw).observe(
     drawing.querySelector<HTMLElement>('[data-atlas-scene]')!,

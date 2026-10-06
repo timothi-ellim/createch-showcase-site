@@ -27,6 +27,12 @@ if (root) {
   let turn = 0;
   let landmarkId: string | undefined;
   const searchInput = q<HTMLInputElement>('#atlas-search');
+  const facilitiesFinder = q<HTMLDetailsElement>('[data-facilities-finder]');
+  facilitiesFinder.addEventListener('toggle', () => {
+    root!.classList.toggle('is-finding-facilities', facilitiesFinder.open);
+    // Preserve projection and discovery filters while returning to the facilities overview.
+    if (facilitiesFinder.open && room !== 'all') render('all');
+  });
 
   for (const card of cards) {
     const placeholder = document.createElement('div');
@@ -420,9 +426,14 @@ if (root) {
         closePreview(true);
         return;
       }
-      if (navigation.dataset.landmarkOpen)
+      if (navigation.dataset.landmarkOpen) {
         render('all', undefined, true, true, navigation.dataset.landmarkOpen);
-      else if (navigation.hasAttribute('data-map-overview')) {
+        if (matchMedia('(max-width: 960px)').matches)
+          q<HTMLElement>('[data-landmark-detail]').scrollIntoView({
+            block: 'start',
+            behavior: 'instant',
+          });
+      } else if (navigation.hasAttribute('data-map-overview')) {
         render('all');
         const overview = q<HTMLButtonElement>('[data-room="all"]');
         overview.focus({ preventScroll: true });

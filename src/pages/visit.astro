@@ -4,6 +4,7 @@ import Layout from '../layouts/Layout.astro';
 import EventFacts from '../components/EventFacts.astro';
 import EventActions from '../components/EventActions.astro';
 import MapInvitation from '../components/MapInvitation.astro';
+import FacilitiesList from '../components/FacilitiesList.astro';
 import { event, directionsUrl } from '../data/catalogue';
 ---
 
@@ -63,6 +64,8 @@ import { event, directionsUrl } from '../data/catalogue';
       </details>
       <details open>
         <summary>Accessibility & sensory information</summary>
+        <h3>Toilets at Canopy</h3>
+        <FacilitiesList />
         <p>
           {event.confirmedVenueAccessInformation ??
             'Venue access guidance is coming soon.'}

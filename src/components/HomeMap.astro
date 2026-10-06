@@ -2,6 +2,7 @@
 import AtlasScene from './AtlasScene.astro';
 import AtlasArtwork from './AtlasArtwork.astro';
 import ArrowIcon from './ArrowIcon.astro';
+import FacilitiesList from './FacilitiesList.astro';
 import { mapProjects } from '../data/exhibition-map';
 import { mapRooms } from '../lib/exhibition-map';
 import '../styles/exhibition-map.css';
@@ -90,6 +91,12 @@ import '../styles/home-map.css';
         </button>
       </div>
     </div>
+    <details class="atlas-facilities-finder" data-facilities-finder>
+      <summary>
+        Find toilets <span>2 step-free WCs · lobby toilets via stairs</span>
+      </summary>
+      <FacilitiesList />
+    </details>
     <AtlasScene space="all" discoveryLinks initialView="3d" />
     <noscript>
       <p class="home-map-nojs">

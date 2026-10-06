@@ -60,6 +60,16 @@ export function drawAtlasScenes(
       const label = labels.find((el) => el.dataset.scenePoint === item.key)!;
       label.style.left = `${item.x}px`;
       label.style.top = `${item.y}px`;
+      const tooltip = label.querySelector<HTMLElement>(
+        '.atlas-facility-tooltip',
+      );
+      if (tooltip) {
+        const half = 101;
+        const center = Math.max(half + 8, Math.min(width - half - 8, item.x));
+        tooltip.style.left = `calc(50% + ${center - item.x}px)`;
+        tooltip.style.bottom = item.y < 150 ? 'auto' : '100%';
+        tooltip.style.top = item.y < 150 ? '100%' : 'auto';
+      }
       const [x, y] = geometry.anchors[item.key];
       if (Math.hypot(x - item.x, y - item.y) > 8) {
         const line = document.createElementNS(svgNS, 'line');
