@@ -26,3 +26,19 @@ test('private preview keeps public gallery, save and share actions unavailable',
   assert.ok(!html.includes('data-save='));
   assert.ok(!html.includes('data-copy-link'));
 });
+
+test('reviewed third-party media keeps escaped participant credit and linked licence', () => {
+  const project = {
+    ...fixture,
+    media: {
+      src: '/media/e6ac1c2da21c6675c58a92f1144a6ca236067a9c827528668432a4de11402a5f.webp',
+      alt: 'Coloured nodes connected by lines.',
+      credit: 'Supplied credit <script>unsafe</script>',
+    },
+  };
+  const html = renderProjectBody(project);
+  assert.ok(html.includes('Supplied credit &lt;script&gt;unsafe&lt;/script&gt;'));
+  assert.ok(html.includes('href="https://creativecommons.org/licenses/by/2.0/"'));
+  assert.ok(html.includes('Social Network II — Manel Torralba'));
+  assert.ok(!renderProjectBody({ ...project, media: { ...project.media, src: '/media/' + 'a'.repeat(64) + '.webp' } }).includes('CC BY 2.0'));
+});

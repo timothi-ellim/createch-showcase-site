@@ -1,3 +1,4 @@
+import { mediaLicenceMarkup } from './media-licence.ts';
 import { arrowIconMarkup } from './arrow-icon.ts';
 import type { PublicProject } from './content-schema.ts';
 import { responsiveMedia } from './responsive-media.ts';
@@ -50,7 +51,7 @@ export function renderProjectBody(
           !options.privatePreview
         ? item.src
         : '';
-    return `<figure class="project-figure"><div class="project-media ${e(project.theme)}">${src ? `<img src="${e(src)}" ${src.startsWith('/media/') ? `srcset="${e(responsiveMedia(src))}" sizes="(max-width: 1023px) 100vw, 65vw"` : ''} alt="${e(item.alt)}" width="960" height="640" loading="${main ? 'eager' : 'lazy'}" ${main ? 'fetchpriority="high"' : ''} />` : '<p>Image unavailable in this preview.</p>'}</div><figcaption>${e(item.credit)}</figcaption>${main && !options.privatePreview ? `<button hidden class="text-link artwork-expand" data-open-artwork="${e(project.id)}">View full artwork ⤢</button>` : ''}</figure>`;
+    return `<figure class="project-figure"><div class="project-media ${e(project.theme)}">${src ? `<img src="${e(src)}" ${src.startsWith('/media/') ? `srcset="${e(responsiveMedia(src))}" sizes="(max-width: 1023px) 100vw, 65vw"` : ''} alt="${e(item.alt)}" width="960" height="640" loading="${main ? 'eager' : 'lazy'}" ${main ? 'fetchpriority="high"' : ''} />` : '<p>Image unavailable in this preview.</p>'}</div><figcaption>${e(item.credit)}${mediaLicenceMarkup(item.src)}</figcaption>${main && !options.privatePreview ? `<button hidden class="text-link artwork-expand" data-open-artwork="${e(project.id)}">View full artwork ⤢</button>` : ''}</figure>`;
   };
   const mainImage = project.media
     ? media(project.media, true)

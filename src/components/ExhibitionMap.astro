@@ -1,4 +1,5 @@
 ---
+import { mediaLicenceMarkup } from '../lib/media-licence';
 import { mapProjects } from '../data/exhibition-map';
 import { mapRooms } from '../lib/exhibition-map';
 import { projects } from '../data/catalogue';
@@ -377,7 +378,7 @@ const unplaced = projects.filter(
                           width="720"
                           height="480"
                         />
-                        <figcaption>{project.media.credit}</figcaption>
+                        <figcaption>{project.media.credit}<Fragment set:html={mediaLicenceMarkup(project.media.src)} /></figcaption>
                       </figure>
                     ) : (
                       <div class="atlas-type-art" aria-hidden="true">

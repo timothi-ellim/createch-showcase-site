@@ -1,4 +1,5 @@
 ---
+import { mediaLicenceMarkup } from '../lib/media-licence';
 import ArrowIcon from './ArrowIcon.astro';
 import { projects } from '../data/catalogue';
 const artworks = projects.filter((project) => project.media);
@@ -30,7 +31,7 @@ const artworks = projects.filter((project) => project.media);
             <p class="viewer-image-state" data-viewer-image-state hidden>
               Loading artwork…
             </p>
-            <figcaption>{project.media!.credit}</figcaption>
+            <figcaption>{project.media!.credit}<Fragment set:html={mediaLicenceMarkup(project.media!.src)} /></figcaption>
           </figure>
           <div class="viewer-story">
             <p class={`theme-label ${project.theme}`}>
