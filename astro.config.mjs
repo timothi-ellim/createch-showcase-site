@@ -4,10 +4,13 @@ import { resolve, relative } from 'node:path';
 import { readSnapshot, releaseBlockers } from './src/lib/content-schema.ts';
 import { freezeSnapshot } from './src/lib/content-schema.ts';
 import { fileURLToPath } from 'node:url';
+import { readReminderLaunchReceipt } from './editorial/reminder-launch.ts';
 
 const isBuild = process.argv.includes('build');
 const mode = process.argv[process.argv.indexOf('--mode') + 1];
 const localMode = ['fixture-preview', 'editorial-preview', 'exhibition-preview'].includes(mode);
+if (isBuild && !localMode && process.env.PUBLIC_REMINDERS_PREVIEW === 'true')
+  throw new Error('Local reminder preview cannot be published.');
 let site;
 if (isBuild && !localMode) {
   if (
@@ -37,6 +40,12 @@ if (isBuild && !localMode) {
     );
   }
   site = snapshot.event.publicSiteUrl;
+  if (process.env.PUBLIC_REMINDERS_ENABLED === 'true') {
+    const receiptPath = process.env.CREATECH_REMINDERS_LAUNCH_RECEIPT;
+    if (!receiptPath) throw new Error('Reminder launch receipt required.');
+    const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+    readReminderLaunchReceipt(receipt, { revision: snapshot.revision, origin: new URL(site).origin });
+  }
 }
 if (isBuild && ['editorial-preview', 'exhibition-preview'].includes(mode) && !process.env.CREATECH_SNAPSHOT)
   throw new Error('An editorial preview requires an exported snapshot.');
@@ -65,6 +74,10 @@ export default defineConfig({
             : freezeSnapshot({ schemaVersion: 2, publicationStatus: 'synthetic-local-only', event: JSON.parse(readFileSync('content/event.json', 'utf8')), themes: catalogue.themes, projects: catalogue.projects });
           const { generateSignage } = await import('./editorial/signage.ts');
           await generateSignage(fileURLToPath(dir), snapshot);
+          if (process.env.PUBLIC_REMINDERS_ENABLED === 'true') {
+            const { buildReminderWorker } = await import('./scripts/reminder-build.mjs');
+            await buildReminderWorker(fileURLToPath(dir), snapshot.revision);
+          }
         },
       },
     },
@@ -101,6 +114,12 @@ export default defineConfig({
   server: { host: '127.0.0.1', port: 4321 },
   // Small processed scripts must remain external under script-src 'self'.
   vite: {
+    // Use the same explicit process flags for release gates, the worker and UI.
+    // A Vite-loaded .env file must not silently enable an unreviewed public form.
+    define: {
+      'import.meta.env.PUBLIC_REMINDERS_ENABLED': JSON.stringify(process.env.PUBLIC_REMINDERS_ENABLED ?? 'false'),
+      'import.meta.env.PUBLIC_REMINDERS_PREVIEW': JSON.stringify(process.env.PUBLIC_REMINDERS_PREVIEW ?? 'false'),
+    },
     build: { sourcemap: false, assetsInlineLimit: 0 },
     css: { postcss: { plugins: [] } },
   },

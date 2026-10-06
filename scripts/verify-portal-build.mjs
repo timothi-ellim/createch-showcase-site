@@ -13,6 +13,7 @@ const expectedPages = [
   'organiser/index.html', 'organiser/review/index.html',
   'organiser/releases/index.html', 'organiser/people/index.html',
   'organiser/presence/index.html', 'organiser/presence-review/index.html', 'organiser/signage/index.html',
+  'organiser/reminders/index.html',
 ];
 async function walk(directory, prefix = '') {
   const result = [];

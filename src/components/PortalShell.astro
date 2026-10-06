@@ -9,7 +9,7 @@ interface Props {
 const { surface, title } = Astro.props;
 const standalone = import.meta.env.MODE === 'portal-staging';
 const singleSignIn = import.meta.env.PUBLIC_PARTICIPANT_AUTH_V2 === 'true';
-const organiserSurface = ['queue', 'review', 'releases', 'people', 'presence-overview', 'presence-review', 'signage'].includes(
+const organiserSurface = ['queue', 'review', 'releases', 'people', 'presence-overview', 'presence-review', 'signage', 'reminders'].includes(
   surface,
 );
 ---
@@ -71,6 +71,7 @@ const organiserSurface = ['queue', 'review', 'releases', 'people', 'presence-ove
       </a>
       <a href="/organiser/presence/" hidden data-organiser-link aria-current={surface.startsWith('presence-') ? 'page' : undefined}>Artist hours</a>
       <a href="/organiser/signage/" hidden data-organiser-link aria-current={surface === 'signage' ? 'page' : undefined}>QR and signage</a>
+      <a href="/organiser/reminders/" hidden data-organiser-link aria-current={surface === 'reminders' ? 'page' : undefined}>Event reminders</a>
       <button class="text-button" data-signout>
         Sign out
       </button>

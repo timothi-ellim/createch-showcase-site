@@ -130,6 +130,53 @@ export interface Database {
         Args: { p_commit: string };
         Returns: undefined;
       };
+      reminder_attention: { Args: {}; Returns: Json };
+      reminder_claim: { Args: {}; Returns: Json };
+      reminder_cleanup: { Args: {}; Returns: undefined };
+      reminder_config: { Args: {}; Returns: Json };
+      reminder_configure: {
+        Args: {
+          p_event: Json;
+          p_origin: string;
+          p_revision: string;
+          p_ready: boolean;
+        };
+        Returns: undefined;
+      };
+      reminder_delivery_status: {
+        Args: { p_provider: string; p_status: string };
+        Returns: undefined;
+      };
+      reminder_pause: { Args: { p_paused: boolean }; Returns: undefined };
+      reminder_receipt: {
+        Args: {
+          p_id: string;
+          p_lease: string;
+          p_status: string;
+          p_provider: string;
+        };
+        Returns: undefined;
+      };
+      reminder_request: {
+        Args: {
+          p_email: string;
+          p_source: string;
+          p_nonce: string;
+          p_confirm: string;
+          p_unsubscribe: string;
+        };
+        Returns: string;
+      };
+      reminder_retry: { Args: { p_id: string }; Returns: undefined };
+      reminder_send_check: {
+        Args: { p_id: string; p_lease: string };
+        Returns: boolean;
+      };
+      reminder_stats: { Args: {}; Returns: Json };
+      reminder_token: {
+        Args: { p_digest: string; p_action: string };
+        Returns: Json;
+      };
       reserve_upload: {
         Args: { p_project: string; p_type: string; p_bytes: number };
         Returns: Json;

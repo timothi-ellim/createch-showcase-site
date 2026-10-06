@@ -441,3 +441,7 @@ verify_jwt = false
 verify_jwt = false
 [functions.participant-auth-resend]
 verify_jwt = false
+
+# Uses a separate server-only scheduler bearer secret, checked inside the function.
+[functions.reminder-delivery]
+verify_jwt = false

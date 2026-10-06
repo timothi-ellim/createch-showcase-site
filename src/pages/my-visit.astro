@@ -4,6 +4,7 @@ import Layout from '../layouts/Layout.astro';
 import MapInvitation from '../components/MapInvitation.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import EventFacts from '../components/EventFacts.astro';
+import EventActions from '../components/EventActions.astro';
 import { projects } from '../data/catalogue';
 ---
 
@@ -95,5 +96,6 @@ import { projects } from '../data/catalogue';
         Plan your visit <ArrowIcon />
       </a>
     </div>
+    <EventActions compact />
   </div>
 </Layout>

@@ -1,0 +1,205 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CalendarLinks from '../components/CalendarLinks.astro';
+import { event } from '../data/catalogue';
+import { reminderSchedule, reminderWindowLabel } from '../lib/event-time';
+import '../styles/event-actions.css';
+const enabled = import.meta.env.PUBLIC_REMINDERS_ENABLED === 'true';
+const preview =
+  import.meta.env.MODE !== 'production' &&
+  import.meta.env.PUBLIC_REMINDERS_PREVIEW === 'true';
+const schedule = reminderSchedule(event);
+---
+
+<Layout
+  title="Get email reminders"
+  description="A little nudge before the showcase. Get event reminders by email or save the date in your calendar."
+>
+  <div class="wrap">
+    <section class="reminder-page" aria-labelledby="reminder-title">
+      {preview && (
+        <p class="reminder-local-note">
+          Local test preview · use an address ending in @example.invalid.
+          Nothing is sent. <a href="/__mail">Open the test mailbox</a>.
+        </p>
+      )}
+      <p class="event-kicker">Keep a little space for curiosity</p>
+      <h1 id="reminder-title">
+        A little nudge.
+        <br />A day of discovery.
+      </h1>
+      <p class="reminder-lead">
+        Let us remind you before the showcase, so the date doesn’t get lost in
+        the everyday.
+      </p>
+      <div class="reminder-grid">
+        <section class="reminder-form-card" aria-label="Email reminder signup">
+          <ol class="reminder-steps" aria-label="Signup steps">
+            <li aria-current="step" data-reminder-step="1">
+              <b>1</b>Your email
+            </li>
+            <li data-reminder-step="2">
+              <b>2</b>Confirm
+            </li>
+            <li>
+              <b>3</b>We remind you
+            </li>
+          </ol>
+          <div
+            class="reminder-feedback"
+            role="alert"
+            tabindex="-1"
+            data-reminder-error
+            hidden
+          ></div>
+          {enabled ? (
+            <>
+              <div data-reminder-form-content>
+                <h2>Where should we send your reminders?</h2>
+                <form
+                  class="reminder-form"
+                  action="/api/reminders/subscribe"
+                  method="post"
+                  data-reminder-form
+                >
+                  <label for="reminder-email">Email address</label>
+                  <input
+                    id="reminder-email"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    inputmode="email"
+                    maxlength="254"
+                    required
+                    aria-describedby="reminder-email-help"
+                    placeholder="you@example.com"
+                  />
+                  <p id="reminder-email-help" class="reminder-field-help">
+                    We’ll send a link to confirm it’s you. No password needed.
+                  </p>
+                  <div class="reminder-honeypot" aria-hidden="true">
+                    <label for="reminder-website">Leave this field empty</label>
+                    <input
+                      id="reminder-website"
+                      name="website"
+                      type="text"
+                      tabindex="-1"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <label class="reminder-consent">
+                    <input
+                      type="checkbox"
+                      name="consent"
+                      value="yes"
+                      required
+                    />
+                    <span>
+                      Email me reminders and essential changes about this event.
+                    </span>
+                  </label>
+                  <button class="reminder-submit" type="submit">
+                    Send my confirmation link <span aria-hidden="true">→</span>
+                  </button>
+                  <p class="reminder-privacy">
+                    Just this event. Unsubscribe whenever you like.
+                    <br />
+                    Read <a href="/reminder-privacy/">how we use your email</a>.
+                  </p>
+                </form>
+              </div>
+              <div data-reminder-received hidden tabindex="-1">
+                <span class="reminder-success-icon" aria-hidden="true">
+                  ↗
+                </span>
+                <h2 class="reminder-success-title">
+                  One small step.
+                  <br />
+                  Check your inbox.
+                </h2>
+                <p>
+                  Your request has been received. If a confirmation is needed,
+                  we’ll email you a link. Open it and choose{' '}
+                  <strong>Confirm my reminders</strong> to finish.
+                </p>
+                <p class="reminder-field-help">
+                  Allow up to an hour and check your spam folder. Confirmation
+                  links last 24 hours.
+                </p>
+                <CalendarLinks />
+                <p class="reminder-privacy">
+                  <a href="/reminders/">
+                    Use another email or request a fresh link
+                  </a>
+                </p>
+              </div>
+            </>
+          ) : (
+            <div>
+              <h2>Email reminders are being prepared.</h2>
+              <p>
+                You can save the date in your calendar now. Please check back
+                for email signup.
+              </p>
+              <CalendarLinks />
+            </div>
+          )}
+        </section>
+        <aside class="reminder-sidebar" aria-label="Event and reminder details">
+          <div class="reminder-date-ticket">
+            <p class="event-kicker">Your date with the showcase</p>
+            <strong>
+              {new Intl.DateTimeFormat('en-GB', {
+                day: 'numeric',
+                month: 'long',
+                timeZone: 'UTC',
+              }).format(new Date(`${event.date}T12:00:00Z`))}
+            </strong>
+            <p>
+              {event.dateLabel.split(' ')[0]} · {event.startTime}–
+              {event.endTime} UK time
+              <br />
+              {event.venue.name}, {event.venue.streetAddress}
+              <br />
+              {event.venue.city}, {event.venue.postalCode}
+            </p>
+          </div>
+          <h2>Two timely reminders.</h2>
+          <ul class="reminder-schedule">
+            {schedule.map((item, i) => (
+              <li>
+                <strong>
+                  {i === 0 ? 'A week to make a plan' : 'A nudge before the day'}
+                </strong>
+                <span>{reminderWindowLabel(item, event.timeZone)}</span>
+              </li>
+            ))}
+          </ul>
+          <p class="event-actions-note">
+            Joining closer to the day? You’ll get only the reminders still to
+            come. If both dates have passed, your confirmation page has the
+            event details.
+          </p>
+          <p class="event-actions-note">
+            This is a reminder signup, not a booking.{' '}
+            <a href="/visit/">Check the latest visitor information</a>.
+          </p>
+          {enabled && (
+            <div class="reminder-calendar-alternative">
+              <p class="event-kicker">Prefer your own calendar?</p>
+              <CalendarLinks />
+            </div>
+          )}
+        </aside>
+      </div>
+    </section>
+  </div>
+</Layout>
+<script>
+  import '../scripts/reminder-signup';
+</script>
+<style>
+  .reminder-calendar-alternative {
+    margin-top: 28px;
+  }
+</style>

@@ -34,12 +34,15 @@ export async function verifyDeployment(
   if (!candidate.origin) throw new ContentError('PUBLIC_ORIGIN_REQUIRED');
   if (!candidate.files.some((file) => file.path === 'content-revision.json'))
     throw new ContentError('REVISION_MANIFEST_REQUIRED');
+  const worker = candidate.files.find(file => file.path === '_worker.js');
+  if (worker && !candidate.files.some(file => file.path === 'reminder-service.json'))
+    throw new ContentError('REMINDER_RECEIPT_REQUIRED');
   // Check ordinary visitor URLs as well as an explicit fresh read. Cache-busted
   // success alone must never hide a stale canonical page.
   for (const fresh of [false, true])
     for (const file of candidate.files) {
       // Pages consumes these controls; they are not public downloadable files.
-      if (file.path === '_headers' || file.path === '_redirects') continue;
+      if (['_headers', '_redirects', '_worker.js', '_routes.json'].includes(file.path)) continue;
       if (file.path.split('/').some((part) => part === '.' || part === '..'))
         throw new ContentError('INVALID_CANDIDATE_PATH');
       const url = new URL(
@@ -78,6 +81,14 @@ export async function verifyDeployment(
         } catch {
           throw new ContentError('DEPLOYED_REVISION_MISMATCH');
         }
+      }
+      if (file.path === 'reminder-service.json') {
+        const service = JSON.parse(bytes.toString());
+        if (!worker || service.revision !== candidate.revision || service.workerSha256 !== worker.sha256 || !/^[a-f0-9]{64}$/.test(service.build))
+          throw new ContentError('REMINDER_WORKER_MISMATCH');
+        const response = await fetcher(new URL('/api/reminders/version', candidate.origin), {cache:'no-store',redirect:'error',signal:AbortSignal.timeout(15000)});
+        if (!response.ok || (await response.json()).build !== service.build || !response.headers.get('cache-control')?.includes('no-store'))
+          throw new ContentError('REMINDER_WORKER_NOT_VERIFIED');
       }
     }
   return {

@@ -358,3 +358,5 @@
     display: none;
   }
 }
+/* Organiser-only reminder statistics. */
+.reminder-admin-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.reminder-admin-count{padding:28px;background:#efebff;color:#11194c;border:1px solid #b2abc6;border-radius:4px;margin-block:24px}.reminder-admin-count strong{display:block;font-size:4rem;line-height:1.2;font-weight:500;font-variant-numeric:tabular-nums}.reminder-admin-count span{font-weight:700;display:block;margin-block:8px}.reminder-admin-count p{margin-bottom:0;font-size:.9rem}.reminder-admin-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.reminder-admin-metrics div{padding:20px;border:1px solid #b2abc6}.reminder-admin-metrics dt{font-size:.85rem}.reminder-admin-metrics dd{margin:8px 0 0;font-size:1.7rem;font-variant-numeric:tabular-nums}@media(max-width:700px){.reminder-admin-metrics{grid-template-columns:1fr 1fr}}@media(max-width:380px){.reminder-admin-metrics{grid-template-columns:1fr}}

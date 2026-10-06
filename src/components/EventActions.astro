@@ -1,0 +1,75 @@
+---
+import { event } from '../data/catalogue';
+import { eventInstants } from '../lib/event-time';
+import CalendarLinks from './CalendarLinks.astro';
+import '../styles/event-actions.css';
+interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+const { start, end } = eventInstants(event);
+---
+
+<section
+  class:list={['event-actions', { 'event-actions-compact': compact }]}
+  aria-label="Save the event"
+  data-event-actions
+  data-start={start}
+  data-end={end}
+>
+  <div class="event-actions-copy">
+    <p class="event-kicker">A date for your curiosity</p>
+    <h2>
+      Make space for <em>something new.</em>
+    </h2>
+    <p class="event-actions-date">
+      <time datetime={event.date}>{event.dateLabel}</time>
+      <br />
+      {event.startTime}–{event.endTime} UK time · {event.venue.name},{' '}
+      {event.venue.city}
+    </p>
+    <div class="event-countdown" data-event-countdown hidden aria-live="off">
+      <p class="event-kicker" data-countdown-caption>
+        Until the showcase
+      </p>
+      <div class="countdown-digits" data-countdown-digits>
+        <span>
+          <strong data-count-days></strong>days
+        </span>
+        <span>
+          <strong data-count-hours></strong>hours
+        </span>
+        <span>
+          <strong data-count-minutes></strong>minutes
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="event-actions-choices">
+    <p class="event-choice-label">Two ways to remember</p>
+    <CalendarLinks />
+    <a class="event-reminder-link" href="/reminders/" data-reminder-link>
+      <span>
+        <strong>Get email reminders</strong>
+        <small>A little nudge before the showcase.</small>
+      </span>
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        aria-hidden="true"
+      >
+        <path d="M4 12h16m-6-6 6 6-6 6" />
+      </svg>
+    </a>
+    <p class="event-actions-note">
+      No account needed. Calendar saves and reminders are not bookings.
+    </p>
+  </div>
+</section>
+<script>
+  import '../scripts/event-countdown';
+</script>

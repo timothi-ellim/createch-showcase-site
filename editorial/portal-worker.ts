@@ -14,6 +14,7 @@ import {
 import { runAstroBuild, verifyOutput } from './publisher.ts';
 import { verifyDeployment } from './deployment.ts';
 import { writeMediaDerivatives } from './media-derivatives.ts';
+import { prepareReminderLaunch } from './reminder-launch.ts';
 
 interface Job {
   jobId: string;
@@ -135,11 +136,21 @@ export async function buildPortalCandidate(
       approvedBy: receipt.approvedBy,
     }),
   );
+  let reminderApproval: string | undefined;
+  if (process.env.PUBLIC_REMINDERS_ENABLED === 'true') {
+    const origin = snapshot.event.publicSiteUrl ?? manifest.targetOrigin;
+    if (!origin) throw new ContentError('REMINDER_PUBLIC_ORIGIN_REQUIRED');
+    reminderApproval = await prepareReminderLaunch(directory, {
+      revision: snapshot.revision,
+      origin: new URL(origin).origin,
+    });
+  }
   await runAstroBuild(
     input,
     site,
     manifest.environment === 'local' ? 'editorial-preview' : 'production',
     approval,
+    reminderApproval,
   );
   for (const project of manifest.projects)
     for (const media of project.media) {

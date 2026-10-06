@@ -1,4 +1,5 @@
 import { addOrganiserTextEditor } from './organiser-text-editor';
+import { showReminderStats } from './portal-reminders';
 import { addEventCopyEditor } from './event-copy-editor';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { escapeHtml as e, renderProjectBody } from '../lib/project-renderer';
@@ -1158,7 +1159,7 @@ async function load() {
     .forEach((el) => (el.hidden = !context.organiser));
   const surface = root.dataset.portal;
   if (
-    ['queue', 'review', 'releases', 'people', 'presence-overview', 'presence-review', 'signage'].includes(surface!) &&
+    ['queue', 'review', 'releases', 'people', 'presence-overview', 'presence-review', 'signage', 'reminders'].includes(surface!) &&
     !context.organiser
   ) {
     clearPrivate();
@@ -1177,6 +1178,9 @@ async function load() {
     return;
   }
   switch (surface) {
+    case 'reminders':
+      await showReminderStats(content, workspaceAPI);
+      break;
     case 'qr': {
       const project = new URLSearchParams(location.search).get('project');
       if (!project || !/^[a-f0-9-]{36}$/i.test(project)) throw new Error('INVALID_WORKSPACE_LINK');
@@ -1233,7 +1237,7 @@ async function load() {
       await showPeople();
       break;
   }
-  if (surface !== 'editor' && !content.querySelector('[data-retry-signage]')) say('Workspace loaded.');
+  if (surface !== 'editor' && !content.querySelector('[data-retry-signage], [data-retry-reminders]')) say('Workspace loaded.');
 }
 async function start() {
   // Never accept or retain credentials or return destinations in browser URLs.

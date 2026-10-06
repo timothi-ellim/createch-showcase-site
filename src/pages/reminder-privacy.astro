@@ -1,0 +1,81 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { event } from '../data/catalogue';
+import '../styles/event-actions.css';
+---
+
+<Layout title="Your email and event reminders" noIndex>
+  <div class="wrap">
+    <article class="reminder-page">
+      <p class="event-kicker">Just this event</p>
+      <h1>
+        Your email.
+        <br />
+        Your choice.
+      </h1>
+      <div class="reading-copy">
+        <p>
+          The {event.series} organiser uses the email address you provide to
+          confirm your request, send the remaining event reminders and
+          communicate essential changes about this event.
+        </p>
+        <h2>What we keep</h2>
+        <p>
+          Your email address, confirmation and permission dates, the wording you
+          agreed to, unsubscribe status and delivery records. We use short-lived
+          request limits to help prevent abuse. You do not need an account, and
+          your address and signup totals are not shown on the public website.
+        </p>
+        <h2>How it is used</h2>
+        <p>
+          Reminder information is kept separately from participant profiles.
+          Only authorised organisers and the services that store or deliver the
+          reminders can process it. We do not add you to a future mailing list
+          or use tracking pixels in these emails.
+        </p>
+        <h2>Stop reminders</h2>
+        <p>
+          Use the unsubscribe link in any reminder, without signing in. We will
+          stop future reminders. You can also contact the organiser to ask about
+          your information.
+        </p>
+        <h2>Retention and delivery services</h2>
+        <p>
+          Pending requests expire after seven days. Campaign addresses are
+          scheduled for removal 30 days after the event. Limited consent,
+          suppression records remain for up to 60 days. Service backups may
+          retain copies under each provider’s retention rules.
+        </p>
+        <p>
+          Cloudflare hosts the signup form, Supabase stores the private reminder
+          records, and Google Gmail sends the emails from Timothi Lim on behalf
+          of the organising team. Email copies and replies in Gmail remain until
+          the organiser deletes them; the 30-day database cleanup does not
+          delete mailbox copies. Contact the organiser if you would like those
+          removed.
+        </p>
+        {event.publicContact && (
+          <p>
+            Contact:{' '}
+            <a href={`mailto:${event.publicContact.email}`}>
+              {event.publicContact.email}
+            </a>
+            .
+          </p>
+        )}
+        <a class="text-link" href="/reminders/">
+          Back to event reminders
+        </a>
+      </div>
+    </article>
+  </div>
+</Layout>
+<style>
+  .reading-copy {
+    max-width: 65ch;
+  }
+  .reading-copy h2 {
+    font-size: 1.4rem;
+    margin-top: 32px;
+  }
+</style>
