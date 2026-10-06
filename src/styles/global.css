@@ -1128,6 +1128,11 @@ input {
     scroll-behavior: auto !important;
   }
 }
+/* Participant credits may contain long source URLs. */
+figcaption {
+  overflow-wrap: anywhere;
+}
+
 @media print {
   :root,
   body {
