@@ -14,18 +14,18 @@ test('compact markers preview without navigation and a click pins the work', asy
   const box = await pin.locator('.atlas-artwork').boundingBox();
   expect(box?.width).toBe(48);
   expect(box?.height).toBe(48);
-  const before = await page.evaluate(() => ({
-    url: location.href,
-    history: history.length,
-    y: scrollY,
-  }));
   await mkdir('docs/evidence/exhibition-map', { recursive: true });
-  await page
-    .locator('.atlas-map-panel')
-    .screenshot({
-      path: `docs/evidence/exhibition-map/compact-${isMobile ? 'mobile' : 'desktop'}.png`,
-    });
+  await page.locator('.atlas-map-panel').screenshot({
+    path: `docs/evidence/exhibition-map/compact-${isMobile ? 'mobile' : 'desktop'}.png`,
+  });
   if (!isMobile) {
+    // Element screenshots may scroll; measure immediately before the interaction.
+    await pin.scrollIntoViewIfNeeded();
+    const before = await page.evaluate(() => ({
+      url: location.href,
+      history: history.length,
+      y: scrollY,
+    }));
     await pin.hover();
     await expect(selected).toHaveAttribute('data-atlas-project', 'social-xr');
     expect(
@@ -79,12 +79,12 @@ test('artist search, visual cards and neighbouring works lead into public profil
 }) => {
   await page.goto('/explore/?mode=map&view=3d');
   const search = page.getByRole('searchbox', {
-    name: 'Find an artist or artwork',
+    name: 'Search artists, works or ideas',
   });
   await search.fill('Qilin');
   await expect(page.locator('[data-search-result]:visible')).toHaveCount(1);
   await expect(page.locator('[data-search-count]')).toContainText(
-    '1 work found',
+    '1 matching work',
   );
   await page.locator('[data-search-result]:visible').click();
   const selected = page.locator('.atlas-selected-project');
@@ -99,6 +99,7 @@ test('artist search, visual cards and neighbouring works lead into public profil
   await expect(page.locator('[data-room-plan="ws09"]')).not.toContainText(
     'W9-2',
   );
+  await page.locator('[data-clear-search]').click();
   await selected
     .getByRole('button', { name: 'Next work', exact: true })
     .click();
@@ -120,8 +121,8 @@ test('artist search, visual cards and neighbouring works lead into public profil
     page.getByRole('button', { name: '3D space', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true');
   await search.fill('zz-no-such-work');
-  await expect(page.locator('[data-search-count]')).toContainText('No matches');
-  await page.getByRole('button', { name: 'Clear', exact: true }).click();
+  await expect(page.locator('#no-results')).toBeVisible();
+  await page.locator('[data-clear-search]').click();
   await expect(search).toHaveValue('');
   await expect(search).toBeFocused();
   await search.fill('XR');
@@ -171,7 +172,7 @@ test('rooms, keyboard selection, profile round trip and history preserve context
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/explore/?mode=map');
   await expect(page.locator('[data-atlas-project]')).toHaveCount(12);
-  await page.getByRole('button', { name: 'WS10', exact: true }).focus();
+  await page.getByRole('button', { name: /^WS10 \d+$/ }).focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('[data-room-plan="ws10"]')).toBeVisible();
   const pin = page.locator('[data-map-pin="social-xr"]');
@@ -196,7 +197,7 @@ test('rooms, keyboard selection, profile round trip and history preserve context
     'data-atlas-project',
     'social-xr',
   );
-  await page.getByRole('button', { name: 'All spaces', exact: true }).click();
+  await page.getByRole('button', { name: /^All spaces \d+$/ }).click();
   await page.goBack();
   await expect(page.locator('.atlas-selected-project')).toHaveAttribute(
     'data-atlas-project',
@@ -218,7 +219,7 @@ test('saved highlights share the existing shortlist and survive reload and cross
     'aria-pressed',
     'true',
   );
-  await page.getByLabel('Highlight my saved projects').check();
+  await page.goto(page.url() + '&saved=1');
   await expect(page.locator('[data-map-saved-summary]')).toContainText(
     '1 saved on this map',
   );
@@ -399,7 +400,7 @@ test('the production content security policy permits map interactions', async ({
     if (/Content Security Policy|violates the following/.test(message.text()))
       violations.push(message.text());
   });
-  await page.route('http://127.0.0.1:4330/**', async (route) => {
+  await page.route('**/*', async (route) => {
     if (route.request().resourceType() !== 'document') return route.continue();
     const response = await route.fetch();
     await route.fulfill({
@@ -414,7 +415,7 @@ test('the production content security policy permits map interactions', async ({
   await page.goto('/explore/?mode=map');
   await page.getByRole('button', { name: '3D space', exact: true }).click();
   await page.getByRole('button', { name: 'Rotate 3D view right' }).click();
-  await page.getByRole('button', { name: 'Gallery', exact: true }).click();
+  await page.getByRole('button', { name: /^Gallery \d+$/ }).click();
   await page.locator('[data-map-pin="listen-scoundrels"]').click();
   await page.locator('.atlas-selected-project [data-save]').click();
   await expect(
@@ -436,7 +437,7 @@ test('2D and 3D controls retain selection, saves, rotation and profile return co
   await page.goto('/explore/?mode=map&project=social-xr');
   const selected = page.locator('.atlas-selected-project');
   await selected.locator('[data-save]').click();
-  await page.getByLabel('Highlight my saved projects').check();
+  await page.goto(page.url() + '&saved=1');
   const scene = page.locator('[data-room-plan="ws10"]');
   const plan = await scene.locator('[data-scene-faces]').innerHTML();
   const view3d = page.getByRole('button', { name: '3D space', exact: true });
@@ -545,16 +546,14 @@ test('Explore combines both views and preserves filters, camera, selection and s
   await expect(projects).toBeVisible();
   await expect(map).toBeHidden();
   await expect(page.locator('#search')).toHaveValue('Qilin');
-  await page.getByRole('link', { name: 'Map Find works at Canopy' }).click();
+  await page.getByRole('link', { name: 'Map', exact: true }).click();
   await expect(map).toBeVisible();
   await expect(projects).toBeHidden();
   await page.getByRole('button', { name: '3D space', exact: true }).click();
-  await page.getByRole('button', { name: 'WS09', exact: true }).click();
+  await page.getByRole('button', { name: /^WS09 \d+$/ }).click();
   await page.locator('[data-map-pin="an-unfinished-body"]').click();
   await page.locator('.atlas-selected-project [data-save]').click();
-  await page
-    .getByRole('link', { name: 'Projects Browse images & ideas' })
-    .click();
+  await page.getByRole('link', { name: 'Projects', exact: true }).click();
   await expect(page.locator('#search')).toHaveValue('Qilin');
   await expect(
     page.locator('#filters [data-theme-filter="image"]'),
@@ -575,15 +574,17 @@ test('Explore combines both views and preserves filters, camera, selection and s
   await page.getByRole('link', { name: 'Back to the exhibition map' }).click();
   await expect(page).toHaveURL(/\/explore\//);
   await expect(map).toBeVisible();
-  await page
-    .getByRole('link', { name: 'Projects Browse images & ideas' })
-    .click();
+  await page.getByRole('link', { name: 'Projects', exact: true }).click();
   await expect(page.locator('#search')).toHaveValue('Qilin');
   await expect(page.locator('h1')).toHaveCount(1);
-  await page.screenshot({ path: `docs/evidence/exhibition-map/combined-projects-${page.viewportSize()!.width}.png` });
-  await page.getByRole('link', { name: 'Map Find works at Canopy' }).click();
+  await page.screenshot({
+    path: `docs/evidence/exhibition-map/combined-projects-${page.viewportSize()!.width}.png`,
+  });
+  await page.getByRole('link', { name: 'Map', exact: true }).click();
   await page.locator('.explore-views').scrollIntoViewIfNeeded();
-  await page.screenshot({ path: `docs/evidence/exhibition-map/combined-map-${page.viewportSize()!.width}.png` });
+  await page.screenshot({
+    path: `docs/evidence/exhibition-map/combined-map-${page.viewportSize()!.width}.png`,
+  });
 });
 
 test('old map links preserve installation, saved and camera context', async ({
@@ -610,11 +611,12 @@ test('old map links preserve installation, saved and camera context', async ({
   await context.close();
 });
 
-
-test('view anchors open the intended panel in a new navigation and support keyboard switching', async ({ page }) => {
+test('view anchors open the intended panel in a new navigation and support keyboard switching', async ({
+  page,
+}) => {
   await page.goto('/explore/?mode=projects#explore-map');
   await expect(page.locator('[data-explore-panel="map"]')).toBeVisible();
-  const projects = page.getByRole('link', { name: 'Projects Browse images & ideas' });
+  const projects = page.getByRole('link', { name: 'Projects', exact: true });
   await projects.focus();
   await page.keyboard.press('Enter');
   await expect(projects).toHaveAttribute('aria-current', 'true');

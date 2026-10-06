@@ -162,6 +162,7 @@ if (root) {
           : matchMedia('(hover: hover) and (pointer: fine)').matches
             ? 'Hover to preview · Click to keep a work open'
             : 'Tap an artwork to meet the artist & explore the work';
+    q<HTMLElement>('[data-preview-jump]').hidden = !selected;
     for (const link of all<HTMLElement>('[data-landmark-open]')) {
       if (link.dataset.landmarkOpen === landmarkId)
         link.setAttribute('aria-current', 'true');
@@ -240,7 +241,7 @@ if (root) {
       const url = new URL(link.href);
       const back = new URL('/explore/', location.origin);
       back.searchParams.set('mode', 'map');
-      for (const key of ['q', 'theme', 'encounter', 'sort']) {
+      for (const key of ['q', 'theme', 'encounter', 'sort', 'savedOnly']) {
         const value = new URLSearchParams(location.search).get(key);
         if (value) back.searchParams.set(key, value);
       }
@@ -261,6 +262,7 @@ if (root) {
             : `${label}${room !== 'all' ? `. ${cards.filter((card) => card.dataset.atlasRoom === room).length} works. Choose an image or an artist.` : '. Choose a space.'}`;
     refreshSaved();
     drawAtlasScenes(root!, view, turn);
+    syncDiscovery();
     if (focus) {
       const heading =
         selected?.querySelector<HTMLElement>('h3') ??
@@ -272,8 +274,6 @@ if (root) {
       if (heading) {
         heading.tabIndex = -1;
         heading.focus({ preventScroll: true });
-        if (matchMedia('(max-width: 960px)').matches)
-          heading.scrollIntoView({ block: 'center', behavior: 'instant' });
       }
     }
   }
@@ -310,6 +310,76 @@ if (root) {
         ? `${count} ${count === 1 ? 'work' : 'works'} found. Select one to explore.`
         : 'No matches. Try another artist, title or keyword.';
   }
+  // The project grid is the shared result set; the map adds spatial context.
+  function syncDiscovery() {
+    const grid = document.querySelector<HTMLElement>('#project-results');
+    if (!grid) return;
+    const matches = new Set(
+      [...grid.querySelectorAll<HTMLElement>('[data-project-card]')]
+        .filter((card) => !card.hidden)
+        .map((card) => card.dataset.id!),
+    );
+    const filtered =
+      matches.size !== grid.querySelectorAll('[data-project-card]').length;
+    root!.dataset.filterActive = String(filtered);
+    const searchSection = q<HTMLElement>('[data-map-search]');
+    if (searchSection.parentElement !== panel) panel.prepend(searchSection);
+    searchSection.hidden = !filtered || !!selected || !!landmarkId;
+    q<HTMLElement>('#atlas-search-results').hidden = false;
+    let placed = 0;
+    for (const item of all<HTMLElement>('[data-search-result]')) {
+      item.hidden = !matches.has(item.dataset.selectProject!);
+      if (!item.hidden) placed++;
+    }
+    q<HTMLElement>('[data-search-count]').textContent =
+      `${placed} matching ${placed === 1 ? 'work' : 'works'} on the map${matches.size > placed ? ` · ${matches.size - placed} with location to be confirmed. See Projects.` : ''}`;
+    for (const pin of all<HTMLElement>('[data-map-pin]'))
+      pin.classList.toggle(
+        'is-filtered-out',
+        !matches.has(pin.dataset.mapPin!),
+      );
+    for (const item of all<HTMLElement>(
+      '.atlas-installation-list [data-select-project]',
+    ))
+      item.hidden = !matches.has(item.dataset.selectProject!);
+    for (const button of all<HTMLElement>('[data-room]')) {
+      let count = button.querySelector<HTMLElement>('[data-room-match-count]');
+      if (!count) {
+        count = document.createElement('span');
+        count.dataset.roomMatchCount = '';
+        button.append(count);
+      }
+      const number = cards.filter(
+        (card) =>
+          matches.has(card.dataset.atlasProject!) &&
+          (button.dataset.room === 'all' ||
+            card.dataset.atlasRoom === button.dataset.room),
+      ).length;
+      count.textContent = ` ${number}`;
+      const roomHit = root!.querySelector<HTMLElement>(
+        `.atlas-room-hit[data-room-open="${button.dataset.room}"]`,
+      );
+      if (roomHit) {
+        roomHit.classList.toggle('has-filter-matches', filtered && number > 0);
+        const label = roomHit.querySelector<HTMLElement>('span');
+        if (label)
+          label.textContent = filtered
+            ? `${number} ${number === 1 ? 'match' : 'matches'}`
+            : `${number} works`;
+      }
+    }
+    let note = panel.querySelector<HTMLElement>('[data-selection-filter-note]');
+    if (!note) {
+      note = document.createElement('p');
+      note.dataset.selectionFilterNote = '';
+      note.className = 'atlas-small';
+      panel.prepend(note);
+    }
+    note.hidden = !selected || matches.has(selected.dataset.atlasProject!);
+    note.textContent =
+      'This selected work is outside your current filters. Clear filters to see the full collection.';
+  }
+  document.addEventListener('createch:filters-changed', syncDiscovery);
   function clearSearch() {
     searchInput.value = '';
     search();
@@ -358,9 +428,15 @@ if (root) {
         overview.focus({ preventScroll: true });
         overview.scrollIntoView({ block: 'center', behavior: 'instant' });
       } else {
-        const choices = navigation.hasAttribute('data-work-step')
+        const candidates = navigation.hasAttribute('data-work-step')
           ? cards.filter((card) => card.dataset.atlasRoom === room)
           : cards.filter((card) => card !== selected);
+        const choices = candidates.filter((card) => {
+          const item = document.querySelector<HTMLElement>(
+            `#project-results [data-id="${card.dataset.atlasProject}"]`,
+          );
+          return !item?.hidden;
+        });
         const index = navigation.dataset.workStep
           ? (choices.indexOf(selected!) +
               Number(navigation.dataset.workStep) +
@@ -550,6 +626,16 @@ if (root) {
     if (img.complete && img.naturalWidth === 0) fail();
   }
   root.classList.add('atlas-enhanced');
+  const directoryDisclosure = q<HTMLDetailsElement>(
+    '[data-directory-disclosure]',
+  );
+  directoryDisclosure.open = false;
+  const revealDirectory = () => {
+    if (/^#(directory-|installation-|atlas-directory)/.test(location.hash))
+      directoryDisclosure.open = true;
+  };
+  window.addEventListener('hashchange', revealDirectory);
+  revealDirectory();
   q<HTMLElement>('[data-map-controls]').hidden = false;
   q<HTMLElement>('[data-view-controls]').hidden = false;
   q<HTMLElement>('[data-map-search]').hidden = false;

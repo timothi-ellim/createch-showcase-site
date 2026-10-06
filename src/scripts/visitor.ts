@@ -261,7 +261,11 @@ const filters = document.querySelector<HTMLFormElement>('#filters');
 if (filters) {
   filters.hidden = false;
   const search = document.querySelector<HTMLInputElement>('#search')!;
+  const savedOnly = filters.querySelector<HTMLInputElement>(
+    '[data-explore-saved]',
+  );
   const params = new URLSearchParams(location.search);
+  if (savedOnly) savedOnly.checked = params.get('savedOnly') === '1';
   const sort = filters.querySelector<HTMLSelectElement>('#sort')!;
   sort.value = ['title', 'maker'].includes(params.get('sort') ?? '')
     ? params.get('sort')!
@@ -308,6 +312,7 @@ if (filters) {
       .querySelectorAll<HTMLElement>('#project-results [data-project-card]')
       .forEach((card) => {
         const match =
+          (!savedOnly?.checked || saved.has(card.dataset.id!)) &&
           (theme === 'all' || card.dataset.theme === theme) &&
           (encounter === 'all' ||
             card.dataset.encounters?.split('|').includes(encounter)) &&
@@ -349,6 +354,13 @@ if (filters) {
       '[data-active-filters]',
     );
     const active: [string, () => void][] = [];
+    if (savedOnly?.checked)
+      active.push([
+        'Saved projects',
+        () => {
+          savedOnly.checked = false;
+        },
+      ]);
     if (theme !== 'all')
       active.push([
         `Theme: ${theme}`,
@@ -406,6 +418,7 @@ if (filters) {
       ['encounter', encounter],
       ['q', search.value.trim()],
       ['sort', sort.value === 'featured' ? '' : sort.value],
+      ['savedOnly', savedOnly?.checked ? '1' : ''],
     ]) {
       if (value && value !== 'all') url.searchParams.set(key, value);
       else url.searchParams.delete(key);
@@ -419,12 +432,25 @@ if (filters) {
     );
   }
   function viewResults() {
+    const drawer = filters!.querySelector<HTMLDetailsElement>('.filter-drawer');
+    if (drawer) drawer.open = false;
     document.querySelector<HTMLElement>('#result-count')?.focus();
     document.querySelector('#result-count')?.scrollIntoView({ block: 'start' });
   }
   filters.addEventListener('submit', (event) => {
     event.preventDefault();
     viewResults();
+  });
+  filters.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const drawer = filters.querySelector<HTMLDetailsElement>('.filter-drawer');
+    if (drawer?.open) {
+      drawer.open = false;
+      drawer.querySelector<HTMLElement>('summary')?.focus();
+    } else if (event.target === search && search.value) {
+      search.value = '';
+      applyFilters();
+    }
   });
   document
     .querySelector('[data-view-results]')
@@ -449,6 +475,9 @@ if (filters) {
       }),
     );
   search.addEventListener('input', () => applyFilters());
+  savedOnly?.addEventListener('change', () => applyFilters());
+  document.addEventListener('createch:save-feedback', () => applyFilters());
+  window.addEventListener('storage', () => applyFilters());
   sort.addEventListener('change', () => {
     sortCards();
     applyFilters();
@@ -459,6 +488,7 @@ if (filters) {
     search.focus();
   });
   function reset() {
+    if (savedOnly) savedOnly.checked = false;
     theme = 'all';
     encounter = 'all';
     search.value = '';
@@ -485,6 +515,7 @@ if (filters) {
     });
   window.addEventListener('popstate', () => {
     const next = new URLSearchParams(location.search);
+    if (savedOnly) savedOnly.checked = next.get('savedOnly') === '1';
     search.value = next.get('q') ?? '';
     theme = ['image', 'world', 'relation'].includes(next.get('theme') ?? '')
       ? next.get('theme')!

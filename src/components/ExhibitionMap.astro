@@ -169,6 +169,9 @@ const unplaced = projects.filter(
           <span data-map-hint>Choose a room to discover the work inside</span>
         </span>
         <span data-map-saved-summary></span>
+        <a href="#atlas-details" data-preview-jump hidden>
+          View selected work ↓
+        </a>
       </div>
     </section>
     <section
@@ -177,11 +180,11 @@ const unplaced = projects.filter(
       aria-label="Selected space or installation"
     >
       <div data-map-welcome>
-        <p class="atlas-kicker">Space to be curious</p>
+        <p class="atlas-kicker">Inside Canopy</p>
         <h2>
-          Find your way
+          Pick a space.
           <br />
-          into the work.
+          Find a new idea.
         </h2>
         <p>
           {mapRooms.length} spaces. {mapProjects.length} different perspectives.
@@ -315,139 +318,144 @@ const unplaced = projects.filter(
       JavaScript adds room selection and saved-project highlighting.
     </p>
   </noscript>
-  <section class="atlas-directory" aria-labelledby="atlas-directory-title">
-    <div class="atlas-directory-heading">
-      <div>
-        <p class="eyebrow">Every work, another way in</p>
-        <h2 id="atlas-directory-title">The room directory.</h2>
+  <details class="atlas-directory-disclosure" open data-directory-disclosure>
+    <summary>
+      Browse the works by room <span aria-hidden="true">＋</span>
+    </summary>
+    <section class="atlas-directory" aria-labelledby="atlas-directory-title">
+      <div class="atlas-directory-heading">
+        <div>
+          <p class="eyebrow">Every work, another way in</p>
+          <h2 id="atlas-directory-title">The room directory.</h2>
+        </div>
+        <p>
+          Proposed positions from the layout plan.
+          <br />
+          Final locations are still to be confirmed.
+        </p>
       </div>
-      <p>
-        Proposed positions from the layout plan.
-        <br />
-        Final locations are still to be confirmed.
-      </p>
-    </div>
-    {mapRooms.map((room) => (
-      <section id={`directory-${room.id}`} class="atlas-directory-room">
-        <h3>{room.label}</h3>
-        <div class="atlas-directory-grid">
-          {mapProjects
-            .filter((row) => row.roomId === room.id)
-            .map(({ project, marker, roomId }) => (
-              <article
-                id={`installation-${project.id}`}
-                data-atlas-project={project.id}
-                data-atlas-room={roomId}
-                data-atlas-marker={marker}
-                class="atlas-project"
-              >
-                <div class="atlas-preview-bar" hidden data-preview-bar>
-                  <span data-preview-state>Preview</span>
-                  <button
-                    type="button"
-                    data-preview-close
-                    aria-label="Close artwork preview"
-                  >
-                    Close <span aria-hidden="true">×</span>
-                  </button>
-                </div>
-                <div class="atlas-project-art">
-                  {project.media ? (
-                    <figure>
-                      <img
-                        src={project.media.src}
-                        srcset={responsiveMedia(project.media.src)}
-                        sizes="(max-width: 760px) 90vw, 400px"
-                        alt={project.media.alt}
-                        loading="lazy"
-                        width="720"
-                        height="480"
-                      />
-                      <figcaption>{project.media.credit}</figcaption>
-                    </figure>
-                  ) : (
-                    <div class="atlas-type-art" aria-hidden="true">
-                      <span>{project.title}</span>
-                      <span>
-                        Code becomes
-                        <br />
-                        {project.theme}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div class="atlas-project-copy">
-                  <p class="atlas-kicker">{room.label} · Proposed position</p>
-                  <h3>{project.title}</h3>
-                  <p class="atlas-maker">{project.maker}</p>
-                  {project.invitation && <p>{project.invitation}</p>}
-                  {!project.media && (
-                    <p class="atlas-small">Text-only project profile</p>
-                  )}
-                  {project.invigilationWindows?.length ? (
-                    <p class="atlas-small">
-                      <strong>Planned artist availability</strong>
-                      <br />
-                      {hoursLabel(project.invigilationWindows)} · UK time. These
-                      planned times may change.
-                    </p>
-                  ) : null}
-                  <div class="atlas-project-actions">
-                    <a
-                      class="button dark"
-                      href={`/projects/${project.slug}/?from=${encodeURIComponent(`/explore/?mode=map&project=${project.id}`)}`}
-                      data-atlas-profile
-                    >
-                      Explore work & artist <ArrowIcon />
-                    </a>
+      {mapRooms.map((room) => (
+        <section id={`directory-${room.id}`} class="atlas-directory-room">
+          <h3>{room.label}</h3>
+          <div class="atlas-directory-grid">
+            {mapProjects
+              .filter((row) => row.roomId === room.id)
+              .map(({ project, marker, roomId }) => (
+                <article
+                  id={`installation-${project.id}`}
+                  data-atlas-project={project.id}
+                  data-atlas-room={roomId}
+                  data-atlas-marker={marker}
+                  class="atlas-project"
+                >
+                  <div class="atlas-preview-bar" hidden data-preview-bar>
+                    <span data-preview-state>Preview</span>
                     <button
                       type="button"
-                      class="button secondary"
-                      data-save={project.id}
-                      data-title={project.title}
-                      hidden
-                      aria-pressed="false"
+                      data-preview-close
+                      aria-label="Close artwork preview"
                     >
-                      Save to my visit
+                      Close <span aria-hidden="true">×</span>
                     </button>
                   </div>
-                  <button
-                    class="atlas-return"
-                    type="button"
-                    data-map-room-return={roomId}
-                    hidden
-                  >
-                    ← All works in {room.label}
-                  </button>
-                  <div class="atlas-work-next" hidden data-work-next>
-                    <button type="button" data-work-step="-1">
-                      <span aria-hidden="true">←</span> Previous work
-                    </button>
-                    <button type="button" data-work-step="1">
-                      Next work <span aria-hidden="true">→</span>
-                    </button>
+                  <div class="atlas-project-art">
+                    {project.media ? (
+                      <figure>
+                        <img
+                          src={project.media.src}
+                          srcset={responsiveMedia(project.media.src)}
+                          sizes="(max-width: 760px) 90vw, 400px"
+                          alt={project.media.alt}
+                          loading="lazy"
+                          width="720"
+                          height="480"
+                        />
+                        <figcaption>{project.media.credit}</figcaption>
+                      </figure>
+                    ) : (
+                      <div class="atlas-type-art" aria-hidden="true">
+                        <span>{project.title}</span>
+                        <span>
+                          Code becomes
+                          <br />
+                          {project.theme}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </article>
+                  <div class="atlas-project-copy">
+                    <p class="atlas-kicker">{room.label} · Proposed position</p>
+                    <h3>{project.title}</h3>
+                    <p class="atlas-maker">{project.maker}</p>
+                    {project.invitation && <p>{project.invitation}</p>}
+                    {!project.media && (
+                      <p class="atlas-small">Text-only project profile</p>
+                    )}
+                    {project.invigilationWindows?.length ? (
+                      <p class="atlas-small">
+                        <strong>Planned artist availability</strong>
+                        <br />
+                        {hoursLabel(project.invigilationWindows)} · UK time.
+                        These planned times may change.
+                      </p>
+                    ) : null}
+                    <div class="atlas-project-actions">
+                      <a
+                        class="button dark"
+                        href={`/projects/${project.slug}/?from=${encodeURIComponent(`/explore/?mode=map&project=${project.id}`)}`}
+                        data-atlas-profile
+                      >
+                        Explore work & artist <ArrowIcon />
+                      </a>
+                      <button
+                        type="button"
+                        class="button secondary"
+                        data-save={project.id}
+                        data-title={project.title}
+                        hidden
+                        aria-pressed="false"
+                      >
+                        Save to my visit
+                      </button>
+                    </div>
+                    <button
+                      class="atlas-return"
+                      type="button"
+                      data-map-room-return={roomId}
+                      hidden
+                    >
+                      ← All works in {room.label}
+                    </button>
+                    <div class="atlas-work-next" hidden data-work-next>
+                      <button type="button" data-work-step="-1">
+                        <span aria-hidden="true">←</span> Previous work
+                      </button>
+                      <button type="button" data-work-step="1">
+                        Next work <span aria-hidden="true">→</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+          </div>
+        </section>
+      ))}
+      {unplaced.length > 0 && (
+        <section>
+          <h3>Location to be confirmed</h3>
+          <ul>
+            {unplaced.map((project) => (
+              <li>
+                <a href={`/projects/${project.slug}/`}>
+                  {project.title} — {project.maker}
+                </a>
+              </li>
             ))}
-        </div>
-      </section>
-    ))}
-    {unplaced.length > 0 && (
-      <section>
-        <h3>Location to be confirmed</h3>
-        <ul>
-          {unplaced.map((project) => (
-            <li>
-              <a href={`/projects/${project.slug}/`}>
-                {project.title} — {project.maker}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
-  </section>
+          </ul>
+        </section>
+      )}
+    </section>
+  </details>
 </div>
 <script>
   import '../scripts/exhibition-map';

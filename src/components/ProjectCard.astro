@@ -3,12 +3,19 @@ import ArrowIcon from './ArrowIcon.astro';
 import type { PublicProject } from '../data/catalogue';
 import { isSynthetic } from '../data/catalogue';
 import ProjectMedia from './ProjectMedia.astro';
+import { mapProjects } from '../data/exhibition-map';
 interface Props {
   project: PublicProject;
   saved?: boolean;
+  discover?: boolean;
   headingLevel?: 'h2' | 'h3';
 }
-const { project, saved = false, headingLevel: Heading = 'h2' } = Astro.props;
+const {
+  project,
+  saved = false,
+  discover = false,
+  headingLevel: Heading = 'h2',
+} = Astro.props;
 ---
 
 <article
@@ -32,7 +39,18 @@ const { project, saved = false, headingLevel: Heading = 'h2' } = Astro.props;
       tabindex="-1"
       aria-label={`View ${project.title}`}
     >
-      <ProjectMedia project={project} />
+      {discover && !project.media ? (
+        <div
+          class:list={['discovery-type-cover', project.theme]}
+          aria-hidden="true"
+        >
+          <span>Code becomes {project.theme}</span>
+          <strong>{project.title}</strong>
+          <span>{project.maker} · Explore the idea ↗</span>
+        </div>
+      ) : (
+        <ProjectMedia project={project} />
+      )}
     </a>
     {project.media && (
       <button
@@ -62,6 +80,21 @@ const { project, saved = false, headingLevel: Heading = 'h2' } = Astro.props;
     </Heading>
     <p class="maker">{project.maker}</p>
     {project.invitation && <p>{project.invitation}</p>}
+    {discover && (
+      <div class="discovery-card-links">
+        <a data-project-link href={`/projects/${project.slug}/`}>
+          Explore work <ArrowIcon />
+        </a>
+        {mapProjects.some((row) => row.project.id === project.id) && (
+          <a
+            href={`/explore/?mode=map&project=${project.id}`}
+            data-locate-project={project.id}
+          >
+            Locate on map <span aria-hidden="true">↗</span>
+          </a>
+        )}
+      </div>
+    )}
     <div class="card-bottom">
       {project.encounters.length > 0 && (
         <span class="tag">{project.encounters.join(' · ')}</span>

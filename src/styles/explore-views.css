@@ -65,11 +65,21 @@
 .explore-page > .lead {
   max-width: 680px;
 }
-.explore-page .atlas-proposal { border-color: #6a4d94; }
-.explore-page .atlas-room-switch button { border-color: #b7aacb; }
-.explore-page .atlas-room-switch button[aria-pressed='true'] { border-color: #776734; }
-.explore-page .atlas-directory-room > h3 { border-color: #c9bfd7; }
-.explore-page .atlas-directory-placeholder { border-color: #c9bfd7; }
+.explore-page .atlas-proposal {
+  border-color: #6a4d94;
+}
+.explore-page .atlas-room-switch button {
+  border-color: #b7aacb;
+}
+.explore-page .atlas-room-switch button[aria-pressed='true'] {
+  border-color: #776734;
+}
+.explore-page .atlas-directory-room > h3 {
+  border-color: #c9bfd7;
+}
+.explore-page .atlas-directory-placeholder {
+  border-color: #c9bfd7;
+}
 @media (max-width: 580px) {
   .explore-views a {
     padding: 10px;
@@ -82,5 +92,674 @@
 @media (forced-colors: active) {
   .explore-views a[aria-current='true'] {
     outline: 2px solid Highlight;
+  }
+}
+
+/* Shared discovery workspace. */
+body[data-page='explore'] .explore-page {
+  padding-block: 28px 64px;
+}
+.discovery-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.discovery-heading .eyebrow {
+  margin: 0 0 12px;
+  font-size: 0.7rem;
+  letter-spacing: 0.13em;
+}
+body[data-page='explore'] .discovery-heading h1 {
+  font-size: clamp(2rem, 3.6vw, 3.5rem);
+  line-height: 1.08;
+  margin: 0;
+  letter-spacing: -0.045em;
+}
+.discovery-heading > p {
+  margin: 0;
+  color: #575267;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.explore-page .discovery-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 12px;
+  padding: 12px 0;
+  margin: 0;
+  border-block: 1px solid #d1cbdc;
+  position: relative;
+}
+.discovery-toolbar .search-label {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+.discovery-toolbar .search-label > label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 7px;
+  display: block;
+}
+.discovery-toolbar .search-control input {
+  min-height: 50px;
+  padding: 12px 108px 12px 16px;
+  border: 1px solid #b3a9c3;
+  border-radius: 6px;
+  background: white;
+  font-size: 1rem;
+  width: 100%;
+}
+.explore-views {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin: 0;
+  border: 1px solid #c8c0d7;
+  background: #e9e5ef;
+  border-radius: 7px;
+  grid-column: 2;
+  grid-row: 1;
+}
+.explore-views a {
+  gap: 9px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 17px;
+  color: #423650;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+.explore-views strong {
+  font-size: 0.85rem;
+}
+.explore-views a[aria-current='true'] {
+  color: white;
+  background: #352052;
+  box-shadow: 0 1px 3px #21115122;
+}
+.explore-views svg {
+  width: 19px;
+  height: 19px;
+}
+.explore-page :is(a, button, input, summary, select):focus-visible {
+  outline: 3px solid #4425df;
+  outline-offset: 4px;
+}
+.discovery-toolbar .filter-drawer {
+  grid-column: 3;
+  grid-row: 1;
+  border: 0;
+  margin: 0;
+  background: transparent;
+}
+.discovery-toolbar .filter-drawer > summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 52px;
+  padding: 12px 16px;
+  border: 1px solid #b3a9c3;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: white;
+}
+.discovery-toolbar [data-filter-summary] {
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+.discovery-toolbar .filter-drawer-body {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  right: 0;
+  width: min(680px, 100%);
+  background: #fff;
+  border: 1px solid #b3a9c3;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 16px 36px #25143a22;
+  display: grid;
+  gap: 20px;
+}
+.discovery-toolbar .filter-drawer:not([open]) .filter-drawer-body {
+  display: none;
+}
+.discovery-saved {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+.discovery-saved input {
+  width: 20px;
+  height: 20px;
+  accent-color: #352052;
+}
+.discovery-toolbar .active-filters {
+  grid-column: 1/-1;
+  margin: 0;
+  gap: 8px;
+}
+.discovery-toolbar .filter-chip {
+  font-size: 0.75rem;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid #b3a9c3;
+  border-radius: 30px;
+  color: #352052;
+  background: #eeebf4;
+}
+.discovery-results {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  font-size: 0.8rem;
+}
+.discovery-results #result-count {
+  margin: 0;
+  padding: 0;
+  font-weight: 600;
+}
+.discovery-results > span {
+  color: #62596f;
+}
+[data-explore-panel],
+#result-count {
+  scroll-margin-top: 130px;
+}
+.explore-page .explore-grid {
+  gap: 24px;
+}
+.explore-page .project-card {
+  border: 1px solid #d1cbdc;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 3px 9px #25143a06;
+}
+.explore-page .project-media {
+  aspect-ratio: 1.65;
+}
+.discovery-type-cover {
+  aspect-ratio: 1.65;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #eae3f3;
+  color: #352052;
+}
+.discovery-type-cover.world {
+  background: #e2ebdf;
+  color: #284630;
+}
+.discovery-type-cover.relation {
+  background: #f3e3d6;
+  color: #593b2b;
+}
+.discovery-type-cover > span {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+}
+.discovery-type-cover > strong {
+  font:
+    italic 500 clamp(1.4rem, 2.2vw, 2.2rem)/1.12 Georgia,
+    serif;
+  max-width: 18ch;
+}
+.explore-page .project-card .card-copy {
+  display: flex;
+  flex-direction: column;
+}
+.explore-page .card-copy {
+  padding: 22px;
+}
+.explore-page .project-card h2 {
+  font-size: clamp(1.3rem, 1.65vw, 1.65rem);
+  letter-spacing: -0.025em;
+  line-height: 1.22;
+  margin: 8px 0;
+}
+.explore-page .card-copy .theme-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+.explore-page .card-copy .maker {
+  color: #584765;
+  font-size: 0.9rem;
+  margin: 10px 0;
+}
+.explore-page .card-copy > p:not([class]) {
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.explore-page .card-arrow,
+.explore-page .artwork-peek {
+  display: none;
+}
+.discovery-card-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+.discovery-card-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 0.8rem;
+  color: #382368;
+  text-underline-offset: 4px;
+}
+.discovery-card-links a:first-child {
+  font-weight: 700;
+}
+.explore-page .card-bottom {
+  border-top: 1px solid #e2dce9;
+  padding-top: 12px;
+  margin-top: 10px;
+}
+.explore-page .card-bottom .tag {
+  border: 0;
+  padding: 0;
+  color: #62596f;
+  font-size: 0.72rem;
+  background: none;
+}
+.explore-page .save-button {
+  border-radius: 5px;
+  min-width: 80px;
+}
+.discovery-layout-note {
+  margin: 0;
+  border: 0;
+  color: #62596f;
+  font-size: 0.75rem;
+  position: relative;
+}
+.discovery-layout-note summary {
+  cursor: pointer;
+  width: fit-content;
+  min-height: 32px;
+  padding: 6px 0;
+}
+.discovery-layout-note p {
+  max-width: 660px;
+  padding: 8px 0;
+  margin: 0;
+}
+.discovery-layout-note[open] p {
+  position: absolute;
+  right: 0;
+  width: min(400px, 75vw);
+  z-index: 5;
+  padding: 16px;
+  background: white;
+  border: 1px solid #b3a9c3;
+  border-radius: 6px;
+}
+[data-explore-view='projects'] .discovery-layout-note,
+[data-explore-view='map'] .discovery-results > span {
+  display: none;
+}
+.explore-page .atlas-toolbar {
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  gap: 8px;
+}
+.explore-page .atlas-storage:empty {
+  display: none;
+}
+.explore-page .atlas-saved-toggle {
+  display: none;
+}
+.explore-page .atlas-room-switch {
+  gap: 6px;
+}
+.explore-page .atlas-room-switch button {
+  min-height: 44px;
+  border: 1px solid #b7aacb;
+  border-radius: 5px;
+  padding: 8px 13px;
+  color: #40324e;
+  font-size: 0.8rem;
+}
+.explore-page .atlas-room-switch button[aria-pressed='true'] {
+  background: #f7fa87;
+  border-color: #827742;
+}
+[data-room-match-count] {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+.explore-page .atlas-breadcrumb {
+  margin: 0 0 12px;
+}
+.explore-page [data-preview-jump] {
+  display: none;
+  color: #352052;
+  font-weight: 700;
+  text-underline-offset: 4px;
+  min-height: 44px;
+  align-items: center;
+}
+.explore-page .atlas-workspace {
+  grid-template-columns: minmax(0, 1fr) 340px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px #25143a0c;
+}
+.explore-page .atlas-map-heading {
+  padding: 16px 20px 12px;
+}
+.explore-page .atlas-view-bar {
+  padding: 0 16px 6px;
+  gap: 6px;
+}
+.explore-page .atlas-detail-panel {
+  padding: 22px;
+  max-height: 700px;
+  overflow: auto;
+}
+.explore-page .atlas-detail-panel h2 {
+  font-size: 1.8rem;
+  letter-spacing: -0.035em;
+}
+.explore-page .atlas-detail-panel p {
+  font-size: 0.85rem;
+}
+.explore-page .atlas-room-list > a {
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 12px;
+}
+.explore-page .atlas-room-teaser {
+  width: 64px;
+  height: 58px;
+}
+.explore-page .atlas-room-teaser .atlas-artwork:not(:first-child) {
+  display: none;
+}
+.explore-page .atlas-scene {
+  min-height: 430px;
+  height: 460px;
+  aspect-ratio: auto;
+}
+.explore-page .atlas-scene[data-atlas-scene='all'] {
+  min-height: 470px;
+  height: 470px;
+}
+.explore-page .atlas-selected-project .atlas-project-art {
+  margin: 0;
+}
+.explore-page .atlas-selected-project .atlas-project-art img {
+  height: 160px;
+  object-fit: contain;
+  background: #ece8f2;
+  border-radius: 5px;
+}
+.explore-page .atlas-selected-project .atlas-project-copy {
+  padding-top: 12px;
+}
+.explore-page .atlas-project-copy h3 {
+  font-size: 1.4rem;
+  line-height: 1.25;
+}
+.explore-page .atlas-project-actions .button {
+  padding: 10px 12px;
+  min-height: 44px;
+  font-size: 0.8rem;
+}
+.explore-page .atlas-find {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+}
+.explore-page .atlas-find > label,
+.explore-page .atlas-search-field {
+  display: none;
+}
+.explore-page .atlas-search-results {
+  grid-template-columns: 1fr;
+}
+.explore-page .atlas-search-results > a {
+  padding: 10px 0;
+  border-bottom: 1px solid #d1cbdc;
+}
+.explore-page
+  .atlas[data-filter-active='true']
+  :is([data-map-welcome], [data-room-detail]) {
+  display: none;
+}
+.explore-page .atlas-pin.is-filtered-out {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+.explore-page .atlas-room-hit.has-filter-matches {
+  background: #f7fa87;
+  outline: 2px solid #827742;
+  outline-offset: 3px;
+}
+.explore-page
+  .atlas-pin.is-filtered-out:is(:focus-visible, :hover, [aria-current='true']) {
+  opacity: 1;
+  filter: none;
+}
+.atlas-directory-disclosure {
+  margin-top: 24px;
+  border-block: 1px solid #c9bfd7;
+}
+.atlas-directory-disclosure > summary {
+  padding: 20px 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.atlas-directory-disclosure > summary > span {
+  float: right;
+}
+.explore-page .atlas-directory-room > h3,
+.explore-page .atlas-directory-placeholder {
+  border-color: #c9bfd7;
+}
+.explore-page .atlas-landmarks {
+  margin-top: 16px;
+  padding: 16px;
+  background: #ece8f2;
+  border-radius: 8px;
+}
+.explore-page .atlas-landmarks h2 {
+  font-size: 0.85rem;
+}
+@media (min-width: 961px) {
+  .explore-page .atlas-workspace {
+    height: 650px;
+  }
+}
+@media (max-width: 960px) {
+  .explore-page [data-preview-jump] {
+    display: inline-flex;
+  }
+  .explore-page #atlas-details {
+    scroll-margin-top: 120px;
+  }
+  .discovery-heading > p {
+    font-size: 0.85rem;
+  }
+  .explore-page .discovery-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .discovery-toolbar .search-label {
+    grid-column: 1/-1;
+  }
+  .explore-views {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+  }
+  .discovery-toolbar .filter-drawer {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .explore-page .atlas-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .explore-page .atlas-detail-panel {
+    max-height: none;
+    overflow: visible;
+  }
+  .explore-page .atlas-selected-project {
+    display: grid;
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .explore-page .atlas-preview-bar {
+    grid-column: 1/-1;
+    margin: 0;
+  }
+  .explore-page .atlas-selected-project .atlas-project-art img {
+    height: 100px;
+  }
+  .explore-page .atlas-selected-project .atlas-project-art figcaption {
+    font-size: 0.6rem;
+  }
+  .explore-page .atlas-selected-project .atlas-project-copy {
+    padding: 0;
+  }
+  .explore-page
+    .atlas-selected-project
+    .atlas-project-copy
+    > p:not(.atlas-maker):not(.atlas-kicker) {
+    display: none;
+  }
+  .explore-page .atlas-selected-project .atlas-project-copy h3 {
+    font-size: 1.2rem;
+  }
+}
+@media (max-width: 580px) {
+  body[data-page='explore'] .explore-page {
+    padding-block: 22px 40px;
+  }
+  .discovery-heading {
+    display: block;
+    margin-bottom: 18px;
+  }
+  .discovery-heading .eyebrow {
+    font-size: 0.6rem;
+    margin-bottom: 8px;
+  }
+  .discovery-heading > p {
+    margin-top: 10px;
+  }
+  .discovery-heading > p br {
+    display: none;
+  }
+  .explore-page .discovery-toolbar {
+    padding: 12px 0;
+    gap: 10px;
+  }
+  .discovery-toolbar .filter-drawer > summary {
+    padding: 10px;
+  }
+  .discovery-toolbar [data-filter-summary] {
+    display: none;
+  }
+  .discovery-toolbar .filter-drawer-body {
+    padding: 16px;
+  }
+  .discovery-toolbar .filter-tools,
+  .discovery-toolbar .filter-actions {
+    flex-wrap: wrap;
+  }
+  .discovery-toolbar .filter-actions > * {
+    min-width: 0;
+    width: auto;
+    font-size: 0.8rem;
+  }
+  .explore-views a {
+    padding: 10px 15px;
+    min-height: 44px;
+  }
+  .discovery-results {
+    margin: 12px 0;
+  }
+  .discovery-results > span {
+    display: none;
+  }
+  .explore-page .explore-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .explore-page .card-copy {
+    padding: 20px;
+  }
+  .explore-page .atlas-room-switch {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+  .explore-page .atlas-room-switch button {
+    padding: 7px 5px;
+    font-size: 0.7rem;
+  }
+  [data-room-match-count] {
+    margin-left: 4px;
+    font-size: 0.65rem;
+  }
+  .explore-page .atlas-map-heading {
+    padding: 12px;
+    gap: 10px;
+  }
+  .explore-page .atlas-map-heading .atlas-kicker,
+  .explore-page .atlas-scale {
+    font-size: 0.6rem;
+  }
+  .explore-page .atlas-view-bar {
+    padding: 0 10px;
+  }
+  .explore-page .atlas-view-switch button {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+  .explore-page .atlas-scene,
+  .explore-page .atlas-scene[data-atlas-scene='all'] {
+    height: 400px;
+    min-height: 400px;
+  }
+  .explore-page .atlas-map-footer {
+    padding: 12px;
+    font-size: 0.65rem;
+  }
+  .explore-page .atlas-detail-panel {
+    padding: 16px;
+  }
+  .explore-page .atlas-project-actions {
+    gap: 8px;
+  }
+  .explore-page .atlas-work-next {
+    flex-wrap: wrap;
+  }
+}
+@media (forced-colors: active) {
+  .explore-page .atlas-pin.is-filtered-out {
+    opacity: 1;
+    outline: 1px dashed GrayText;
   }
 }

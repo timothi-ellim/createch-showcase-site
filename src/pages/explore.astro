@@ -11,44 +11,206 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
 
 <Layout title="Explore the showcase">
   <div class="wrap section explore-page" data-explore-page>
-    <p class="eyebrow">
-      {'{'} Explore the works {'}'}
-    </p>
-    <h1>Follow your curiosity.</h1>
-    <p class="lead">
-      {projects.length
-        ? 'Browse the work or step inside Canopy. Find an idea to make your visit your own.'
-        : 'Meet the people taking part. Their project pages are coming soon.'}
-    </p>
-    {hasMapPreview && (
-      <nav class="explore-views" aria-label="Explore views">
-        <a
-          href="#explore-projects"
-          data-explore-mode="projects"
-          aria-controls="explore-projects"
+    <header class="discovery-heading">
+      <div>
+        <p class="eyebrow">
+          {'{'} EXPLORE THE SHOWCASE {'}'}
+        </p>
+        <h1>Follow your curiosity.</h1>
+      </div>
+      <p>
+        Discover the work. <br />
+        Meet the makers.
+      </p>
+    </header>
+    {projects.length > 0 && (
+      <>
+        <form
+          id="filters"
+          class="filters discovery-toolbar"
+          hidden
+          role="search"
+          aria-label="Filter projects"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
-          </svg>
-          <span>
-            <strong>Projects</strong>
-            <span>Browse images &amp; ideas</span>
-          </span>
-        </a>
-        <a
-          href="#explore-map"
-          data-explore-mode="map"
-          aria-controls="explore-map"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2V5Zm6-2v16m6-14v16" />
-          </svg>
-          <span>
-            <strong>Map</strong>
-            <span>Find works at Canopy</span>
-          </span>
-        </a>
-      </nav>
+          {hasMapPreview && (
+            <nav class="explore-views" aria-label="Explore views">
+              <a
+                href="#explore-projects"
+                data-explore-mode="projects"
+                aria-controls="explore-projects"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
+                </svg>
+                <span>
+                  <strong>Projects</strong>
+                </span>
+              </a>
+              <a
+                href="#explore-map"
+                data-explore-mode="map"
+                aria-controls="explore-map"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2V5Zm6-2v16m6-14v16" />
+                </svg>
+                <span>
+                  <strong>Map</strong>
+                </span>
+              </a>
+            </nav>
+          )}
+          <div class="search-label">
+            <label for="search">
+              {isSynthetic
+                ? 'Search sample projects'
+                : 'Search artists, works or ideas'}
+            </label>
+            <div class="search-control">
+              <input
+                id="search"
+                type="search"
+                enterkeyhint="search"
+                placeholder="An artist, a work, a new idea…"
+              />
+              <button
+                type="button"
+                class="text-button"
+                data-clear-search
+                hidden
+              >
+                Clear search
+              </button>
+            </div>
+          </div>
+          <details class="filter-drawer">
+            <summary>
+              Filters <span data-filter-summary>No filters applied</span>
+              <span aria-hidden="true">＋</span>
+            </summary>
+            <div class="filter-drawer-body">
+              <label class="discovery-saved">
+                <input type="checkbox" data-explore-saved /> Saved projects only
+              </label>
+              <fieldset>
+                <legend>Theme</legend>
+                <div class="filter-options">
+                  <button
+                    type="button"
+                    aria-label="All themes"
+                    data-theme-filter="all"
+                    aria-pressed="true"
+                  >
+                    All themes
+                  </button>
+                  {themes
+                    .filter((theme) =>
+                      projects.some((project) => project.theme === theme.id),
+                    )
+                    .map((theme) => (
+                      <button
+                        type="button"
+                        aria-label={theme.name}
+                        data-theme-filter={theme.id}
+                        aria-pressed="false"
+                      >
+                        {theme.name}
+                      </button>
+                    ))}
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend>Encounter</legend>
+                <div class="filter-options">
+                  <button
+                    type="button"
+                    aria-label="All encounters"
+                    data-encounter-filter="all"
+                    aria-pressed="true"
+                  >
+                    All encounters
+                  </button>
+                  {projects.some((project) =>
+                    project.encounters.includes('Look / listen'),
+                  ) && (
+                    <button
+                      type="button"
+                      aria-label="Look / listen"
+                      data-encounter-filter="Look / listen"
+                      aria-pressed="false"
+                    >
+                      Look / listen
+                    </button>
+                  )}
+                  {projects.some((project) =>
+                    project.encounters.includes('Participate'),
+                  ) && (
+                    <button
+                      type="button"
+                      aria-label="Participate"
+                      data-encounter-filter="Participate"
+                      aria-pressed="false"
+                    >
+                      Participate
+                    </button>
+                  )}
+                </div>
+              </fieldset>
+              <div class="filter-tools">
+                <label class="sort-control">
+                  Sort projects
+                  <select id="sort">
+                    <option value="featured">Featured</option>
+                    <option value="title">A–Z</option>
+                    <option value="maker">Participant</option>
+                  </select>
+                </label>
+                <button type="reset" class="text-button">
+                  Clear all filters
+                </button>
+              </div>
+              <div class="filter-actions">
+                <button type="button" class="button outline" data-surprise>
+                  Surprise me <ArrowIcon />
+                </button>
+                <a
+                  class="button lime results-jump"
+                  href="#result-count"
+                  data-view-results
+                >
+                  View results ↓
+                </a>
+              </div>
+            </div>
+          </details>
+          <div
+            class="active-filters"
+            data-active-filters
+            hidden
+            aria-label="Active filters"
+          ></div>
+        </form>
+        <div class="discovery-results">
+          <p id="result-count" tabindex="-1" role="status" aria-live="polite">
+            {projects.length} projects
+          </p>
+          <span>Ideas to explore. People to meet.</span>
+          <details class="discovery-layout-note">
+            <summary>Proposed layout · Canopy, King Street</summary>
+            <p>
+              Installation positions may change. This schematic is not a
+              confirmed access or wayfinding guide.
+            </p>
+          </details>
+        </div>
+        <div id="no-results" class="empty-state" hidden>
+          <h2>No works found.</h2>
+          <p>Try another artist or idea, or clear your filters.</p>
+          <button data-reset-filters class="button dark">
+            Clear all filters
+          </button>
+        </div>
+      </>
     )}
     <section
       id="explore-projects"
@@ -57,179 +219,16 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
     >
       {projects.length > 0 && (
         <>
-          <a
-            class="text-link explore-skip"
-            href="#result-count"
-            data-browse-all
-          >
-            Browse all {projects.length} projects ↓
-          </a>
-          {isSynthetic && (
-            <p class="muted">
-              All entries and encounter labels below are synthetic examples, not
-              a confirmed programme.
-            </p>
-          )}
-          <form
-            id="filters"
-            class="filters"
-            hidden
-            role="search"
-            aria-label="Filter projects"
-          >
-            <div class="search-label">
-              <label for="search">
-                {isSynthetic ? 'Search the sample projects' : 'Search projects'}
-              </label>
-              <div class="search-control">
-                <input
-                  id="search"
-                  type="search"
-                  enterkeyhint="search"
-                  placeholder="Project, contributor or keyword"
-                />
-                <button
-                  type="button"
-                  class="text-button"
-                  data-clear-search
-                  hidden
-                >
-                  Clear search
-                </button>
-              </div>
-            </div>
-            <details class="filter-drawer">
-              <summary>
-                Filters &amp; sort{' '}
-                <span data-filter-summary>No filters applied</span>
-                <span aria-hidden="true">＋</span>
-              </summary>
-              <div class="filter-drawer-body">
-                <fieldset>
-                  <legend>Theme</legend>
-                  <div class="filter-options">
-                    <button
-                      type="button"
-                      aria-label="All themes"
-                      data-theme-filter="all"
-                      aria-pressed="true"
-                    >
-                      All themes
-                    </button>
-                    {themes
-                      .filter((theme) =>
-                        projects.some((project) => project.theme === theme.id),
-                      )
-                      .map((theme) => (
-                        <button
-                          type="button"
-                          aria-label={theme.name}
-                          data-theme-filter={theme.id}
-                          aria-pressed="false"
-                        >
-                          {theme.name}
-                        </button>
-                      ))}
-                  </div>
-                </fieldset>
-                <fieldset>
-                  <legend>Encounter</legend>
-                  <div class="filter-options">
-                    <button
-                      type="button"
-                      aria-label="All encounters"
-                      data-encounter-filter="all"
-                      aria-pressed="true"
-                    >
-                      All encounters
-                    </button>
-                    {projects.some((project) =>
-                      project.encounters.includes('Look / listen'),
-                    ) && (
-                      <button
-                        type="button"
-                        aria-label="Look / listen"
-                        data-encounter-filter="Look / listen"
-                        aria-pressed="false"
-                      >
-                        Look / listen
-                      </button>
-                    )}
-                    {projects.some((project) =>
-                      project.encounters.includes('Participate'),
-                    ) && (
-                      <button
-                        type="button"
-                        aria-label="Participate"
-                        data-encounter-filter="Participate"
-                        aria-pressed="false"
-                      >
-                        Participate
-                      </button>
-                    )}
-                  </div>
-                </fieldset>
-                <div class="filter-tools">
-                  <label class="sort-control">
-                    Sort projects
-                    <select id="sort">
-                      <option value="featured">Featured</option>
-                      <option value="title">A–Z</option>
-                      <option value="maker">Participant</option>
-                    </select>
-                  </label>
-                  <button type="reset" class="text-button">
-                    Clear all filters
-                  </button>
-                </div>
-                <div class="filter-actions">
-                  <button type="button" class="button outline" data-surprise>
-                    Surprise me <ArrowIcon />
-                  </button>
-                  <a
-                    class="button lime results-jump"
-                    href="#result-count"
-                    data-view-results
-                  >
-                    View results ↓
-                  </a>
-                </div>
-              </div>
-            </details>
-            <div
-              class="active-filters"
-              data-active-filters
-              hidden
-              aria-label="Active filters"
-            ></div>
-          </form>
           <noscript>
             <p class="notice">
               All projects are shown below. Enable JavaScript to filter projects
               or save a shortlist.
             </p>
           </noscript>
-          <div class="results-heading">
-            <p id="result-count" tabindex="-1" role="status" aria-live="polite">
-              {projects.length} {isSynthetic ? 'sample projects' : 'projects'}
-            </p>
-            <button hidden type="button" class="button dark" data-open-gallery>
-              Enter artwork viewer <span aria-hidden="true">⤢</span>
-            </button>
-          </div>
           <div id="project-results" class="project-grid explore-grid">
             {projects.map((project) => (
-              <ProjectCard project={project} />
+              <ProjectCard project={project} discover />
             ))}
-          </div>
-          <div id="no-results" class="empty-state" hidden>
-            <h2>No projects match yet.</h2>
-            <p>
-              Try a different keyword or clear the filters to see every project.
-            </p>
-            <button data-reset-filters class="button lime">
-              Clear all filters
-            </button>
           </div>
         </>
       )}
@@ -240,21 +239,11 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
         data-explore-panel="map"
         aria-label="Explore by space"
       >
-        <div class="explore-map-intro">
-          <h2>Explore by space.</h2>
-          <a class="text-link" href="#atlas-directory-title">
-            Room directory ↓
-          </a>
-        </div>
-        <p class="atlas-proposal">
-          <strong>Proposed exhibition layout</strong> Installation positions may
-          change. This schematic is not a confirmed access or wayfinding guide.
-        </p>
         <ExhibitionMap />
       </section>
     )}
   </div>
-  <ParticipantRoster />
+  {projects.length === 0 && <ParticipantRoster />}
 </Layout>
 
 <script>

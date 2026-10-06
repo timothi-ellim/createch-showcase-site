@@ -34,11 +34,12 @@ if (page && page.querySelector('[data-explore-mode="map"]')) {
     show(
       mapHash
         ? 'map'
-        : /^(#explore-projects|#project-)/.test(location.hash) || params.get('mode') === 'projects'
-        ? 'projects'
-        : params.get('mode') === 'map' || mapContext
-          ? 'map'
-          : 'projects',
+        : /^(#explore-projects|#project-)/.test(location.hash) ||
+            params.get('mode') === 'projects'
+          ? 'projects'
+          : params.get('mode') === 'map' || mapContext
+            ? 'map'
+            : 'projects',
     );
   }
   for (const link of links)
@@ -53,6 +54,52 @@ if (page && page.querySelector('[data-explore-mode="map"]')) {
       if (url.href !== location.href) history.pushState(null, '', url);
       show(mode);
     });
+  page.addEventListener('click', (event) => {
+    if (
+      !(event.target instanceof Element) ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    const link = event.target.closest<HTMLAnchorElement>(
+      '[data-locate-project]',
+    );
+    if (!link) return;
+    event.preventDefault();
+    const url = new URL(location.href);
+    url.searchParams.set('mode', 'map');
+    url.searchParams.set('project', link.dataset.locateProject!);
+    url.searchParams.delete('landmark');
+    url.hash = '';
+    history.pushState(null, '', url);
+    show('map');
+    page
+      .querySelector<HTMLElement>('.atlas-map-panel')
+      ?.scrollIntoView({ block: 'start' });
+    const heading = page.querySelector<HTMLElement>(
+      '.atlas-selected-project h3',
+    );
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
+  });
+  function updateLocateLinks() {
+    for (const link of page!.querySelectorAll<HTMLAnchorElement>(
+      '[data-locate-project]',
+    )) {
+      const url = new URL(location.href);
+      url.searchParams.set('mode', 'map');
+      url.searchParams.set('project', link.dataset.locateProject!);
+      url.searchParams.delete('landmark');
+      url.hash = '';
+      link.href = url.pathname + url.search;
+    }
+  }
+  document.addEventListener('createch:filters-changed', updateLocateLinks);
+  document.addEventListener('createch:explore-view-changed', updateLocateLinks);
   // Anchors remain useful when JavaScript is unavailable. With enhancement,
   // directory/project fragment links can also reveal their containing view.
   window.addEventListener('hashchange', () => {
