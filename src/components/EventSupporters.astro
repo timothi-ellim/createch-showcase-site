@@ -1,0 +1,155 @@
+---
+import { Image } from 'astro:assets';
+import lcb from '../assets/supporters/lcb.png';
+import canopy from '../assets/supporters/canopy.png';
+import dmu from '../assets/supporters/dmu.png';
+import cr8x from '../assets/supporters/cr8x.png';
+import wcbc from '../assets/supporters/wcbc.png';
+import createch from '../assets/supporters/createch.png';
+import banner from '../assets/supporters/banner.png';
+// Original files supplied by the organiser on 6 October 2026. No sponsor tiers.
+const marks = [
+  { id: 'lcb', source: lcb, alt: 'LCB', width: 150 },
+  { id: 'canopy', source: canopy, alt: 'Canopy', width: 210 },
+  {
+    id: 'dmu',
+    source: dmu,
+    alt: 'De Montfort University Leicester',
+    width: 170,
+  },
+  { id: 'cr8x', source: cr8x, alt: 'CR8X Leics', width: 96 },
+  { id: 'wcbc', source: wcbc, alt: 'Where Code Becomes Culture', width: 92 },
+  { id: 'createch', source: createch, alt: 'CreaTech', width: 100 },
+];
+---
+
+<section
+  class="event-supporters"
+  aria-labelledby="supporters-heading"
+  id="supporters"
+>
+  <div class="wrap">
+    <div class="supporters-heading">
+      <div>
+        <p class="eyebrow">With thanks</p>
+        <h2 id="supporters-heading">
+          Thank you for
+          <br />
+          <em>supporting the event.</em>
+        </h2>
+      </div>
+      <Image
+        class="supporters-banner"
+        src={banner}
+        alt=""
+        width={330}
+        widths={[330, 660]}
+        sizes="(max-width: 650px) 260px, 330px"
+        format="webp"
+        quality={90}
+        loading="lazy"
+      />
+    </div>
+    <ul
+      class="supporters-logos"
+      role="list"
+      aria-label="Event supporters and showcase logos"
+    >
+      {marks.map((mark) => (
+        <li class={mark.id}>
+          <Image
+            src={mark.source}
+            alt={mark.alt}
+            width={mark.width}
+            widths={[mark.width, Math.min(mark.width * 2, mark.source.width)]}
+            sizes={`${mark.width}px`}
+            format="webp"
+            quality={95}
+            loading="lazy"
+            decoding="async"
+          />
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+<style>
+  .event-supporters {
+    background: #fff;
+    color: var(--ct-ink);
+    padding-block: clamp(28px, 4vw, 48px);
+    border-block: 1px solid #d9d3e5;
+  }
+  .supporters-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding-bottom: 28px;
+  }
+  .eyebrow {
+    color: var(--ct-blue);
+    margin: 0 0 10px;
+  }
+  h2 {
+    font: 400 clamp(1.8rem, 3vw, 2.8rem)/1.08 var(--ct-font-display);
+    letter-spacing: -0.04em;
+    margin: 0;
+  }
+  h2 em {
+    color: var(--ct-blue);
+  }
+  .supporters-banner {
+    display: block;
+    width: min(33%, 330px);
+    height: auto;
+  }
+  .supporters-logos {
+    list-style: none;
+    padding: 28px 0 0;
+    margin: 0;
+    border-top: 1px solid #dedbe5;
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1.15fr 0.85fr 0.85fr 0.85fr;
+    gap: 24px;
+    align-items: center;
+  }
+  li {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+  }
+  .supporters-logos img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  @media (max-width: 900px) {
+    .supporters-logos {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      row-gap: 24px;
+    }
+  }
+  @media (max-width: 650px) {
+    .supporters-heading {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 20px;
+      padding-bottom: 24px;
+    }
+    .supporters-banner {
+      width: min(100%, 260px);
+    }
+    .supporters-logos {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px 24px;
+      padding-top: 24px;
+    }
+    li {
+      min-height: 86px;
+    }
+  }
+</style>

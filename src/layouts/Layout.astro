@@ -24,12 +24,14 @@ interface Props {
   title?: string;
   description?: string;
   privatePage?: boolean;
+  showLogos?: boolean;
   noIndex?: boolean;
   projectSlug?: string;
 }
 const {
   title,
   privatePage = false,
+  showLogos = true,
   noIndex = false,
   projectSlug,
   description = pageDescription(event, Astro.url.pathname),
@@ -122,7 +124,7 @@ const structuredData =
     <main id="main" tabindex="-1">
       <slot />
     </main>
-    {!privatePage && <LogoStrip />}
+    {!privatePage && showLogos && <LogoStrip />}
     <footer class="site-footer wrap">
       <p class="footer-statement" aria-hidden="true">
         Stay curious.

@@ -11,6 +11,7 @@ import EventDescription from '../components/EventDescription.astro';
 import PosterFeature from '../components/PosterFeature.astro';
 import InteractiveSketch from '../components/InteractiveSketch.astro';
 import HomeMap from '../components/HomeMap.astro';
+import EventSupporters from '../components/EventSupporters.astro';
 import { hasMapPreview } from '../data/exhibition-map';
 import { event, projects, themes, isSynthetic } from '../data/catalogue';
 const featured = themes
@@ -20,7 +21,7 @@ const featured = themes
   .slice(0, 3);
 ---
 
-<Layout>
+<Layout showLogos={false}>
   <section class="hero wrap poster-grid" data-pointer-hero>
     <div class="hero-pointer-glow" aria-hidden="true"></div>
     <div class="hero-copy">
@@ -74,6 +75,7 @@ const featured = themes
     </div>
     <ExhibitionWindow />
   </section>
+  <EventSupporters />
   {hasMapPreview && <HomeMap />}
   <div class="wrap"><EventActions /></div>
   {event.description && (
@@ -99,7 +101,7 @@ const featured = themes
       </div>
     </section>
   )}
-  <PosterFeature />
+  <PosterFeature showLogos={false} />
   <nav class="welcome-paths wrap" aria-label="Start exploring the showcase">
     <a href="/explore/">
       <span class="path-number" aria-hidden="true">

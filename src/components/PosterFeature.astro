@@ -4,6 +4,8 @@ import ShareLinks from './ShareLinks.astro';
 import LogoStrip from './LogoStrip.astro';
 import ArrowIcon from './ArrowIcon.astro';
 import { event } from '../data/catalogue';
+interface Props { showLogos?: boolean }
+const { showLogos = true } = Astro.props;
 import { promotion } from '../data/promotion';
 ---
 <section class="poster-feature light-section" aria-labelledby="poster-heading" id="poster">
@@ -26,7 +28,7 @@ import { promotion } from '../data/promotion';
         <ShareLinks compact />
       </div>
     </div>
-    <LogoStrip compact />
+    {showLogos && <LogoStrip compact />}
   </div>
 </section>
 <style>
