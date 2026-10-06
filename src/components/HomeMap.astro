@@ -1,0 +1,110 @@
+---
+import AtlasScene from './AtlasScene.astro';
+import AtlasArtwork from './AtlasArtwork.astro';
+import ArrowIcon from './ArrowIcon.astro';
+import { mapProjects } from '../data/exhibition-map';
+import { mapRooms } from '../lib/exhibition-map';
+import '../styles/exhibition-map.css';
+import '../styles/atlas-architecture.css';
+import '../styles/atlas-discovery.css';
+import '../styles/home-map.css';
+---
+
+<section class="home-map wrap" aria-labelledby="home-map-heading" data-home-map>
+  <div class="home-map-copy">
+    <p class="eyebrow">Step inside Canopy</p>
+    <h2 id="home-map-heading">
+      Three spaces.
+      <br />
+      <em>New perspectives.</em>
+    </h2>
+    <p>Choose a room and meet the people making work inside.</p>
+    <a class="button dark" href="/explore/?mode=map" data-home-map-explore>
+      Explore the exhibition <ArrowIcon />
+    </a>
+    <div class="home-map-preview" aria-label="Room preview">
+      <div class="home-map-prompt" data-home-map-prompt>
+        <span aria-hidden="true">↗</span>
+        <p>
+          A different way in.
+          <br />
+          <span>Follow a space. Find a new idea.</span>
+        </p>
+      </div>
+      {mapRooms.map((room) => {
+        const works = mapProjects.filter((row) => row.roomId === room.id);
+        const featured = works.find((row) => row.project.media) ?? works[0];
+        return (
+          <a
+            hidden
+            data-home-room-preview={room.id}
+            href={`/explore/?mode=map&room=${room.id}`}
+          >
+            {featured && <AtlasArtwork project={featured.project} />}
+            <span>
+              <strong>
+                {room.label} · {works.length} works
+              </strong>
+              {featured && (
+                <>
+                  <span>{featured.project.title}</span>
+                  <small>{featured.project.maker}</small>
+                </>
+              )}
+            </span>
+            <ArrowIcon />
+          </a>
+        );
+      })}
+    </div>
+    <nav class="home-map-room-links" aria-label="Explore a room">
+      {mapRooms.map((room) => (
+        <a
+          href={`/explore/?mode=map&room=${room.id}`}
+          data-home-room-link={room.id}
+        >
+          {room.label} <ArrowIcon />
+        </a>
+      ))}
+    </nav>
+  </div>
+  <div class="atlas home-map-visual" data-map-view="2d">
+    <div class="home-map-topline">
+      <span class="atlas-kicker">Canopy / King Street</span>
+      <div
+        class="home-map-views"
+        role="group"
+        aria-label="Homepage map view"
+        hidden
+        data-home-map-controls
+      >
+        <button type="button" aria-pressed="true" data-home-map-view="2d">
+          2D plan
+        </button>
+        <button type="button" aria-pressed="false" data-home-map-view="3d">
+          3D space
+        </button>
+      </div>
+    </div>
+    <AtlasScene space="all" discoveryLinks />
+    <noscript>
+      <p class="home-map-nojs">
+        Entrance on King Street · Public café at Canopy. Choose a labelled room
+        to explore its works.
+      </p>
+    </noscript>
+    <div class="home-map-caption">
+      <span data-home-map-hint>Choose a room to explore →</span>
+      <details>
+        <summary>Proposed layout</summary>
+        <p>
+          Installation positions may change. This schematic is not a confirmed
+          access or wayfinding guide. Not to scale; 3D heights are illustrative.
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
+<script>
+  import '../scripts/home-map';
+</script>

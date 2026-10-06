@@ -8,15 +8,18 @@ import AtlasLandmarkIcon from './AtlasLandmarkIcon.astro';
 import ArrowIcon from './ArrowIcon.astro';
 interface Props {
   space: SpaceId;
+  discoveryLinks?: boolean;
 }
-const { space } = Astro.props;
+const { space, discoveryLinks = false } = Astro.props;
+const roomHref = (id: string) =>
+  discoveryLinks ? `/explore/?mode=map&room=${id}` : `#directory-${id}`;
 const overview = space === 'all';
 const scene = projectAtlas(space, '2d', 0, 720, 560);
 const entries = overview
   ? mapRooms.map((room) => ({
       key: room.id,
       label: room.label,
-      href: `#directory-${room.id}`,
+      href: roomHref(room.id),
     }))
   : mapProjects
       .filter((row) => row.roomId === space)
@@ -89,7 +92,7 @@ const entries = overview
         {mapRooms.map((room) => (
           <a
             class="atlas-room-hit"
-            href={`#directory-${room.id}`}
+            href={roomHref(room.id)}
             data-room-open={room.id}
             data-scene-point={room.id}
           >
@@ -135,7 +138,11 @@ const entries = overview
       atlasLandmarks.map((landmark) => (
         <a
           class={`atlas-landmark atlas-landmark-${landmark.id}`}
-          href={`#landmark-${landmark.id}`}
+          href={
+            discoveryLinks
+              ? `/explore/?mode=map&landmark=${landmark.id}`
+              : `#landmark-${landmark.id}`
+          }
           data-landmark-open={landmark.id}
           data-scene-point={landmark.id}
         >

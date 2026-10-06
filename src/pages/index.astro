@@ -9,7 +9,7 @@ import ExhibitionWindow from '../components/ExhibitionWindow.astro';
 import EventDescription from '../components/EventDescription.astro';
 import PosterFeature from '../components/PosterFeature.astro';
 import InteractiveSketch from '../components/InteractiveSketch.astro';
-import MapInvitation from '../components/MapInvitation.astro';
+import HomeMap from '../components/HomeMap.astro';
 import { hasMapPreview } from '../data/exhibition-map';
 import { event, projects, themes, isSynthetic } from '../data/catalogue';
 const featured = themes
@@ -76,7 +76,7 @@ const featured = themes
     </div>
     <ExhibitionWindow />
   </section>
-  {hasMapPreview && <div class="wrap"><MapInvitation /></div>}
+  {hasMapPreview && <HomeMap />}
   {event.description && (
     <section
       class="light-section home-about"
