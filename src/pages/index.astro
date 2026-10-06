@@ -75,7 +75,6 @@ const featured = themes
     </div>
     <ExhibitionWindow />
   </section>
-  <EventSupporters />
   {hasMapPreview && <HomeMap />}
   <div class="wrap"><EventActions /></div>
   {event.description && (
@@ -101,6 +100,7 @@ const featured = themes
       </div>
     </section>
   )}
+  <EventSupporters />
   <PosterFeature showLogos={false} />
   <nav class="welcome-paths wrap" aria-label="Start exploring the showcase">
     <a href="/explore/">
