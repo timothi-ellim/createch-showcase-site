@@ -19,7 +19,11 @@ import '../styles/home-map.css';
       <em>New perspectives.</em>
     </h2>
     <p>Choose a room and meet the people making work inside.</p>
-    <a class="button dark" href="/explore/?mode=map" data-home-map-explore>
+    <a
+      class="button dark"
+      href="/explore/?mode=map&view=3d"
+      data-home-map-explore
+    >
       Explore the exhibition <ArrowIcon />
     </a>
     <div class="home-map-preview" aria-label="Room preview">
@@ -38,7 +42,7 @@ import '../styles/home-map.css';
           <a
             hidden
             data-home-room-preview={room.id}
-            href={`/explore/?mode=map&room=${room.id}`}
+            href={`/explore/?mode=map&room=${room.id}&view=3d`}
           >
             {featured && <AtlasArtwork project={featured.project} />}
             <span>
@@ -60,7 +64,7 @@ import '../styles/home-map.css';
     <nav class="home-map-room-links" aria-label="Explore a room">
       {mapRooms.map((room) => (
         <a
-          href={`/explore/?mode=map&room=${room.id}`}
+          href={`/explore/?mode=map&room=${room.id}&view=3d`}
           data-home-room-link={room.id}
         >
           {room.label} <ArrowIcon />
@@ -68,7 +72,7 @@ import '../styles/home-map.css';
       ))}
     </nav>
   </div>
-  <div class="atlas home-map-visual" data-map-view="2d">
+  <div class="atlas home-map-visual" data-map-view="3d">
     <div class="home-map-topline">
       <span class="atlas-kicker">Canopy / King Street</span>
       <div
@@ -78,15 +82,15 @@ import '../styles/home-map.css';
         hidden
         data-home-map-controls
       >
-        <button type="button" aria-pressed="true" data-home-map-view="2d">
+        <button type="button" aria-pressed="false" data-home-map-view="2d">
           2D plan
         </button>
-        <button type="button" aria-pressed="false" data-home-map-view="3d">
+        <button type="button" aria-pressed="true" data-home-map-view="3d">
           3D space
         </button>
       </div>
     </div>
-    <AtlasScene space="all" discoveryLinks />
+    <AtlasScene space="all" discoveryLinks initialView="3d" />
     <noscript>
       <p class="home-map-nojs">
         Entrance on King Street · Public café at Canopy. Choose a labelled room
@@ -94,7 +98,12 @@ import '../styles/home-map.css';
       </p>
     </noscript>
     <div class="home-map-caption">
-      <span data-home-map-hint>Choose a room to explore →</span>
+      <span data-home-map-hint>
+        <span class="home-map-cue" aria-hidden="true">
+          ↗
+        </span>{' '}
+        Choose a room to step inside
+      </span>
       <details>
         <summary>Proposed layout</summary>
         <p>

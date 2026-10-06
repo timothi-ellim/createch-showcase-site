@@ -1,7 +1,11 @@
 ---
 import { mapProjects } from '../data/exhibition-map';
 import { mapRooms } from '../lib/exhibition-map';
-import { projectAtlas, type SpaceId } from '../lib/atlas-geometry';
+import {
+  projectAtlas,
+  type SpaceId,
+  type AtlasView,
+} from '../lib/atlas-geometry';
 import { atlasLandmarks } from '../lib/atlas-landmarks';
 import AtlasArtwork from './AtlasArtwork.astro';
 import AtlasLandmarkIcon from './AtlasLandmarkIcon.astro';
@@ -9,12 +13,15 @@ import ArrowIcon from './ArrowIcon.astro';
 interface Props {
   space: SpaceId;
   discoveryLinks?: boolean;
+  initialView?: AtlasView;
 }
-const { space, discoveryLinks = false } = Astro.props;
+const { space, discoveryLinks = false, initialView = '2d' } = Astro.props;
 const roomHref = (id: string) =>
-  discoveryLinks ? `/explore/?mode=map&room=${id}` : `#directory-${id}`;
+  discoveryLinks
+    ? `/explore/?mode=map&room=${id}${initialView === '3d' ? '&view=3d' : ''}`
+    : `#directory-${id}`;
 const overview = space === 'all';
-const scene = projectAtlas(space, '2d', 0, 720, 560);
+const scene = projectAtlas(space, initialView, 0, 720, 560);
 const entries = overview
   ? mapRooms.map((room) => ({
       key: room.id,
@@ -140,7 +147,7 @@ const entries = overview
           class={`atlas-landmark atlas-landmark-${landmark.id}`}
           href={
             discoveryLinks
-              ? `/explore/?mode=map&landmark=${landmark.id}`
+              ? `/explore/?mode=map&landmark=${landmark.id}${initialView === '3d' ? '&view=3d' : ''}`
               : `#landmark-${landmark.id}`
           }
           data-landmark-open={landmark.id}

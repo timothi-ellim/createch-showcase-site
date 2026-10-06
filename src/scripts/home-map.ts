@@ -5,7 +5,7 @@ const home = document.querySelector<HTMLElement>('[data-home-map]');
 if (home) {
   const drawing = home.querySelector<HTMLElement>('.home-map-visual')!;
   const controls = home.querySelector<HTMLElement>('[data-home-map-controls]')!;
-  let view: AtlasView = '2d';
+  let view: AtlasView = '3d';
   let room: string | undefined;
   const previews = [
     ...home.querySelectorAll<HTMLElement>('[data-home-room-preview]'),
@@ -39,6 +39,28 @@ if (home) {
     drawAtlasScenes(drawing, view, 0);
     preview(room);
   }
+  // A single short invitation when the map enters view, never a looping distraction.
+  let cueFinished = false;
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const stopCue = () => {
+    cueFinished = true;
+    drawing.classList.remove('is-inviting');
+  };
+  const visibility = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      visibility.disconnect();
+      if (cueFinished || reducedMotion.matches) return;
+      drawing.classList.add('is-inviting');
+      window.setTimeout(stopCue, 3400);
+    },
+    { threshold: 0.45 },
+  );
+  visibility.observe(drawing);
+  drawing.addEventListener('pointerover', stopCue, { once: true });
+  drawing.addEventListener('pointerdown', stopCue, { once: true });
+  home.addEventListener('focusin', stopCue, { once: true });
+  reducedMotion.addEventListener('change', stopCue);
   const roomFor = (target: EventTarget | null) =>
     target instanceof Element
       ? target.closest<HTMLElement>(

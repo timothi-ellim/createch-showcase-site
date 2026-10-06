@@ -195,6 +195,64 @@
 .home-map .atlas-face.is-home-room-active {
   fill: #e8e9ad;
 }
+.home-map-cue {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: #f7fa87;
+  color: #302347;
+  font-size: 0.9rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .home-map-visual.is-inviting .atlas-room-hit::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border: 2px solid #76672e;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    animation: home-map-invitation 1.6s ease-out both;
+  }
+  .home-map-visual.is-inviting [data-room-open='ws09']::after {
+    animation-delay: 0.65s;
+  }
+  .home-map-visual.is-inviting [data-room-open='ws10']::after {
+    animation-delay: 1.3s;
+  }
+  .home-map-visual.is-inviting .home-map-cue {
+    animation: home-map-arrow 1.4s ease-in-out 2;
+  }
+}
+@keyframes home-map-invitation {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  25% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+}
+@keyframes home-map-arrow {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(2px, -2px);
+  }
+}
+:root[data-loop-motion='paused'] .home-map-visual .atlas-room-hit::after,
+:root[data-loop-motion='paused'] .home-map-cue {
+  animation: none;
+}
 .home-map-caption {
   display: flex;
   justify-content: space-between;
