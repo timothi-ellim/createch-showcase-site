@@ -2,6 +2,7 @@
 import ArrowIcon from '../components/ArrowIcon.astro';
 import Layout from '../layouts/Layout.astro';
 import EventFacts from '../components/EventFacts.astro';
+import EventActions from '../components/EventActions.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import ParticipantRoster from '../components/ParticipantRoster.astro';
 import ProgrammePreview from '../components/ProgrammePreview.astro';
@@ -77,6 +78,7 @@ const featured = themes
     <ExhibitionWindow />
   </section>
   {hasMapPreview && <div class="wrap"><MapInvitation /></div>}
+  <div class="wrap"><EventActions /></div>
   {event.description && (
     <section
       class="light-section home-about"

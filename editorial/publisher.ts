@@ -75,6 +75,7 @@ export async function runAstroBuild(
   outDir: string,
   mode: 'editorial-preview' | 'production' = 'editorial-preview',
   receiptPath?: string,
+  reminderReceiptPath?: string,
 ) {
   ensureBuildPath(outDir);
   await mkdir(outDir, { recursive: true });
@@ -97,6 +98,8 @@ export async function runAstroBuild(
     'PUBLIC_SUPABASE_PUBLISHABLE_KEY',
     'PUBLIC_PORTAL_ENVIRONMENT',
     'PUBLIC_PROJECT_ASSET_ORIGIN',
+    'PUBLIC_REMINDERS_ENABLED',
+    'CREATECH_REMINDERS_LAUNCH_RECEIPT',
     'CHROME_PATH',
     'PLAYWRIGHT_BROWSERS_PATH',
   ])
@@ -106,6 +109,7 @@ export async function runAstroBuild(
     CREATECH_SNAPSHOT: snapshotPath,
     CREATECH_BUILD_DIR: outDir,
     CREATECH_RELEASE_APPROVAL: receiptPath ?? '',
+    CREATECH_REMINDERS_LAUNCH_RECEIPT: reminderReceiptPath ?? env.CREATECH_REMINDERS_LAUNCH_RECEIPT ?? '',
   });
   return await new Promise<void>((resolveBuild, reject) => {
     const child = spawn(
@@ -170,6 +174,12 @@ export async function verifyOutput(
     throw new ContentError('BUILT_REVISION_MISMATCH');
   const files = await inventory(directory);
   const fileNames = new Set(files.map((file) => file.path));
+  if (fileNames.has('_worker.js')) {
+    const service = JSON.parse(await readFile(join(directory, 'reminder-service.json'), 'utf8'));
+    const routes = JSON.parse(await readFile(join(directory, '_routes.json'), 'utf8'));
+    if (service.revision !== snapshot.revision || !/^[a-f0-9]{64}$/.test(service.build) || service.workerSha256 !== files.find(f => f.path === '_worker.js')?.sha256 || JSON.stringify(routes) !== JSON.stringify({version:1,include:['/api/reminders/*'],exclude:[]}))
+      throw new ContentError('REMINDER_WORKER_MISMATCH');
+  }
   for (const project of snapshot.projects) {
     if (!fileNames.has(`projects/${project.slug}/index.html`))
       throw new ContentError('PROJECT_ROUTE_MISSING');
@@ -203,7 +213,7 @@ export async function verifyOutput(
       )
     )
       throw new ContentError('PRIVATE_FILE_IN_OUTPUT');
-    if (/\.(?:html|js|json|css|txt|svg)$/.test(file.path)) {
+    if (/\.(?:html|js|json|css|txt|svg|ics)$/.test(file.path)) {
       const text = await readFile(join(directory, file.path), 'utf8');
       if (
         file.path.endsWith('.html') &&
@@ -244,7 +254,7 @@ export async function publishLocal(
 ) {
   const snapshot = readSnapshot(snapshotValue);
   const sourceFiles = await Promise.all(
-    ['src', 'public'].map(async (name) =>
+    ['src', 'public', 'functions'].map(async (name) =>
       (await inventory(join(repositoryRoot, name))).map((file) => ({
         ...file,
         path: `${name}/${file.path}`,
@@ -252,7 +262,7 @@ export async function publishLocal(
     ),
   );
   const configuration = await Promise.all(
-    ['astro.config.mjs', 'package.json', 'package-lock.json'].map(
+    ['astro.config.mjs', 'package.json', 'package-lock.json', 'scripts/reminder-build.mjs', 'editorial/reminders.ts', 'editorial/reminders-http.ts', 'editorial/reminders-webhook.ts', 'editorial/reminder-launch.ts'].map(
       async (path) => ({
         path,
         sha256: createHash('sha256')
@@ -261,7 +271,7 @@ export async function publishLocal(
       }),
     ),
   );
-  const sourceHash = digest([...sourceFiles.flat(), ...configuration]);
+  const sourceHash = digest([...sourceFiles.flat(), ...configuration, { remindersEnabled: process.env.PUBLIC_REMINDERS_ENABLED === 'true' }]);
   if (snapshot.publicationStatus !== 'synthetic-local-only')
     throw new ContentError('LOCAL_PILOT_ACCEPTS_SYNTHETIC_ONLY');
   let pointer: LivePointer | null = null;

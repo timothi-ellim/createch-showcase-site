@@ -1,0 +1,48 @@
+---
+import { event, snapshot } from '../data/catalogue';
+import { snapshotOrigin } from '../lib/project-url';
+import { googleCalendarUrl, calendarPath } from '../lib/event-calendar';
+---
+
+<details class="calendar-picker" data-calendar-picker>
+  <summary>
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      aria-hidden="true"
+    >
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M7 2v6M17 2v6M3 11h18m-13 4h3m2 0h3" />
+    </svg>
+    Add to calendar
+    <span class="calendar-plus" aria-hidden="true">
+      +
+    </span>
+  </summary>
+  <div class="calendar-options">
+    <a
+      href={googleCalendarUrl(event, snapshotOrigin(snapshot))}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <strong>
+        Google Calendar <span aria-hidden="true">↗</span>
+      </strong>
+      <span>Opens in a new tab</span>
+    </a>
+    <a href={calendarPath} download="createch-showcase-2026.ics">
+      <strong>
+        Apple, Outlook & other calendars <span aria-hidden="true">↓</span>
+      </strong>
+      <span>Download the calendar file (.ics)</span>
+    </a>
+    <p>
+      Save the event in your calendar app to finish. You can choose your own
+      alerts there.
+    </p>
+  </div>
+</details>

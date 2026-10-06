@@ -1,4 +1,5 @@
 import type { PublicSnapshot, PublicProject } from './content-schema.ts';
+import { zonedInstant } from './event-time.ts';
 
 type Event = PublicSnapshot['event'];
 export const socialImagePath = (slug?: string) =>
@@ -30,13 +31,10 @@ export function pageDescription(event: Event, path: string): string {
   return descriptions[path] ?? eventSummary(event);
 }
 export function eventDateTime(event: Event, time: string): string {
-  const offset = new Intl.DateTimeFormat('en-GB', {
-    timeZone: event.timeZone,
-    timeZoneName: 'longOffset',
-  })
-    .formatToParts(new Date(`${event.date}T${time}:00Z`))
-    .find((part) => part.type === 'timeZoneName')!.value;
-  return `${event.date}T${time}:00${offset === 'GMT' ? '+00:00' : offset.slice(3)}`;
+  const instant = zonedInstant(event.date, time, event.timeZone);
+  const offsetMinutes = (Date.parse(`${event.date}T${time}:00Z`) - instant) / 60000;
+  const abs = Math.abs(offsetMinutes);
+  return `${event.date}T${time}:00${offsetMinutes < 0 ? '-' : '+'}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(abs % 60).padStart(2, '0')}`;
 }
 export function eventStructuredData(event: Event) {
   if (!event.publicSiteUrl) return null;
