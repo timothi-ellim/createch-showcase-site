@@ -49,7 +49,10 @@ const imagePath = socialImagePath(projectSlug);
 const imageUrl = canonicalUrl
   ? new URL(imagePath, event.publicSiteUrl!).href
   : imagePath;
-const imageAlt = `${title ?? event.title} — ${event.series}. ${event.dateLabel}, ${event.startTime}–${event.endTime} (UK time), ${event.venue.name}, ${event.venue.city}.`;
+const imageType = projectSlug ? 'image/png' : 'image/jpeg';
+const imageAlt = projectSlug
+  ? `${title ?? event.title} — ${event.series}. ${event.dateLabel}, ${event.startTime}–${event.endTime} (UK time), ${event.venue.name}, ${event.venue.city}.`
+  : `Hero banner for ${event.title}, ${event.series}, with blue, yellow and white lettering, a monochrome collage and supporter logos.`;
 const structuredData =
   indexable && path === '/' ? eventStructuredData(event) : null;
 ---
@@ -75,7 +78,10 @@ const structuredData =
     <meta property="og:description" content={description} />
     {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
     <meta property="og:image" content={imageUrl} />
-    <meta property="og:image:type" content="image/png" />
+    {imageUrl.startsWith('https://') && (
+      <meta property="og:image:secure_url" content={imageUrl} />
+    )}
+    <meta property="og:image:type" content={imageType} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={imageAlt} />

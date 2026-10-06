@@ -3,7 +3,9 @@ import { zonedInstant } from './event-time.ts';
 
 type Event = PublicSnapshot['event'];
 export const socialImagePath = (slug?: string) =>
-  slug ? `/social/projects/${slug}.png` : '/social/event.png';
+  slug
+    ? `/social/projects/${slug}.png`
+    : '/social/where-code-becomes-culture-fac3d7b8.jpg';
 
 export function eventParagraphs(event: Event): string[] {
   return event.description?.split(/\n\s*\n/).filter(Boolean) ?? [];

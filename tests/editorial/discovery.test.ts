@@ -106,7 +106,16 @@ test(
     );
     assert.match(
       home,
-      /property="og:image" content="https:\/\/discovery\.example\.invalid\/social\/event.png"/,
+      /property="og:image" content="https:\/\/discovery\.example\.invalid\/social\/where-code-becomes-culture-fac3d7b8\.jpg"/,
+    );
+    assert.match(home, /property="og:image:type" content="image\/jpeg"/);
+    assert.match(
+      home,
+      /property="og:image:secure_url" content="https:\/\/discovery\.example\.invalid\/social\/where-code-becomes-culture-fac3d7b8\.jpg"/,
+    );
+    assert.match(
+      home,
+      /name="twitter:image" content="https:\/\/discovery\.example\.invalid\/social\/where-code-becomes-culture-fac3d7b8\.jpg"/,
     );
     assert.match(home, /name="twitter:card" content="summary_large_image"/);
     const structured = JSON.parse(
@@ -160,7 +169,19 @@ test(
       sitemap,
       /my-visit|participant|organiser|404|localhost/,
     );
-    const image = await sharp(join(site, 'social/event.png')).metadata();
+    assert.deepEqual(structured.image, [
+      'https://discovery.example.invalid/social/where-code-becomes-culture-fac3d7b8.jpg',
+    ]);
+    const banner = await readFile(
+      join(site, 'social/where-code-becomes-culture-fac3d7b8.jpg'),
+    );
+    const image = await sharp(banner).metadata();
+    assert.equal(image.format, 'jpeg');
+    assert.ok(
+      banner.length < 300_000,
+      'The social banner must stay small for preview fetches.',
+    );
+    assert.equal(image.exif, undefined);
     assert.equal(image.width, 1200);
     assert.equal(image.height, 630);
   },
