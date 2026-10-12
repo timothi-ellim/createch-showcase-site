@@ -7,6 +7,12 @@ import '../styles/ambient-motion.css';
 import ArtworkViewer from '../components/ArtworkViewer.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import LogoStrip from '../components/LogoStrip.astro';
+import AnalyticsChoice from '../components/AnalyticsChoice.astro';
+import {
+  googleAnalyticsMeasurementId,
+  analyticsVerificationTag,
+  isAnalyticsPage,
+} from '../lib/google-analytics';
 import {
   pageDescription,
   socialImagePath,
@@ -54,6 +60,12 @@ const imageAlt = projectSlug
   : `${event.title}, ${event.series}. ${event.dateLabel}, ${event.startTime}–${event.endTime} UK time. ${event.venue.name}, ${event.venue.city}. Blue and yellow event graphic.`;
 const structuredData =
   indexable && path === '/' ? eventStructuredData(event) : null;
+const analyticsChoice =
+  !privatePage && (isAnalyticsPage(path) || path === '/privacy/');
+const analyticsTag =
+  indexable && isAnalyticsPage(path)
+    ? analyticsVerificationTag(googleAnalyticsMeasurementId)
+    : null;
 ---
 
 <!doctype html>
@@ -61,6 +73,7 @@ const structuredData =
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
+    {analyticsTag && <Fragment set:html={analyticsTag.html} />}
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     {!indexable && <meta name="robots" content="noindex, nofollow" />}
@@ -111,7 +124,7 @@ const structuredData =
             ? 'explore'
             : path === '/map/'
               ? 'map'
-            : 'reading'
+              : 'reading'
     }
   >
     <a class="skip-link" href="#main">
@@ -126,6 +139,7 @@ const structuredData =
       </div>
     )}
     <SiteHeader />
+    {analyticsChoice && <AnalyticsChoice preview={isPreview} />}
     <main id="main" tabindex="-1">
       <slot />
     </main>
@@ -156,6 +170,17 @@ const structuredData =
         <a href="/sharing/">Sharing pack</a>
         <a href="/participants/">Participant help</a>
         <a href="/visit/">Plan your visit</a>
+        {!privatePage && <a href="/privacy/">Privacy and cookies</a>}
+        {analyticsChoice && (
+          <button
+            type="button"
+            class="analytics-settings"
+            data-analytics-settings
+            hidden
+          >
+            Analytics settings
+          </button>
+        )}
       </div>
       <p class="footer-note">
         {isSynthetic
@@ -181,3 +206,17 @@ const structuredData =
     </script>
   </body>
 </html>
+<style>
+  .analytics-settings {
+    border: 0;
+    background: none;
+    padding: 0.25rem 0;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+    min-height: 44px;
+  }
+  .analytics-settings[hidden] {
+    display: none !important;
+  }
+</style>

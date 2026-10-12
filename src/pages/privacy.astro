@@ -1,0 +1,84 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { event } from '../data/catalogue';
+import { analyticsMeasurementId } from '../lib/analytics-consent';
+---
+
+<Layout
+  title="Privacy and cookies"
+  description="Choose whether CreaTech Showcase can use Google Analytics to understand visits."
+>
+  <div class="wrap section">
+    <p class="eyebrow">Your choice</p>
+    <h1>Privacy and cookies</h1>
+    <div class="prose">
+      <h2>Visitor statistics are optional</h2>
+      <p>
+        We use Google Analytics to understand visits to the public exhibition
+        guide. Analytics cookies and visitor measurement stay off until you
+        choose “Allow analytics”. Choosing “No thanks” does not change how the
+        site works.
+      </p>
+      <button type="button" class="button" data-analytics-settings hidden>
+        Change analytics choice
+      </button>
+      <noscript>
+        <p>JavaScript is off, so analytics is off too.</p>
+      </noscript>
+      <h2>What Google receives</h2>
+      <p>
+        If you allow analytics, Google receives the public pages you visit and
+        information such as your device, browser, language and approximate
+        location. Cookies help count visits and returning visitors. We do not
+        use this data for advertising.
+      </p>
+      <p>
+        We leave private workspaces, reminder forms and your shortlist out of
+        analytics. We do not send form answers, email addresses, URL query
+        strings or fragments, or the address of the page you came from.
+        Automatic tracking of searches, downloads, links and form interactions
+        is off.
+      </p>
+      <p>
+        The public guide loads a Google script to verify this website in Google
+        Search Console. Loading it connects your browser to Google, even if you
+        decline analytics. Visitor measurement remains disabled until you allow
+        it.
+      </p>
+      <p>
+        Read{' '}
+        <a href="https://policies.google.com/privacy">
+          Google’s privacy policy
+        </a>{' '}
+        for details of how Google handles data.
+      </p>
+      <h2>Cookies and saved choices</h2>
+      <p>
+        We remember your choice in this browser for 180 days. If you allow
+        analytics, Google’s <code>_ga</code> and{' '}
+        <code>{`_ga_${analyticsMeasurementId.slice(2)}`}</code> cookies last for
+        up to 90 days. Declining later stops measurement and removes these
+        cookies from this site. It does not erase statistics already sent.
+      </p>
+      <p>
+        Your shortlist is saved separately in this browser. Changing your
+        analytics choice does not change your shortlist.
+      </p>
+      <h2>Change your choice</h2>
+      <p>
+        Use “Analytics settings” in the footer at any time. Your choice applies
+        to this browser; make it again if you use another browser or clear its
+        saved data.
+      </p>
+      {event.publicContact && (
+        <p>
+          For questions, contact{' '}
+          <a href={`mailto:${event.publicContact.email}`}>
+            {event.publicContact.email}
+          </a>
+          .
+        </p>
+      )}
+    </div>
+  </div>
+</Layout>

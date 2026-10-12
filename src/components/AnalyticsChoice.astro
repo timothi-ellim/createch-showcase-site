@@ -1,0 +1,117 @@
+---
+interface Props {
+  preview: boolean;
+}
+const { preview } = Astro.props;
+---
+
+<div
+  class="analytics-choice wrap"
+  data-analytics-choice
+  data-preview={String(preview)}
+  hidden
+>
+  <section aria-labelledby="analytics-heading" data-analytics-panel hidden>
+    <div>
+      <h2 id="analytics-heading" tabindex="-1">
+        May we count your visit?
+      </h2>
+      <p>
+        With your permission, Google Analytics helps us see how people use this
+        site. Analytics cookies and visitor measurement stay off unless you
+        choose “Allow analytics”. You can change your choice in the footer.{' '}
+        <a href="/privacy/">Privacy and cookies</a>
+      </p>
+      {preview && (
+        <p class="analytics-preview">
+          Local preview: these controls demonstrate the choice. No analytics is
+          sent.
+        </p>
+      )}
+    </div>
+    <div class="analytics-actions">
+      <button type="button" data-analytics-allow>
+        Allow analytics
+      </button>
+      <button type="button" data-analytics-deny>
+        No thanks
+      </button>
+    </div>
+  </section>
+  <p
+    data-analytics-status
+    role="status"
+    aria-live="polite"
+    tabindex="-1"
+    hidden
+  ></p>
+</div>
+<style>
+  .analytics-choice {
+    margin-block: 1rem;
+    color: var(--ct-ink);
+    background: var(--ct-paper);
+    border: 2px solid currentColor;
+    padding: 1.25rem;
+  }
+  .analytics-choice[hidden],
+  .analytics-choice [hidden] {
+    display: none !important;
+  }
+  section {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  section > div:first-child {
+    flex: 1;
+  }
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    scroll-margin-top: 10rem;
+  }
+  p {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .analytics-preview {
+    font-weight: bold;
+    margin-top: 0.75rem;
+  }
+  .analytics-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  button {
+    background: transparent;
+    color: inherit;
+    border: 2px solid currentColor;
+    padding: 0.75rem 1rem;
+    min-height: 48px;
+    font-weight: bold;
+  }
+  button:hover {
+    background: var(--ct-lemon);
+  }
+  :focus-visible {
+    outline: 3px solid var(--ct-blue);
+    outline-offset: 4px;
+  }
+  @media (max-width: 760px) {
+    section {
+      display: block;
+    }
+    .analytics-actions {
+      margin-top: 1rem;
+    }
+    .analytics-actions button {
+      flex: 1 1 9rem;
+    }
+  }
+</style>
+<script>
+  import '../scripts/analytics-choice';
+</script>

@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
+import { runInNewContext } from 'node:vm';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import sharp from 'sharp';
@@ -153,6 +155,58 @@ test(
       );
     }
     const headers = await readFile(join(site, '_headers'), 'utf8');
+    // Verify the actual compiled head, including function serialization and CSP.
+    const head = home.split('</head>')[0];
+    assert.match(head, /gtag\/js\?id=G-H3WM611LGJ/);
+    const analyticsScripts = [
+      ...head.matchAll(/<script>([\s\S]*?)<\/script>/g),
+    ].map((match) => match[1]);
+    assert.equal(analyticsScripts.length, 2);
+    const runtime: any = {
+      location: {
+        origin: 'https://discovery.example.invalid',
+        hostname: 'discovery.example.invalid',
+        pathname: '/',
+      },
+      localStorage: { getItem: () => null },
+      document: { cookie: '', title: 'Local test' },
+      addEventListener() {},
+      clearTimeout() {},
+      setTimeout() {},
+    };
+    runtime.window = runtime;
+    for (const script of analyticsScripts) {
+      assert.ok(
+        headers.includes(
+          `'sha256-${createHash('sha256').update(script).digest('base64')}'`,
+        ),
+        'CSP must match the emitted bytes',
+      );
+      runInNewContext(script, runtime);
+    }
+    assert.equal(runtime['ga-disable-G-H3WM611LGJ'], true);
+    assert.equal(runtime.createchAnalytics.live, false);
+    for (const path of [
+      'my-visit/index.html',
+      'reminders/index.html',
+      'privacy/index.html',
+      '404.html',
+    ]) {
+      const html = await readFile(join(site, path), 'utf8');
+      assert.doesNotMatch(html, /googletagmanager\.com\/gtag\/js/);
+    }
+    for (const path of ['participant/index.html', 'organiser/index.html']) {
+      assert.equal(
+        existsSync(join(site, path)),
+        false,
+        'Private workspaces are excluded from the public build.',
+      );
+    }
+    for (const rule of headers
+      .split('\n\n')
+      .filter((rule) => /^\/(participant|organiser)\//.test(rule))) {
+      assert.doesNotMatch(rule, /google-analytics|googletagmanager/);
+    }
     assert.match(
       headers,
       /\/participant\/\*[\s\S]*X-Robots-Tag: noindex, nofollow/,
