@@ -35,12 +35,12 @@ test('reader preserves every word and supports larger text and keyboard chapter 
     const chapters = page.getByRole('navigation', {
       name: 'Read the event introduction',
     });
-    await chapters.getByRole('link', { name: 'Join us' }).focus();
+    await chapters.getByRole('link', { name: 'Meet the researchers' }).focus();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/#event-paragraph-3$/);
     await expect(page.locator('#event-paragraph-3')).toBeFocused();
     await expect(
-      chapters.getByRole('link', { name: 'Join us' }),
+      chapters.getByRole('link', { name: 'Meet the researchers' }),
     ).toHaveAttribute('aria-current', 'location');
     const target = (await page.locator('#event-paragraph-3').boundingBox())!;
     expect(target.y).toBeGreaterThanOrEqual(100);
@@ -80,7 +80,7 @@ test('the full blurb precedes project previews and native chapters work without 
   );
   await page
     .getByRole('navigation', { name: 'Read the event introduction' })
-    .getByRole('link', { name: 'Experience' })
+    .getByRole('link', { name: 'The work' })
     .click();
   await expect(page).toHaveURL(/#event-paragraph-2$/);
   await expect(page.locator('#event-paragraph-2')).toBeFocused();

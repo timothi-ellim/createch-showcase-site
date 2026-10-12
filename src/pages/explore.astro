@@ -16,11 +16,11 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
         <p class="eyebrow">
           {'{'} EXPLORE THE SHOWCASE {'}'}
         </p>
-        <h1>Follow your curiosity.</h1>
+        <h1>Explore the projects.</h1>
       </div>
       <p>
-        Discover the work. <br />
-        Meet the makers.
+        Browse the work. <br />
+        Find the people behind it.
       </p>
     </header>
     {projects.length > 0 && (
@@ -64,14 +64,14 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
             <label for="search">
               {isSynthetic
                 ? 'Search sample projects'
-                : 'Search artists, works or ideas'}
+                : 'Search participants, projects or ideas'}
             </label>
             <div class="search-control">
               <input
                 id="search"
                 type="search"
                 enterkeyhint="search"
-                placeholder="An artist, a work, a new idea…"
+                placeholder="Name, project or keyword"
               />
               <button
                 type="button"
@@ -194,7 +194,7 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
           <p id="result-count" tabindex="-1" role="status" aria-live="polite">
             {projects.length} projects
           </p>
-          <span>Ideas to explore. People to meet.</span>
+          <span>Save projects to plan your visit.</span>
           <details class="discovery-layout-note">
             <summary>Proposed layout · Canopy, King Street</summary>
             <p>
@@ -204,8 +204,8 @@ import { projects, themes, isSynthetic } from '../data/catalogue';
           </details>
         </div>
         <div id="no-results" class="empty-state" hidden>
-          <h2>No works found.</h2>
-          <p>Try another artist or idea, or clear your filters.</p>
+          <h2>No projects found.</h2>
+          <p>Try another name or keyword, or clear your filters.</p>
           <button data-reset-filters class="button dark">
             Clear all filters
           </button>

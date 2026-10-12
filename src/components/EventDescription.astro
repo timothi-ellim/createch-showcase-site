@@ -2,11 +2,10 @@
 import { event } from '../data/catalogue';
 import { eventParagraphs } from '../lib/discovery';
 const paragraphs = eventParagraphs(event);
-const names = ['Discover', 'Experience', 'Join us'];
+const names = ['About', 'The work', 'Meet the researchers'];
 const highlights = [
-  'explore, test, discuss and experience',
-  'experiments, prototypes, installations and experiences',
-  'ask new questions, challenge conventions and imagine different cultural, social and technological futures',
+  'experiments, prototypes and installations',
+  'Meet the researchers, ask questions',
 ];
 function parts(text: string) {
   const expression = new RegExp(`(${highlights.join('|')})`, 'g');

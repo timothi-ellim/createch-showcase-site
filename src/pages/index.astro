@@ -49,8 +49,8 @@ const featured = themes
         ))}
       </h1>
       <p class="hero-intro">
-        Come curious. Explore creative technologies, meet the researchers behind
-        them, and discover ideas taking shape at De Montfort University.
+        Explore art and creative technology at Canopy. Meet the doctoral
+        researchers from De Montfort University behind the work.
       </p>
       <EventFacts />
       <div class="actions">
@@ -84,11 +84,11 @@ const featured = themes
     >
       <div class="wrap section event-overview">
         <div class="event-overview-heading">
-          <p class="eyebrow">An invitation to explore</p>
+          <p class="eyebrow">About the exhibition</p>
           <h2 id="event-description-heading">
-            Research beyond <em>the page.</em>
+            Explore research <em>in progress.</em>
           </h2>
-          <p class="home-about-note">Explore. Test. Discuss. Experience.</p>
+          <p class="home-about-note">Try the work. Ask questions.</p>
           <a class="text-link" href="/about/">
             More about the showcase{' '}
             <span aria-hidden="true">
@@ -108,8 +108,8 @@ const featured = themes
         01
       </span>
       <span>
-        <strong>Find your spark</strong>
-        <span>Browse projects and follow your curiosity.</span>
+        <strong>Browse the projects</strong>
+        <span>Find work you would like to see.</span>
       </span>
       <span class="path-arrow" aria-hidden="true">
         <ArrowIcon />
@@ -121,7 +121,7 @@ const featured = themes
       </span>
       <span>
         <strong>Meet the participants</strong>
-        <span>Find a name. Discover their work.</span>
+        <span>Choose a name to see their work.</span>
       </span>
       <span class="path-arrow" aria-hidden="true">
         ↓
@@ -132,7 +132,7 @@ const featured = themes
         03
       </span>
       <span>
-        <strong>Make a day of discovery</strong>
+        <strong>Plan your visit</strong>
         <span>Find the venue and plan your visit.</span>
       </span>
       <span class="path-arrow" aria-hidden="true">
@@ -147,7 +147,7 @@ const featured = themes
           <div>
             <p class="eyebrow">Inside the showcase</p>
             <h2>
-              A taste of <em>what awaits.</em>
+              Selected <em>projects.</em>
             </h2>
           </div>
           <a class="text-link" href="/explore/">
@@ -160,7 +160,7 @@ const featured = themes
         <p class="section-intro">
           {isSynthetic
             ? 'Sample entries show how the guide will work. The approved programme is still to come.'
-            : 'Step into research in progress. Explore a few starting points, then discover the people and ideas across the showcase.'}
+            : 'Start with these projects, then browse the full showcase.'}
         </p>
         <div class="project-grid featured-grid">
           {featured.map((project) => (
@@ -178,7 +178,7 @@ const featured = themes
           <p class="eyebrow">
             {'{'} Find a starting point {'}'}
           </p>
-          <h2>Follow a thread.</h2>
+          <h2>Explore by theme.</h2>
         </div>
         <a class="text-link" href="/explore/">
           Browse all{' '}
@@ -188,8 +188,8 @@ const featured = themes
         </a>
       </div>
       <p class="section-intro">
-        Follow a theme, or follow your curiosity. These are ideas to explore,
-        not rooms.
+        Choose Image, World or Relation to browse projects by theme. Themes do
+        not identify rooms.
       </p>
       <div class="theme-grid">
         {themes.map((theme) => (
@@ -233,9 +233,9 @@ const featured = themes
           {'{'} See you there {'}'}
         </p>
         <h2>
-          Make space for
+          Join us at
           <br />
-          <em>something new.</em>
+          <em>{event.venue.name}.</em>
         </h2>
         <EventFacts />
       </div>

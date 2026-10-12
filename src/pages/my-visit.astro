@@ -10,16 +10,17 @@ import { projects } from '../data/catalogue';
 
 <Layout title="My visit" noIndex>
   <div class="wrap section" id="shortlist">
-    <p class="eyebrow">A little room for discovery</p>
+    <p class="eyebrow">Your saved projects</p>
     <h1>My visit.</h1>
-    <p class="lead">Your own collection of things to explore.</p>
+    <p class="lead">Keep track of the projects you want to see.</p>
     <p class="section-intro">
-      Saved on this device, in this browser. This is not a booking and does not
-      sync across devices. Clearing your browser data removes your shortlist.
+      Your shortlist stays in this browser on this device. It does not sync
+      across devices. Clearing your browser data removes it. Saving a project
+      does not book a place.
     </p>
     <noscript>
       <p class="notice">
-        JavaScript is needed to read your device-local shortlist. You can still{' '}
+        Turn on JavaScript to see your saved projects. You can still{' '}
         <a href="/explore/">browse every project</a> and note down your
         favourites.
       </p>
@@ -51,10 +52,10 @@ import { projects } from '../data/catalogue';
       <span class="empty-icon" aria-hidden="true">
         ＋
       </span>
-      <h2>A visit full of possibilities.</h2>
+      <h2>No saved projects yet.</h2>
       <p>
         {projects.length
-          ? 'Find something that sparks your curiosity and choose “Save”. Your projects will appear here.'
+          ? 'Choose “Save” on a project to add it here.'
           : 'Project pages are coming soon. Once they are published, you can save your favourites here to plan your day.'}
       </p>
       <a class="button lime" href="/explore/">
@@ -89,8 +90,7 @@ import { projects } from '../data/catalogue';
       <h2>Before you set off</h2>
       <EventFacts />
       <p>
-        Check the confirmed event details and the information still awaiting
-        confirmation.
+        Check the latest arrival, booking and access information before you travel.
       </p>
       <a class="text-link" href="/visit/">
         Plan your visit <ArrowIcon />

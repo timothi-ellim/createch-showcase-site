@@ -13,27 +13,27 @@ import '../styles/home-map.css';
 
 <section class="home-map wrap" aria-labelledby="home-map-heading" data-home-map>
   <div class="home-map-copy">
-    <p class="eyebrow">Step inside Canopy</p>
+    <p class="eyebrow">The exhibition map</p>
     <h2 id="home-map-heading">
-      Three spaces.
+      Explore
       <br />
-      <em>New perspectives.</em>
+      <em>Canopy.</em>
     </h2>
-    <p>Choose a room and meet the people making work inside.</p>
+    <p>Choose a room to see the projects planned for that space.</p>
     <a
       class="button dark"
       href="/explore/?mode=map&view=3d"
       data-home-map-explore
     >
-      Explore the exhibition <ArrowIcon />
+      Explore the map <ArrowIcon />
     </a>
     <div class="home-map-preview" aria-label="Room preview">
       <div class="home-map-prompt" data-home-map-prompt>
         <span aria-hidden="true">↗</span>
         <p>
-          A different way in.
+          Choose a room.
           <br />
-          <span>Follow a space. Find a new idea.</span>
+          <span>See its proposed projects.</span>
         </p>
       </div>
       {mapRooms.map((room) => {
@@ -109,7 +109,7 @@ import '../styles/home-map.css';
         <span class="home-map-cue" aria-hidden="true">
           ↗
         </span>{' '}
-        Choose a room to step inside
+        Choose a room to see its projects
       </span>
       <details>
         <summary>Proposed layout</summary>

@@ -126,7 +126,7 @@ test(
     assert.equal(structured.startDate, '2026-10-28T11:00:00+00:00');
     assert.equal(structured.endDate, '2026-10-28T16:00:00+00:00');
     assert.equal(structured.description, event.description);
-    assert.match(home, /research beyond the page/i);
+    assert.match(home, /Explore research/);
     assert.match(home, /mailto:\?subject=/);
     for (const destination of [
       'wa.me/',

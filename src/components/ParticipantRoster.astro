@@ -18,11 +18,10 @@ const participants = [...event.participants].sort((a, b) =>
         <h2 id="participant-roster-heading">
           Meet the <em>participants.</em>
         </h2>
-        <span class="roster-count">{participants.length} creative voices</span>
+        <span class="roster-count">{participants.length} participants</span>
       </div>
       <p class="section-intro">
-        Get to know the people behind the ideas. Choose a name to explore their
-        project and research.
+        Choose a name to read about their project and research.
         {event.participants.every((participant) =>
           projects.some((project) => project.id === participant.projectId),
         )

@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import CalendarLinks from '../components/CalendarLinks.astro';
-import { event } from '../data/catalogue';
+import { event, isPreview } from '../data/catalogue';
 import { reminderSchedule, reminderWindowLabel } from '../lib/event-time';
 import '../styles/event-actions.css';
 const enabled = import.meta.env.PUBLIC_REMINDERS_ENABLED === 'true';
@@ -13,7 +13,7 @@ const schedule = reminderSchedule(event);
 
 <Layout
   title="Get email reminders"
-  description="A little nudge before the showcase. Get event reminders by email or save the date in your calendar."
+  description="Get showcase reminders and essential event updates by email, or add the date to your calendar."
 >
   <div class="wrap">
     <section class="reminder-page" aria-labelledby="reminder-title">
@@ -23,14 +23,13 @@ const schedule = reminderSchedule(event);
           Nothing is sent. <a href="/__mail">Open the test mailbox</a>.
         </p>
       )}
-      <p class="event-kicker">Keep a little space for curiosity</p>
+      <p class="event-kicker">Before the showcase</p>
       <h1 id="reminder-title">
-        A little nudge.
-        <br />A day of discovery.
+        Get email
+        <br />reminders.
       </h1>
       <p class="reminder-lead">
-        Let us remind you before the showcase, so the date doesn’t get lost in
-        the everyday.
+        Get reminders and essential event updates by email.
       </p>
       <div class="reminder-grid">
         <section class="reminder-form-card" aria-label="Email reminder signup">
@@ -113,8 +112,6 @@ const schedule = reminderSchedule(event);
                   ↗
                 </span>
                 <h2 class="reminder-success-title">
-                  One small step.
-                  <br />
                   Check your inbox.
                 </h2>
                 <p>
@@ -136,10 +133,11 @@ const schedule = reminderSchedule(event);
             </>
           ) : (
             <div>
-              <h2>Email reminders are being prepared.</h2>
+              <h2>{isPreview ? 'Email signup is disabled in this local preview.' : 'Email reminders are being prepared.'}</h2>
               <p>
-                You can save the date in your calendar now. Please check back
-                for email signup.
+                {isPreview
+                  ? 'You can review the event details and calendar links here. This preview does not send emails.'
+                  : 'You can add the event to your calendar now. Please check back for email signup.'}
               </p>
               <CalendarLinks />
             </div>
@@ -147,7 +145,7 @@ const schedule = reminderSchedule(event);
         </section>
         <aside class="reminder-sidebar" aria-label="Event and reminder details">
           <div class="reminder-date-ticket">
-            <p class="event-kicker">Your date with the showcase</p>
+            <p class="event-kicker">Event details</p>
             <strong>
               {new Intl.DateTimeFormat('en-GB', {
                 day: 'numeric',
@@ -164,20 +162,20 @@ const schedule = reminderSchedule(event);
               {event.venue.city}, {event.venue.postalCode}
             </p>
           </div>
-          <h2>Two timely reminders.</h2>
+          <h2>When we send reminders</h2>
           <ul class="reminder-schedule">
             {schedule.map((item, i) => (
               <li>
                 <strong>
-                  {i === 0 ? 'A week to make a plan' : 'A nudge before the day'}
+                  {i === 0 ? 'About a week before' : 'Just before the event'}
                 </strong>
                 <span>{reminderWindowLabel(item, event.timeZone)}</span>
               </li>
             ))}
           </ul>
           <p class="event-actions-note">
-            Joining closer to the day? You’ll get only the reminders still to
-            come. If both dates have passed, your confirmation page has the
+            You’ll receive only the reminders still to come when you sign up.
+            If both dates have passed, your confirmation page has the
             event details.
           </p>
           <p class="event-actions-note">

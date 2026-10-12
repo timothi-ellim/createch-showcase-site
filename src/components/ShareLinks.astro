@@ -65,13 +65,13 @@ const channels = [
       {project ? 'Share this project' : 'Share the showcase'}
     </p>
     <h2 id={`${id}-heading`}>
-      <span>{project ? 'Found something' : 'Curiosity is'}</span>
-      <em>{project ? 'worth sharing?' : 'better shared.'}</em>
+      <span>{project ? 'Share this' : 'Share the'}</span>
+      <em>{project ? 'project.' : 'showcase.'}</em>
     </h2>
     <p class="share-intro">
       {project
-        ? 'Send this project to someone who sees things a little differently.'
-        : 'Art, ideas and unexpected possibilities. Bring someone curious along.'}
+        ? 'Send this project to a friend.'
+        : 'Send the event details to someone you would like to bring.'}
     </p>
     <div class="share-signoff">
       <svg
@@ -96,7 +96,7 @@ const channels = [
     </div>
   </div>
   <div class="share-controls">
-    <p class="share-prompt">{compact ? 'Share the event link' : 'A good discovery deserves company.'}</p>
+    <p class="share-prompt">Share the {project ? 'project' : 'event'} link</p>
     <div class="share-primary">
       <button class="share-action share-native" data-native-share hidden>
         <svg

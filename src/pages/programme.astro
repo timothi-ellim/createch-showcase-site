@@ -22,20 +22,18 @@ const rooms = [
         {'{'} On the day {'}'}
       </p>
       <h1>
-        Time to
-        <br />
-        <em>get curious.</em>
+        Programme.
       </h1>
       <EventFacts />
     </div>
   </div>
   <div class="wrap section">
-    {present.length > 0 && <section aria-labelledby="meet-artists"><p class="eyebrow">Planned in-person hours</p><h2 id="meet-artists">Meet the artists</h2><p>Planned attendance during the showcase, in UK time. These hours may change.</p><ul class="programme-list artist-programme">{present.map(project => <li><p class="programme-time">{hoursLabel(project.invigilationWindows!)}</p><div><h3><a href={`/projects/${project.slug}/`}>{project.title} <ArrowIcon /></a></h3><p>{project.maker}</p></div></li>)}</ul></section>}
+    {present.length > 0 && <section aria-labelledby="meet-artists"><p class="eyebrow">Planned booth hours</p><h2 id="meet-artists">Meet the participants</h2><p>These are the times participants plan to be at their booths. All times are UK time and may change.</p><ul class="programme-list artist-programme">{present.map(project => <li><p class="programme-time">{hoursLabel(project.invigilationWindows!)}</p><div><h3><a href={`/projects/${project.slug}/`}>{project.title} <ArrowIcon /></a></h3><p>{project.maker}</p></div></li>)}</ul></section>}
     {scheduled.length ? (
       <>
-        <h2>{isSynthetic ? 'Sample programme' : 'Programme'}</h2>
+        <h2>{isSynthetic ? 'Sample programme' : 'Project timings'}</h2>
         <p>
-          Published timings are shown as supplied. Event times are UK time.
+          All times are UK time.
           Saving a project is not a reservation.
         </p>
         {rooms.length > 1 && (
@@ -85,11 +83,11 @@ const rooms = [
           {'{ … }'}
         </span>
         <div>
-          <p class="eyebrow">More to discover</p>
-          <h2>{present.length ? 'Further programme details coming soon.' : 'Programme publishing soon.'}</h2>
+          <p class="eyebrow">Programme updates</p>
+          <h2>{present.length ? 'More details to follow.' : 'Programme details to follow.'}</h2>
           <p>
-            Project locations, timings and further visitor guidance will appear
-            here when confirmed.
+            We will add further programme details when confirmed.
+            Explore proposed project locations on the <a href="/explore/?mode=map">map</a>.
           </p>
           <div class="actions">
             <a class="button dark" href="/explore/">

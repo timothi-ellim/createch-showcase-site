@@ -15,7 +15,7 @@ const localTesting =
     <h1>Your work, in your words.</h1>
     <p class="lead">
       {connected
-        ? 'Sign in with your invited email address to review your public project page.'
+        ? 'Sign in with the email address we invited to review your public project page.'
         : localTesting
           ? 'The local workspace is connected for synthetic testing. Real participant editing is not open yet.'
           : 'The participant editor is being prepared. It is not connected for participant use yet.'}
@@ -25,7 +25,7 @@ const localTesting =
       <h2>What happens next</h2>
       <p>
         {connected
-          ? 'Open the participant workspace, enter your invited email address and request a sign-in code. Use the latest code to continue. You can edit only your assigned projects.'
+          ? 'Open the participant workspace and enter the email address we invited. Request a sign-in code, then use the latest code to continue. You can edit only your assigned projects.'
           : 'The planned workspace lets invited contributors edit their own text and main image, preview a page and submit an exact version for review.'}
       </p>
       <p>
@@ -34,8 +34,8 @@ const localTesting =
         sign-in codes private. Installation logistics remain separate.
       </p>
       <p>
-        Changes will need organiser review before publication. Submitting an
-        edit, approval and going live are separate steps.
+        The organiser reviews your submitted changes before publication.
+        Your current page stays online while you wait.
       </p>
       <h2>Need help?</h2>
       {event.publicContact ? (

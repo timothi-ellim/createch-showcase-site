@@ -14,15 +14,15 @@ const hasPresence = projects.some((project) => project.invigilationWindows?.leng
   </p>
   <div class="section-heading">
     <h2 id="programme-preview-title">
-      {scheduled.length || hasPresence ? 'Make a little time.' : 'A day of possibilities.'}
+      {hasPresence ? 'Meet the participants.' : 'Plan your day.'}
     </h2>
     <a class="text-link" href="/programme/">
       View programme <span aria-hidden="true"><ArrowIcon /></span>
     </a>
   </div>
   <p class="section-intro">
-    {hasPresence ? 'Find planned artist hours and make time to meet the people behind the work.' : scheduled.length
-      ? 'Find the published timings and plan an encounter.'
-      : 'Programme publishing soon. Explore the participants while the details take shape.'}
+    {hasPresence ? 'See when participants plan to be at their booths. Hours may change.' : scheduled.length
+      ? 'Check project timings and plan your visit.'
+      : 'Programme details will appear here when confirmed. You can browse the projects now.'}
   </p>
 </section>

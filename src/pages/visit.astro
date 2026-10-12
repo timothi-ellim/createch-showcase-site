@@ -10,9 +10,9 @@ import { event, directionsUrl } from '../data/catalogue';
 
 <Layout title="Plan your visit">
   <div class="wrap section">
-    <p class="eyebrow">Come with curiosity</p>
+    <p class="eyebrow">Visitor information</p>
     <h1>Plan your visit.</h1>
-    <p class="lead">The essentials for finding your way to the showcase.</p>
+    <p class="lead">Find the venue and check what you need before travelling.</p>
     <div class="visit-grid">
       <section class="reading-panel">
         <h2>When & where</h2>
@@ -23,10 +23,10 @@ import { event, directionsUrl } from '../data/catalogue';
             <ArrowIcon />
           </span>
         </a>
-        <p class="small">Opens a Google Maps search for the venue address.</p>
+        <p class="small">Find the venue on Google Maps.</p>
       </section>
       <section class="venue-type">
-        <span class="eyebrow">The meeting point</span>
+        <span class="eyebrow">The venue</span>
         <h2>
           {event.venue.name}
           <span>{event.venue.city}</span>
@@ -74,8 +74,12 @@ import { event, directionsUrl } from '../data/catalogue';
       <details>
         <summary>Programme & finding projects</summary>
         <p>
-          Project locations, timings and further visitor guidance are coming
-          soon. The Image, World and Relation themes are not room assignments.
+          Explore proposed project locations on the <a href="/explore/?mode=map">map</a>.
+          See the <a href="/programme/">Programme page</a> for published times to meet
+          participants at their booths. Locations and hours may change.
+        </p>
+        <p>
+          Image, World and Relation are themes. They do not identify rooms.
         </p>
       </details>
       <details>
