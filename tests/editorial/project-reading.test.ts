@@ -27,6 +27,15 @@ test('private preview keeps public gallery, save and share actions unavailable',
   assert.ok(!html.includes('data-copy-link'));
 });
 
+test('the public sharing shortcut leaves all existing project HTML intact and stays out of private previews', () => {
+  const shortcut = '<a class="button secondary" href="#share-project-heading" data-share-shortcut>Share this project</a>';
+  const original = renderProjectBody(fixture);
+  const enhanced = renderProjectBody(fixture, { shareHref: '#share-project-heading' });
+  assert.equal(enhanced.replace(shortcut, ''), original);
+  assert.equal(enhanced.split(shortcut).length, 2);
+  assert.ok(!renderProjectBody(fixture, { privatePreview: true, shareHref: '#share-project-heading' }).includes('data-share-shortcut'));
+});
+
 test('reviewed third-party media keeps escaped participant credit and linked licence', () => {
   const project = {
     ...fixture,

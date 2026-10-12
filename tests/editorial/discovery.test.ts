@@ -96,6 +96,10 @@ test(
     );
     await runAstroBuild(input, site, 'production', receipt);
     const home = await readFile(join(site, 'index.html'), 'utf8');
+    assert.match(home, /<title>CreaTech Showcase 2026 \| Art &amp; Technology in Leicester<\/title>/);
+    const sharing = await readFile(join(site, 'sharing/index.html'), 'utf8');
+    assert.match(sharing, /href="\/sharing\/pack.zip"/);
+    assert.match(sharing, /id="copy-invitation"[^>]*readonly/);
     assert.match(
       home,
       /rel="canonical" href="https:\/\/discovery\.example\.invalid\/"/,
@@ -106,16 +110,16 @@ test(
     );
     assert.match(
       home,
-      /property="og:image" content="https:\/\/discovery\.example\.invalid\/social\/where-code-becomes-culture-fac3d7b8\.jpg"/,
+      /property="og:image" content="https:\/\/discovery\.example\.invalid\/sharing\/preview\.png"/,
     );
-    assert.match(home, /property="og:image:type" content="image\/jpeg"/);
+    assert.match(home, /property="og:image:type" content="image\/png"/);
     assert.match(
       home,
-      /property="og:image:secure_url" content="https:\/\/discovery\.example\.invalid\/social\/where-code-becomes-culture-fac3d7b8\.jpg"/,
+      /property="og:image:secure_url" content="https:\/\/discovery\.example\.invalid\/sharing\/preview\.png"/,
     );
     assert.match(
       home,
-      /name="twitter:image" content="https:\/\/discovery\.example\.invalid\/social\/where-code-becomes-culture-fac3d7b8\.jpg"/,
+      /name="twitter:image" content="https:\/\/discovery\.example\.invalid\/sharing\/preview\.png"/,
     );
     assert.match(home, /name="twitter:card" content="summary_large_image"/);
     const structured = JSON.parse(
@@ -163,20 +167,20 @@ test(
       /Allow: \/\nSitemap: https:\/\/discovery\.example\.invalid\/sitemap.xml/,
     );
     const sitemap = await readFile(join(site, 'sitemap.xml'), 'utf8');
-    for (const path of ['about', 'explore', 'visit', 'programme'])
+    for (const path of ['about', 'explore', 'visit', 'programme', 'sharing'])
       assert.ok(sitemap.includes(`https://discovery.example.invalid/${path}/`));
     assert.doesNotMatch(
       sitemap,
       /my-visit|participant|organiser|404|localhost/,
     );
     assert.deepEqual(structured.image, [
-      'https://discovery.example.invalid/social/where-code-becomes-culture-fac3d7b8.jpg',
+      'https://discovery.example.invalid/sharing/preview.png',
     ]);
     const banner = await readFile(
-      join(site, 'social/where-code-becomes-culture-fac3d7b8.jpg'),
+      join(site, 'sharing/preview.png'),
     );
     const image = await sharp(banner).metadata();
-    assert.equal(image.format, 'jpeg');
+    assert.equal(image.format, 'png');
     assert.ok(
       banner.length < 300_000,
       'The social banner must stay small for preview fetches.',

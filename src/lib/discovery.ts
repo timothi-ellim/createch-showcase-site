@@ -5,7 +5,22 @@ type Event = PublicSnapshot['event'];
 export const socialImagePath = (slug?: string) =>
   slug
     ? `/social/projects/${slug}.png`
-    : '/social/where-code-becomes-culture-fac3d7b8.jpg';
+    : '/sharing/preview.png';
+
+export function searchTitle(event: Event, path: string, title?: string, projectSlug?: string) {
+  // Participant titles retain their existing, verbatim metadata treatment.
+  if (projectSlug) return `${title} | ${event.series}`;
+  const titles: Record<string, string> = {
+    '/': `${event.series} | Art & Technology in ${event.venue.city}`,
+    '/explore/': `Art & Creative Technology Projects | ${event.series}`,
+    '/visit/': `Visit ${event.venue.name}, ${event.venue.city} | ${event.series}`,
+    '/about/': `About the Exhibition | ${event.series}`,
+    '/programme/': `Booth Hours & Programme | ${event.series}`,
+    '/poster/': `Event Poster | ${event.series}`,
+    '/sharing/': `Share the Showcase | ${event.series}`,
+  };
+  return titles[path] ?? (title ? `${title} | ${event.series}` : `${event.title} | ${event.series}`);
+}
 
 export function eventParagraphs(event: Event): string[] {
   return event.description?.split(/\n\s*\n/).filter(Boolean) ?? [];

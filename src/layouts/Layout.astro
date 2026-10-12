@@ -12,6 +12,7 @@ import {
   socialImagePath,
   eventStructuredData,
   jsonLd,
+  searchTitle,
 } from '../lib/discovery';
 import { motionLevel } from '../lib/motion/config';
 import {
@@ -42,17 +43,15 @@ const canonicalUrl =
   !isPreview && !privatePage && event.publicSiteUrl
     ? new URL(path, event.publicSiteUrl).href
     : null;
-const pageTitle = title
-  ? `${title} | ${event.series}`
-  : `${event.title} | ${event.series}`;
+const pageTitle = searchTitle(event, path, title, projectSlug);
 const imagePath = socialImagePath(projectSlug);
 const imageUrl = canonicalUrl
   ? new URL(imagePath, event.publicSiteUrl!).href
   : imagePath;
-const imageType = projectSlug ? 'image/png' : 'image/jpeg';
+const imageType = 'image/png';
 const imageAlt = projectSlug
   ? `${title ?? event.title} — ${event.series}. ${event.dateLabel}, ${event.startTime}–${event.endTime} (UK time), ${event.venue.name}, ${event.venue.city}.`
-  : `Hero banner for ${event.title}, ${event.series}, with blue, yellow and white lettering, a monochrome collage and supporter logos.`;
+  : `${event.title}, ${event.series}. ${event.dateLabel}, ${event.startTime}–${event.endTime} UK time. ${event.venue.name}, ${event.venue.city}. Blue and yellow event graphic.`;
 const structuredData =
   indexable && path === '/' ? eventStructuredData(event) : null;
 ---
@@ -154,6 +153,7 @@ const structuredData =
         <a href="/programme/">Programme</a>
         <a href="/about/">About</a>
         <a href="/poster/">Event poster</a>
+        <a href="/sharing/">Sharing pack</a>
         <a href="/participants/">Participant help</a>
         <a href="/visit/">Plan your visit</a>
       </div>

@@ -33,6 +33,7 @@ export function renderProjectBody(
     eventDateLabel?: string;
     qrPath?: string;
     canonicalUrl?: string;
+    shareHref?: string;
   } = {},
 ): string {
   const e = escapeHtml;
@@ -83,7 +84,7 @@ export function renderProjectBody(
     ${options.related?.length ? section('Keep exploring', `<p>Related works selected for this project.</p><ul class="artist-links">${options.related.map((item) => `<li><a href="/projects/${e(item.slug)}/">${e(item.title)} ${arrowIconMarkup}</a></li>`).join('')}</ul>`) : ''}`;
   const actions = !options.privatePreview
     ? `<div class="detail-actions"><button hidden class="button lime" data-save="${e(project.id)}" data-title="${e(project.title)}" aria-pressed="false" aria-label="Save ${e(project.title)} to my visit">Save to my visit</button>
-       <button hidden class="button secondary" data-copy-link ${options.canonicalUrl ? `data-canonical-url="${e(options.canonicalUrl)}"` : ''}>Copy project link</button>${options.qrPath ? `<a class="button secondary" href="${e(options.qrPath)}" data-open-qr>QR code</a>` : ''}</div>
+       ${options.shareHref === '#share-project-heading' ? '<a class="button secondary" href="#share-project-heading" data-share-shortcut>Share this project</a>' : ''}<button hidden class="button secondary" data-copy-link ${options.canonicalUrl ? `data-canonical-url="${e(options.canonicalUrl)}"` : ''}>Copy project link</button>${options.qrPath ? `<a class="button secondary" href="${e(options.qrPath)}" data-open-qr>QR code</a>` : ''}</div>
        <p class="small">Your shortlist stays in this browser. Saving is not a booking.</p>
        <div data-copy-fallback hidden><label for="project-url">Copy this project address</label><input id="project-url" type="url" readonly /><p class="small">Select the address and use your browser’s copy command.</p></div>
        <noscript><p>To share, copy the address from your browser. Enable JavaScript to save a shortlist.</p></noscript>`

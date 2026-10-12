@@ -38,6 +38,7 @@ const related = project.relatedIds
         eventDateLabel: event.dateLabel,
         qrPath: qrEnabled ? qrPaths(project.slug).svg : undefined,
         canonicalUrl: isSynthetic ? undefined : canonicalUrl,
+        shareHref: '#share-project-heading',
       })}
     />
     {placement && <p class="notice">Proposed location: {placement.roomId === 'gallery' ? 'Gallery' : placement.roomId.toUpperCase()}. <a class="text-link" href={mapProjectHref(project.id)}>Find this installation on the map</a>. Final position to be confirmed.</p>}

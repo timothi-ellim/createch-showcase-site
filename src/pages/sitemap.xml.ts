@@ -9,6 +9,7 @@ export function GET() {
     '/about/',
     '/poster/',
     '/visit/',
+    '/sharing/',
     ...projects.map((project) => `/projects/${project.slug}/`),
   ];
   const urls = isPreview

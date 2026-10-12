@@ -2,6 +2,7 @@
 import ArrowIcon from './ArrowIcon.astro';
 import { event, isPreview } from '../data/catalogue';
 import { shareText } from '../lib/discovery';
+import { eventInvitation } from '../lib/sharing-pack';
 import type { PublicProject } from '../lib/content-schema';
 interface Props {
   project?: PublicProject;
@@ -50,12 +51,15 @@ const channels = [
 ---
 
 <section
+  id={id}
+  tabindex="-1"
   class:list={['share-links', { 'share-compact': compact }]}
   aria-labelledby={`${id}-heading`}
   data-share-links
   data-share-url={url}
   data-share-title={title}
   data-share-text={text}
+  data-share-invitation={!project ? eventInvitation(event) : undefined}
 >
   <div class="share-invitation">
     <p class="share-eyebrow">
@@ -64,7 +68,7 @@ const channels = [
       </span>{' '}
       {project ? 'Share this project' : 'Share the showcase'}
     </p>
-    <h2 id={`${id}-heading`}>
+    <h2 id={`${id}-heading`} tabindex="-1">
       <span>{project ? 'Share this' : 'Share the'}</span>
       <em>{project ? 'project.' : 'showcase.'}</em>
     </h2>
@@ -131,6 +135,7 @@ const channels = [
           <ArrowIcon />
         </span>
       </button>
+      {!project && <button class="share-action share-native" data-copy-invitation hidden>Copy invitation <ArrowIcon /></button>}
     </div>
     <div class="share-channels">
       {channels.map((channel) => (
@@ -169,6 +174,7 @@ const channels = [
       <label for={`${id}-url`}>Copy this address to share</label>
       <input id={`${id}-url`} type="url" value={url} readonly />
     </details>
+    {!project && <><details class="share-address" data-invitation-fallback><summary>Get the invitation text</summary><label for={`${id}-invitation`}>Copy this invitation</label><textarea id={`${id}-invitation`} data-invitation-text readonly rows="6">{eventInvitation(event)}{'\n\n'}{url}</textarea></details><a class="share-pack-link" href="/sharing/">Get graphics and captions <ArrowIcon /></a></>}
     <p
       class="share-feedback"
       role="status"
@@ -188,6 +194,10 @@ const channels = [
   import '../scripts/share';
 </script>
 <style>
+  h2[id], .share-links { scroll-margin-top: 135px; }
+  .share-pack-link { display:flex; gap:12px; align-items:center; color:#fff; margin-top:24px; text-underline-offset:4px; min-height:44px; }
+  .share-address textarea { display:block; width:100%; padding:14px; margin-top:10px; font:inherit; font-size:.9rem; line-height:1.5; color:#160859; background:#fff; border:1px solid #b7aaff; border-radius:8px; resize:vertical; }
+  .share-address textarea:focus-visible { outline:3px solid #ffff66; outline-offset:4px; }
   .share-links.share-compact { grid-template-columns: minmax(0, 1fr); padding: 24px; gap: 0; border-radius: 16px; margin-top: 24px; }
   .share-compact .share-invitation { display: none; }
   .share-compact .share-prompt { margin-bottom: 12px; }

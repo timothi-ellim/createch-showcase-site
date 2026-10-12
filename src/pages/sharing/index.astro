@@ -1,0 +1,44 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ShareLinks from '../../components/ShareLinks.astro';
+import ArrowIcon from '../../components/ArrowIcon.astro';
+import { event, projects, isPreview } from '../../data/catalogue';
+import { sharingFormats, sharingCopy } from '../../lib/sharing-pack';
+const copy = sharingCopy(event);
+---
+<Layout title="Share the showcase" description={`Download graphics, captions and project links to share ${event.series} at ${event.venue.name}, ${event.venue.city}.`}>
+  <div class="wrap section sharing-page">
+    <header class="sharing-heading">
+      <div><p class="eyebrow">Spread the word</p><h1>Bring someone<br /><em>curious.</em></h1></div>
+      <div class="sharing-intro"><p>Share the showcase with a friend, a colleague or your community. Here are the pictures, words and links.</p><a class="button dark" href="/sharing/pack.zip" download="createch-sharing-pack.zip">Download the sharing pack <ArrowIcon /></a><p class="small">3 PNG graphics · captions · event listing · {projects.length} project links</p></div>
+    </header>
+    {isPreview && <p class="notice">Draft sharing pack for review. Links in the downloads and captions below point to the live showcase. Nothing is posted or sent for you.</p>}
+    <section aria-labelledby="graphics-heading">
+      <div class="section-heading"><h2 id="graphics-heading">Choose a graphic.</h2><p>One event. Three sizes.</p></div>
+      <div class="sharing-graphics">{sharingFormats.map(format=><article class="graphic-card"><a href={`/sharing/${format.id}.png`} download={`createch-${format.id}.png`} aria-label={`Download ${format.label.toLowerCase()} graphic`}><img src={`/sharing/${format.id}.png`} width={format.width} height={format.height} alt={`${event.title}. ${event.dateLabel}, ${event.startTime}–${event.endTime} UK time. ${event.venue.name}, ${event.venue.city}.`} /></a><div class="graphic-caption"><h3>{format.label}</h3><p>{format.use}</p><a class="text-link" href={`/sharing/${format.id}.png`} download={`createch-${format.id}.png`}>Download PNG <ArrowIcon /></a><span class="small">{format.width} × {format.height}</span></div></article>)}</div>
+    </section>
+    <section class="sharing-words" aria-labelledby="words-heading">
+      <div><p class="eyebrow">Ready to use</p><h2 id="words-heading">A few words<br /><em>to pass on.</em></h2><p>Use the short invitation in a message, or the caption with a graphic. Add the link so people can explore the work.</p><p>These links open the public website.</p></div>
+      <div class="copy-cards">{([{id:'invitation',label:'Short invitation',text:copy.invitation},{id:'caption',label:'Social caption',text:copy.caption},{id:'listing',label:'Event listing',text:copy.listing}]).map(item=><div class="copy-card" data-copy-text><label for={`copy-${item.id}`}>{item.label}</label><textarea id={`copy-${item.id}`} readonly rows={item.id==='listing'?12:item.id==='caption'?10:5}>{item.text}</textarea><button class="button dark" data-copy-text-button hidden>Copy {item.label.toLowerCase()}</button><p class="small" data-copy-text-status role="status" aria-live="polite"></p></div>)}</div>
+    </section>
+    <section class="sharing-projects" aria-labelledby="project-links-heading"><p class="eyebrow">Share a discovery</p><h2 id="project-links-heading">Start with a project.</h2><p>Each project page has its own sharing tools. Names and titles below are exactly as published.</p><ul>{projects.map(project=><li><a href={`/projects/${project.slug}/`}><span>{project.maker}</span><strong>{project.title}</strong><ArrowIcon /></a></li>)}</ul></section>
+    <ShareLinks />
+  </div>
+</Layout>
+<script>import '../../scripts/copy-text';</script>
+<style>
+  .sharing-page { color: var(--ct-ink); }
+  .sharing-heading { display:grid; grid-template-columns:1.2fr 1fr; gap:48px; align-items:end; padding-bottom:56px; border-bottom:1px solid #c9c2d3; }
+  h1 { font-size:clamp(3.2rem,7vw,6.5rem); line-height:1.04; margin-bottom:0; } h1 em,h2 em { color:var(--ct-blue); }
+  .sharing-intro > p:first-child { font-size:1.3rem; line-height:1.55; max-width:36ch; } .sharing-intro .small { margin:15px 0 0; }
+  .section-heading { margin-top:58px; } .sharing-graphics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+  .graphic-card { border:1px solid #c9c2d3; border-radius:16px; overflow:hidden; background:#fff; display:flex; flex-direction:column; }
+  .graphic-card > a { padding:20px; background:#e8e3ef; display:flex; align-items:center; justify-content:center; min-height:360px; }
+  .graphic-card img { width:100%; height:auto; max-height:340px; object-fit:contain; } .graphic-caption { padding:24px; } .graphic-caption h3 { font-size:1.35rem; margin:0; } .graphic-caption p { min-height:3em; line-height:1.5; } .graphic-caption .small { display:block; margin-top:10px; }
+  .sharing-words { display:grid; grid-template-columns:1fr 1.3fr; gap:64px; margin-top:88px; padding-top:56px; border-top:1px solid #c9c2d3; } h2 { font-size:clamp(2rem,3.8vw,3.6rem); line-height:1.1; }
+  .sharing-words > div:first-child > p { max-width:33ch; line-height:1.65; } .copy-cards { display:grid; gap:24px; }
+  .copy-card { padding:24px; background:#fff; border:1px solid #c9c2d3; border-radius:16px; min-width:0; } .copy-card label { display:block; font-size:1.1rem; font-weight:700; margin-bottom:12px; } textarea { width:100%; resize:vertical; font:inherit; line-height:1.55; padding:15px; border:1px solid #aaa2b9; background:#faf8fc; border-radius:8px; color:inherit; } .copy-card button { margin-top:15px; } button[hidden] { display:none; } .copy-card [role=status] { margin-bottom:0; }
+  .sharing-projects { margin:88px 0; } .sharing-projects ul { list-style:none; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:0 40px; } .sharing-projects li { border-bottom:1px solid #c9c2d3; } .sharing-projects a { display:grid; grid-template-columns:1fr auto; gap:7px 20px; padding:24px 0; text-decoration:none; } .sharing-projects span { grid-column:1; font-size:.85rem; } .sharing-projects strong { grid-column:1; font-weight:500; line-height:1.45; } .sharing-projects svg { grid-column:2; grid-row:1/3; align-self:center; }
+  a:focus-visible,button:focus-visible,textarea:focus-visible { outline:3px solid var(--ct-blue); outline-offset:5px; }
+  @media(max-width:900px) { .sharing-heading,.sharing-words { grid-template-columns:1fr; gap:28px; } .sharing-graphics { grid-template-columns:1fr; } .graphic-card > a { min-height:0; } .graphic-card img { max-height:420px; } .graphic-caption p { min-height:0; } .sharing-projects ul { grid-template-columns:1fr; } .sharing-intro > p:first-child { max-width:unset; } }
+</style>

@@ -31,6 +31,24 @@ for (const group of document.querySelectorAll<HTMLElement>(
       fallback();
     }
   });
+  const invitationButton = group.querySelector<HTMLButtonElement>('[data-copy-invitation]');
+  const invitationArea = group.querySelector<HTMLTextAreaElement>('[data-invitation-text]');
+  if (invitationButton && invitationArea) {
+    invitationButton.hidden = false;
+    invitationArea.value = `${group.dataset.shareInvitation}\n\n${url}`;
+    invitationButton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(invitationArea.value);
+        feedback.textContent = preview
+          ? 'Invitation copied with a local preview link. It only works on this computer.'
+          : 'Invitation copied with the event link.';
+      } catch {
+        group.querySelector<HTMLDetailsElement>('[data-invitation-fallback]')!.open = true;
+        invitationArea.focus(); invitationArea.select();
+        feedback.textContent = 'Automatic copying is unavailable. The invitation is selected for you to copy.';
+      }
+    });
+  }
   const share = group.querySelector<HTMLButtonElement>('[data-native-share]')!;
   if (navigator.share) {
     share.hidden = false;
