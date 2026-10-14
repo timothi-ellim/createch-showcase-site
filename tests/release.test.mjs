@@ -37,7 +37,8 @@ test('local static output has no handoff references, secrets, or stale recruitme
     .join('\n');
   assert.doesNotMatch(
     output,
-    /edit2=|responseId|editLinkSecret|ownerContact|1e1L8KAw|7 August|WS09|captions provided/i,
+    // WS09 is now an approved public map label, not a private-data marker.
+    /edit2=|responseId|editLinkSecret|ownerContact|1e1L8KAw|7 August|captions provided/i,
   );
   for (const path of paths.filter((path) => path.endsWith('.html'))) {
     const html = readFileSync(path, 'utf8');

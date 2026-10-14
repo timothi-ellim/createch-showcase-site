@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import re
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -53,6 +54,10 @@ snapshot_bytes = args.snapshot.read_bytes()
 snapshot = json.loads(snapshot_bytes)
 assert snapshot['publicationStatus'] == 'approved-public'
 pages = list(args.site.rglob('*.html'))
+private_markers = re.compile(r'edit2=|responseId|editLinkSecret|ownerContact|1e1L8KAw|7 August|captions provided', re.I)
+for path in args.site.rglob('*'):
+    if path.suffix in ('.html', '.js', '.json', '.css'):
+        assert not private_markers.search(path.read_text(encoding='utf-8')), ('Forbidden public-output marker', str(path))
 for path in pages:
     page = Page(path.read_text(encoding='utf-8'))
     assert not page.errors, (str(path), page.errors)
@@ -78,4 +83,4 @@ for src in media:
     content = (args.site / src.lstrip('/')).read_bytes()
     assert hashlib.sha256(content).hexdigest() == Path(src).stem, ('Media changed', src)
 assert args.snapshot.read_bytes() == snapshot_bytes
-print(json.dumps({'htmlPagesChecked': len(pages), 'validCardLinks': True, 'uniqueIds': True, 'samePageAnchorsResolve': True, 'eventParagraphsUnchanged': True, 'approvedMedia': len(media), 'projects': len(snapshot['projects']), 'contentRevision': snapshot['revision'], 'published': False}, indent=2))
+print(json.dumps({'htmlPagesChecked': len(pages), 'validCardLinks': True, 'uniqueIds': True, 'samePageAnchorsResolve': True, 'eventParagraphsUnchanged': True, 'privateDataMarkersAbsent': True, 'approvedMedia': len(media), 'projects': len(snapshot['projects']), 'contentRevision': snapshot['revision'], 'published': False}, indent=2))

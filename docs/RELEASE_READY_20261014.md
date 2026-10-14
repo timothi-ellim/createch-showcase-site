@@ -27,6 +27,7 @@ Bundled Node v24.19.0 and the existing lockfile were used.
 - In-app browser: 320, 390, 768, 892, 899, 900, 901, 1024 and 1440px; normal and larger text; no heading/toolbar/passage overlaps or horizontal overflow. Stacked introduction keeps a 40px gap. Divider clearance checked at 320/900/1440px.
 - Keyboard chapter navigation, mobile menu Enter navigation/focus, pause/resume and saved pause after reload, keyboard save/reload/remove, all 12 Explore card image links and all seven supporter images checked. No captured browser errors or warnings.
 - `git diff --check`: passed (line-ending notices only).
+- `node --test tests/release.test.mjs` in root: 2/2 passed after removing the obsolete ban on the approved map label WS09. The initial failure matched only WS09 in an older local fixture build; all private-data marker matches were zero. The same marker scan was then run against the actual 40-page release preview through `verify-homepage-release.py` and passed. Existing root test changes were preserved.
 
 Evidence is in `docs/evidence/homepage-release-20261014/`, including four screenshots and browser measurements. A regression spec was added at `tests/browser/homepage-layout.spec.ts`; its equivalent geometry checks were executed through the in-app browser, not the Playwright CLI.
 
