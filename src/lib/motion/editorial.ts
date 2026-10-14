@@ -17,6 +17,8 @@ function reveal(
   if (
     !canMove() ||
     !(element instanceof HTMLElement) ||
+    element.matches(':focus-within') ||
+    element.closest(':focus') ||
     !element.getClientRects().length
   )
     return;
@@ -74,10 +76,11 @@ export function startEditorial() {
     for (const [selector, delay, duration] of [
       ['.poster-margin', 0, 250],
       ['.hero-copy > .eyebrow', h.label, 180],
-      ['.title-word:nth-child(1)', h.where, 200],
-      ['.title-word:nth-child(2)', h.code, 360],
-      ['.title-word:nth-child(3)', h.becomes, 200],
-      ['.title-word:nth-child(4)', h.culture, 220],
+      ['.title-word:nth-child(1)', h.where, 440],
+      ['.title-word:nth-child(2)', h.code, 460],
+      ['.title-word:nth-child(3)', h.becomes, 380],
+      ['.title-word:nth-child(4)', h.culture, 320],
+      ['.exhibition-window', 120, 560],
       ['.event-facts', h.facts, 180],
       ['.hero-intro', h.intro, 140],
       ['.actions', h.actions, h.complete - h.actions],
@@ -88,8 +91,9 @@ export function startEditorial() {
           element,
           delay,
           duration,
-          selector.startsWith('.title-word') || selector === '.poster-margin'
-            ? distance.reveal
+          selector.startsWith('.title-word') ||
+            selector === '.exhibition-window'
+            ? 28
             : distance.register,
           selector.includes('nth-child(2)'),
         );
@@ -113,6 +117,32 @@ export function startEditorial() {
     { amount: 0.15 },
   );
   window.addEventListener('pagehide', stop, { once: true });
+  if (document.body.dataset.page === 'home') {
+    const headings = inView(
+      '.news-heading, .event-overview-intro, .poster-feature-copy',
+      (element) => {
+        reveal(element, 0, 560, 20);
+      },
+      { amount: 0.15 },
+    );
+    window.addEventListener('pagehide', headings, { once: true });
+    // Observe each item, so a long mobile stack enters as it is read.
+    for (const group of document.querySelectorAll(
+      '.news-links, .supporters-logos, .supporters-campaign, .welcome-paths, .featured-grid, .theme-grid',
+    )) {
+      const items = [...group.children];
+      const stopGroup = inView(
+        items,
+        (element) => {
+          if (element instanceof HTMLElement)
+            element.dataset.motionSeen = 'true';
+          reveal(element, (items.indexOf(element) % 4) * 65, 560, 24);
+        },
+        { amount: 0.15 },
+      );
+      window.addEventListener('pagehide', stopGroup, { once: true });
+    }
+  }
   document.addEventListener('createch:filters-changed', ((
     event: CustomEvent,
   ) => {

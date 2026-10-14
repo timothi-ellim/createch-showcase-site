@@ -115,9 +115,9 @@ test('touch buttons animate without taking over vertical scrolling', async ({
     await page
       .locator('[data-sketch-stage]')
       .evaluate((element) => getComputedStyle(element).touchAction),
-  ).toBe('auto');
+  ).toBe('pan-y pinch-zoom');
   await expect(page.locator('[data-sketch-instructions]')).toContainText(
-    'Tap a shape',
+    'Drag sideways',
   );
   await context.close();
 });

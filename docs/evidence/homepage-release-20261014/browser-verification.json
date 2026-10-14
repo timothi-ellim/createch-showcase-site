@@ -1,0 +1,395 @@
+{
+  "date": "2026-10-14",
+  "url": "http://127.0.0.1:4343/",
+  "finalLayout": [
+    {
+      "headingGap": 40,
+      "large": false,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 320
+    },
+    {
+      "headingGap": 40,
+      "large": true,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 320
+    },
+    {
+      "headingGap": 40,
+      "large": false,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 390
+    },
+    {
+      "headingGap": 40,
+      "large": true,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 390
+    },
+    {
+      "headingGap": 40,
+      "large": false,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 768
+    },
+    {
+      "headingGap": 40,
+      "large": true,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 768
+    },
+    {
+      "headingGap": 40,
+      "large": false,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 892
+    },
+    {
+      "headingGap": 40,
+      "large": true,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 892
+    },
+    {
+      "headingGap": 40,
+      "large": false,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 899
+    },
+    {
+      "headingGap": 40,
+      "large": true,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 899
+    },
+    {
+      "headingGap": 40,
+      "large": false,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 900
+    },
+    {
+      "headingGap": 40,
+      "large": true,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 900
+    },
+    {
+      "headingGap": -335,
+      "large": false,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 901
+    },
+    {
+      "headingGap": -335,
+      "large": true,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 901
+    },
+    {
+      "headingGap": -317,
+      "large": false,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 1024
+    },
+    {
+      "headingGap": -317,
+      "large": true,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 1024
+    },
+    {
+      "headingGap": -363,
+      "large": false,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 1440
+    },
+    {
+      "headingGap": -363,
+      "large": true,
+      "overflow": false,
+      "overlap": false,
+      "toolbarOverlap": false,
+      "width": 1440
+    }
+  ],
+  "dividerResults": [
+    {
+      "clearOfHeading": true,
+      "clearOfIntroduction": true,
+      "width": 320
+    },
+    {
+      "clearOfHeading": true,
+      "clearOfIntroduction": true,
+      "width": 900
+    },
+    {
+      "clearOfHeading": true,
+      "clearOfIntroduction": true,
+      "width": 1440
+    }
+  ],
+  "pausedKeyboardChecks": [
+    {
+      "focused": "event-paragraph-2",
+      "headerBottom": 64,
+      "height": 800,
+      "overflow": false,
+      "passageTop": 216,
+      "paused": "paused",
+      "toolbarBottom": -204,
+      "toolbarPosition": "static",
+      "width": 320
+    },
+    {
+      "focused": "event-paragraph-2",
+      "headerBottom": 64,
+      "height": 800,
+      "overflow": false,
+      "passageTop": 216,
+      "paused": "paused",
+      "toolbarBottom": -49,
+      "toolbarPosition": "static",
+      "width": 900
+    },
+    {
+      "focused": "event-paragraph-2",
+      "headerBottom": 64,
+      "height": 600,
+      "overflow": false,
+      "passageTop": 216,
+      "paused": "paused",
+      "toolbarBottom": -82,
+      "toolbarPosition": "static",
+      "width": 901
+    },
+    {
+      "focused": "event-paragraph-2",
+      "headerBottom": 72,
+      "height": 600,
+      "overflow": false,
+      "passageTop": 216,
+      "paused": "paused",
+      "toolbarBottom": -101,
+      "toolbarPosition": "static",
+      "width": 1440
+    },
+    {
+      "focused": "event-paragraph-2",
+      "headerBottom": 72,
+      "height": 1000,
+      "overflow": false,
+      "passageTop": 216,
+      "paused": "paused",
+      "toolbarBottom": 187,
+      "toolbarPosition": "sticky",
+      "width": 1440
+    }
+  ],
+  "sectionAudit": [
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "News & social.",
+      "width": 320
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "With thanks.",
+      "width": 320
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Selected projects.",
+      "width": 320
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Meet the participants.",
+      "width": 320
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Download the poster.",
+      "width": 320
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Explore by theme.",
+      "width": 320
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Play with shape and motion.",
+      "width": 320
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Join us at Canopy.",
+      "width": 320
+    },
+    {
+      "clippedText": 1,
+      "overflow": false,
+      "section": "News & social.",
+      "width": 900
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "With thanks.",
+      "width": 900
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Selected projects.",
+      "width": 900
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Meet the participants.",
+      "width": 900
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Download the poster.",
+      "width": 900
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Explore by theme.",
+      "width": 900
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Play with shape and motion.",
+      "width": 900
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Join us at Canopy.",
+      "width": 900
+    },
+    {
+      "clippedText": 1,
+      "overflow": false,
+      "section": "News & social.",
+      "width": 1440
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "With thanks.",
+      "width": 1440
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Selected projects.",
+      "width": 1440
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Meet the participants.",
+      "width": 1440
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Download the poster.",
+      "width": 1440
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Explore by theme.",
+      "width": 1440
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Play with shape and motion.",
+      "width": 1440
+    },
+    {
+      "clippedText": 0,
+      "overflow": false,
+      "section": "Join us at Canopy.",
+      "width": 1440
+    }
+  ],
+  "overflowFlagReview": "News eyebrow has a 4px decorative mark overhang with overflow visible; screenshot confirms no text clipping.",
+  "mobileMenu": {
+    "enterNavigatesToNews": true,
+    "closesDialog": true,
+    "focusesNews": true
+  },
+  "projectCards": {
+    "oneArtworkLinkEach": true,
+    "creditsOutsideArtworkLink": true,
+    "exploreCardsChecked": 12
+  },
+  "shortlist": {
+    "keyboardSave": true,
+    "persistsAfterReload": true,
+    "restoredOriginalUnsavedState": true
+  },
+  "supporterImagesLoaded": 7,
+  "brokenLoadedImages": 0,
+  "browserLogs": [],
+  "limits": [
+    "Real 200%/400% browser zoom unavailable: Ctrl+plus did not change viewport, DPR or visual viewport scale.",
+    "OS reduced motion and storage failure covered by Node tests, not physical OS/device changes.",
+    "No screen-reader speech, physical touch, no-JavaScript browser context or full axe/Playwright suite run."
+  ],
+  "published": false
+}

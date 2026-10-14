@@ -5,12 +5,24 @@ import type { PublicProject } from '../data/catalogue';
 import { responsiveMedia } from '../lib/responsive-media';
 interface Props {
   project: PublicProject;
+  linkToProject?: boolean;
 }
-const { project } = Astro.props;
+const { project, linkToProject = false } = Astro.props;
+const MediaContainer = linkToProject ? 'a' : 'div';
 ---
 
 <figure class="project-figure">
-  <div class:list={['project-media', project.theme]}>
+  <MediaContainer
+    class:list={[
+      'project-media',
+      project.theme,
+      { 'card-media-link': linkToProject },
+    ]}
+    href={linkToProject ? `/projects/${project.slug}/` : undefined}
+    data-project-media-link={linkToProject || undefined}
+    tabindex={linkToProject ? -1 : undefined}
+    aria-label={linkToProject ? `View ${project.title}` : undefined}
+  >
     {project.media ? (
       <img
         src={project.media.src}
@@ -35,6 +47,21 @@ const { project } = Astro.props;
         <span class="placeholder-caption">Project image not supplied</span>
       </>
     )}
-  </div>
-  {project.media && <figcaption>{project.media.credit}<Fragment set:html={mediaLicenceMarkup(project.media.src)} /></figcaption>}
+  </MediaContainer>
+  {project.media && (
+    <figcaption>
+      {project.media.credit}
+      <Fragment set:html={mediaLicenceMarkup(project.media.src)} />
+    </figcaption>
+  )}
 </figure>
+
+<style>
+  .project-media.card-media-link {
+    display: flex;
+    text-decoration: none;
+  }
+  .project-media.card-media-link:hover {
+    background-color: var(--ct-lilac);
+  }
+</style>

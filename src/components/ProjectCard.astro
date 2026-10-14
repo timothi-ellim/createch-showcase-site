@@ -32,14 +32,14 @@ const {
   hidden={saved}
 >
   <div class="card-artwork">
-    <a
-      class="card-media-link"
-      href={`/projects/${project.slug}/`}
-      data-project-media-link
-      tabindex="-1"
-      aria-label={`View ${project.title}`}
-    >
-      {discover && !project.media ? (
+    {discover && !project.media ? (
+      <a
+        class="card-media-link"
+        href={`/projects/${project.slug}/`}
+        data-project-media-link
+        tabindex="-1"
+        aria-label={`View ${project.title}`}
+      >
         <div
           class:list={['discovery-type-cover', project.theme]}
           aria-hidden="true"
@@ -48,10 +48,10 @@ const {
           <strong>{project.title}</strong>
           <span>{project.maker} · Explore the idea ↗</span>
         </div>
-      ) : (
-        <ProjectMedia project={project} />
-      )}
-    </a>
+      </a>
+    ) : (
+      <ProjectMedia project={project} linkToProject />
+    )}
     {project.media && (
       <button
         hidden

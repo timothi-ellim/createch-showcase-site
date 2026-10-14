@@ -7,6 +7,7 @@ if (menu && trigger && typeof menu.showModal === 'function') {
   document.documentElement.classList.add('nav-enhanced');
   trigger.hidden = false;
   let closing: Animation | null = null;
+  let followingLink = false;
   let untrack: (() => void) | undefined;
   const close = () => {
     untrack?.();
@@ -37,6 +38,7 @@ if (menu && trigger && typeof menu.showModal === 'function') {
     closing.finished.then(close, () => {});
   };
   trigger.addEventListener('click', () => {
+    followingLink = false;
     menu.showModal();
     document.documentElement.classList.add('menu-open');
     trigger.setAttribute('aria-expanded', 'true');
@@ -60,10 +62,15 @@ if (menu && trigger && typeof menu.showModal === 'function') {
   });
   menu
     .querySelectorAll('a')
-    .forEach((link) => link.addEventListener('click', close));
+    .forEach((link) => link.addEventListener('click', () => {
+      followingLink = true;
+      close();
+    }));
   menu.addEventListener('close', () => {
     document.documentElement.classList.remove('menu-open');
     trigger.setAttribute('aria-expanded', 'false');
+    // Let native link navigation keep focus and scrolling at its destination.
+    if (followingLink) return;
     // Resizing into desktop must not leave focus on the now-hidden trigger.
     if (trigger.getClientRects().length) trigger.focus();
     else

@@ -1,5 +1,6 @@
 import type { PublicSnapshot, PublicProject } from './content-schema.ts';
 import { zonedInstant } from './event-time.ts';
+import { eventLinks } from '../data/event-links.ts';
 
 type Event = PublicSnapshot['event'];
 export const socialImagePath = (slug?: string) =>
@@ -61,6 +62,7 @@ export function eventStructuredData(event: Event) {
     '@type': 'ExhibitionEvent',
     '@id': `${url}#event`,
     url,
+    sameAs: [eventLinks.canopy.href],
     name: `${event.title} — ${event.series}`,
     description: event.description ?? eventSummary(event),
     startDate: eventDateTime(event, event.startTime),

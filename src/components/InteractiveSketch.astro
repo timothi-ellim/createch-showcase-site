@@ -9,55 +9,31 @@ const paths = sketchPaths(restingPose);
   class="interactive-sketch wrap"
   id="play"
   aria-labelledby="play-heading"
+  tabindex="-1"
   data-sketch
 >
   <div class="sketch-copy">
-    <p class="eyebrow">Try the website sketch</p>
-    <h2 id="play-heading">
-      Play with
-      <br />
-      <em>shape and motion.</em>
-    </h2>
-    <p>
-      Change the shape of this interactive sketch, then explore the researchers’ work.
-    </p>
-    <p class="sketch-instructions" data-sketch-instructions hidden>
-      Move your pointer across the sculpture. Try a shape, or use Turn to see
-      another angle.
-    </p>
-    <div class="sketch-controls" data-sketch-controls hidden>
-      <div class="shape-options" role="group" aria-label="Sculpture shape">
-        {['Orbit', 'Wave', 'Bloom'].map((name, index) => (
-          <button
-            type="button"
-            data-sketch-shape={index}
-            aria-pressed={index === 0}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
-      <button class="sketch-turn" type="button" data-sketch-turn>
-        Turn the sculpture <span aria-hidden="true">↻</span>
-      </button>
+    <div class="sketch-intro">
+      <p class="eyebrow">Your turn</p>
+      <h2 id="play-heading">
+        Play with
+        <br />
+        <em>shape and motion.</em>
+      </h2>
+      <p>
+        Turn, stretch and blend this website sketch. See what happens when you
+        take control.
+      </p>
     </div>
-    {projects.length > 0 && (
-      <button
-        class="text-link sketch-surprise"
-        hidden
-        data-home-surprise
-        data-project-paths={JSON.stringify(
-          projects.map((project) => `/projects/${project.slug}/`),
-        )}
-      >
-        Surprise me{' '}
-        <span aria-hidden="true">
-          <ArrowIcon />
-        </span>
-      </button>
-    )}
   </div>
-  <div class="sketch-stage" data-sketch-stage>
+  <div
+    class="sketch-stage"
+    data-sketch-stage
+    role="group"
+    aria-label="Turn the interactive sculpture"
+    aria-describedby="sketch-instructions"
+    aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home"
+  >
     <div class="sketch-stage-heading">
       <span>Code / Play</span>
       <span data-sketch-label>01 — Orbit</span>
@@ -105,6 +81,76 @@ const paths = sketchPaths(restingPose);
       <span aria-hidden="true">✳</span>
     </div>
   </div>
+  <div class="sketch-interaction">
+    <p
+      class="sketch-instructions"
+      id="sketch-instructions"
+      data-sketch-instructions
+      hidden
+    >
+      Move your pointer across the sculpture. Try a shape, or use Turn to see
+      another angle.
+    </p>
+    <div class="sketch-controls" data-sketch-controls hidden>
+      <div class="shape-options" role="group" aria-label="Sculpture shape">
+        {['Orbit', 'Wave', 'Bloom'].map((name, index) => (
+          <button
+            type="button"
+            data-sketch-shape={index}
+            aria-pressed={index === 0}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+      <div class="sketch-blend">
+        <div class="blend-label">
+          <label for="sketch-blend">Blend the shapes</label>
+          <output for="sketch-blend" data-sketch-output>
+            Orbit
+          </output>
+        </div>
+        <input
+          id="sketch-blend"
+          data-sketch-blend
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          value="0"
+          aria-valuetext="Orbit"
+        />
+        <div class="blend-stops" aria-hidden="true">
+          <span>Orbit</span>
+          <span>Wave</span>
+          <span>Bloom</span>
+        </div>
+      </div>
+      <div class="sketch-view-controls">
+        <button class="sketch-turn" type="button" data-sketch-turn>
+          Turn the sculpture <span aria-hidden="true">↻</span>
+        </button>
+        <button class="sketch-reset" type="button" data-sketch-reset>
+          Reset
+        </button>
+      </div>
+    </div>
+    {projects.length > 0 && (
+      <button
+        class="text-link sketch-surprise"
+        hidden
+        data-home-surprise
+        data-project-paths={JSON.stringify(
+          projects.map((project) => `/projects/${project.slug}/`),
+        )}
+      >
+        Surprise me{' '}
+        <span aria-hidden="true">
+          <ArrowIcon />
+        </span>
+      </button>
+    )}
+  </div>
 </section>
 <script>
   import '../scripts/interactive-sketch';
@@ -115,9 +161,21 @@ const paths = sketchPaths(restingPose);
     display: grid;
     grid-template-columns: 0.85fr 1.15fr;
     gap: clamp(28px, 5vw, 72px);
-    align-items: center;
+    align-items: start;
+    grid-template-areas: 'intro drawing' 'controls drawing';
+    row-gap: 12px;
     padding-block: var(--ct-space-section);
     border-top: 1px solid var(--ct-line-light);
+  }
+  .sketch-copy {
+    grid-area: intro;
+  }
+  .sketch-interaction {
+    grid-area: controls;
+  }
+  .sketch-stage {
+    grid-area: drawing;
+    align-self: center;
   }
   .sketch-copy h2 {
     font-size: clamp(2.3rem, 4.5vw, 4.5rem);
@@ -127,13 +185,15 @@ const paths = sketchPaths(restingPose);
   .sketch-copy h2 em {
     color: var(--ct-lemon);
   }
-  .sketch-copy > p:not(.eyebrow) {
+  .sketch-intro > p:not(.eyebrow) {
     max-width: 40ch;
     line-height: 1.7;
   }
   .sketch-instructions {
     font-size: 0.875rem;
     color: #e2dcff;
+    line-height: 1.6;
+    max-width: 44ch;
   }
   .sketch-controls {
     margin-top: 24px;
@@ -176,6 +236,68 @@ const paths = sketchPaths(restingPose);
     display: inline-block;
     margin-left: 12px;
     font-size: 1.3rem;
+  }
+  .sketch-blend {
+    margin-top: 24px;
+    max-width: 360px;
+  }
+  .blend-label {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.85rem;
+  }
+  .blend-label output {
+    color: var(--ct-lemon);
+  }
+  .sketch-blend input {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin: 4px 0 0;
+    padding: 0;
+    accent-color: var(--ct-lemon);
+    cursor: ew-resize;
+  }
+  .blend-stops {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #e2dcff;
+  }
+  .sketch-view-controls {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+  }
+  .sketch-reset {
+    background: transparent;
+    border: 1px solid #ffffff88;
+    border-radius: 999px;
+    color: inherit;
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 10px 18px;
+    min-height: 48px;
+    cursor: pointer;
+  }
+  .sketch-reset:hover {
+    background: #211067;
+  }
+  .sketch-stage[data-interactive-motion='true'] {
+    cursor: grab;
+    touch-action: pan-y pinch-zoom;
+  }
+  .sketch-stage[data-dragging] {
+    cursor: grabbing;
+    user-select: none;
+  }
+  .sketch-stage:focus-visible,
+  .sketch-controls :is(button, input):focus-visible {
+    outline: 3px solid var(--ct-lemon);
+    outline-offset: 5px;
   }
   .sketch-surprise {
     margin-top: 20px;
@@ -232,9 +354,46 @@ const paths = sketchPaths(restingPose);
   @media (max-width: 800px) {
     .interactive-sketch {
       grid-template-columns: 1fr;
+      grid-template-areas: 'intro' 'drawing' 'controls';
+      gap: 20px;
+    }
+    .sketch-interaction {
+      display: flex;
+      flex-direction: column;
+    }
+    .sketch-intro {
+      order: 0;
+    }
+    .sketch-interaction {
+      order: 2;
+    }
+    .sketch-intro h2 {
+      margin-block: 16px;
+    }
+    .sketch-intro > p:last-child {
+      margin-bottom: 0;
     }
     .sketch-stage {
+      order: 1;
       box-shadow: 6px 6px 0 #1c0a90;
+    }
+    .sketch-drawing {
+      max-height: 260px;
+    }
+    .sketch-stage-heading,
+    .sketch-stage-footer {
+      padding: 14px 16px;
+    }
+    .sketch-instructions {
+      order: 2;
+      margin-top: 20px;
+    }
+    .sketch-surprise {
+      order: 3;
+      margin-top: 0;
+    }
+    .sketch-controls {
+      margin-top: 0;
     }
   }
   @media (max-width: 400px) {

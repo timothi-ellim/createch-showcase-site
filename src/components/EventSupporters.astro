@@ -1,5 +1,7 @@
 ---
 import { Image } from 'astro:assets';
+import MotionMark from './MotionMark.astro';
+import { event } from '../data/catalogue';
 import lcb from '../assets/supporters/lcb.png';
 import canopy from '../assets/supporters/canopy.png';
 import dmu from '../assets/supporters/dmu.png';
@@ -7,19 +9,21 @@ import cr8x from '../assets/supporters/cr8x.png';
 import wcbc from '../assets/supporters/wcbc.png';
 import createch from '../assets/supporters/createch.png';
 import banner from '../assets/supporters/banner.png';
-// Original files supplied by the organiser on 6 October 2026. No sponsor tiers.
+// Original organiser-supplied artwork. Visual grouping does not denote sponsor tiers.
 const marks = [
-  { id: 'lcb', source: lcb, alt: 'LCB', width: 150 },
-  { id: 'canopy', source: canopy, alt: 'Canopy', width: 210 },
+  { id: 'lcb', source: lcb, alt: 'LCB', width: 156 },
+  { id: 'canopy', source: canopy, alt: 'Canopy', width: 250 },
   {
     id: 'dmu',
     source: dmu,
     alt: 'De Montfort University Leicester',
-    width: 170,
+    width: 156,
   },
-  { id: 'cr8x', source: cr8x, alt: 'CR8X Leics', width: 96 },
-  { id: 'wcbc', source: wcbc, alt: 'Where Code Becomes Culture', width: 92 },
-  { id: 'createch', source: createch, alt: 'CreaTech', width: 100 },
+  { id: 'cr8x', source: cr8x, alt: 'CR8X Leics', width: 88 },
+];
+const campaignMarks = [
+  { source: wcbc, alt: 'Where Code Becomes Culture', width: 82 },
+  { source: createch, alt: 'CreaTech', width: 92 },
 ];
 ---
 
@@ -27,34 +31,22 @@ const marks = [
   class="event-supporters"
   aria-labelledby="supporters-heading"
   id="supporters"
+  tabindex="-1"
 >
-  <div class="wrap">
+  <div class="wrap section">
     <div class="supporters-heading">
-      <div>
-        <p class="eyebrow">With thanks</p>
+      <div data-motion-reveal>
+        <p class="eyebrow">Supporters</p>
         <h2 id="supporters-heading">
-          Thank you for
-          <br />
-          <em>supporting the event.</em>
+          With <em>thanks.</em>
         </h2>
+        <p class="supporters-intro">Thank you for supporting {event.series}.</p>
       </div>
-      <Image
-        class="supporters-banner"
-        src={banner}
-        alt=""
-        width={330}
-        widths={[330, 660]}
-        sizes="(max-width: 650px) 260px, 330px"
-        format="webp"
-        quality={90}
-        loading="lazy"
-      />
+      <div class="thanks-mark">
+        <MotionMark />
+      </div>
     </div>
-    <ul
-      class="supporters-logos"
-      role="list"
-      aria-label="Event supporters and showcase logos"
-    >
+    <ul class="supporters-logos" role="list" aria-label="Event supporters">
       {marks.map((mark) => (
         <li class={mark.id}>
           <Image
@@ -71,85 +63,196 @@ const marks = [
         </li>
       ))}
     </ul>
+    <div class="supporters-campaign" aria-label="Showcase artwork">
+      <div class="campaign-signature">
+        <p class="eyebrow">{event.series}</p>
+        <p>{event.title}</p>
+      </div>
+      <ul class="campaign-marks" role="list" aria-label="Showcase logos">
+        {campaignMarks.map((mark) => (
+          <li>
+            <Image
+              src={mark.source}
+              alt={mark.alt}
+              width={mark.width}
+              widths={[mark.width, Math.min(mark.width * 2, mark.source.width)]}
+              sizes={`${mark.width}px`}
+              format="webp"
+              quality={95}
+              loading="lazy"
+              decoding="async"
+            />
+          </li>
+        ))}
+      </ul>
+      <Image
+        class="supporters-banner"
+        src={banner}
+        alt=""
+        width={330}
+        widths={[330, 660]}
+        sizes="(max-width: 650px) 280px, 330px"
+        format="webp"
+        quality={90}
+        loading="lazy"
+      />
+    </div>
   </div>
 </section>
 <style>
   .event-supporters {
     background: #fff;
     color: var(--ct-ink);
-    padding-block: clamp(28px, 4vw, 48px);
-    border-block: 1px solid #d9d3e5;
+    border-bottom: 1px solid #dedbe5;
   }
   .supporters-heading {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 32px;
-    padding-bottom: 28px;
+    gap: 24px;
+    margin-bottom: 44px;
   }
   .eyebrow {
     color: var(--ct-blue);
-    margin: 0 0 10px;
+    margin: 0 0 16px;
   }
   h2 {
-    font: 400 clamp(1.8rem, 3vw, 2.8rem)/1.08 var(--ct-font-display);
-    letter-spacing: -0.04em;
+    color: var(--ct-blue);
+    font: 500 clamp(3.4rem, 7.5vw, 7rem)/1.02 var(--ct-font-display);
+    letter-spacing: -0.06em;
     margin: 0;
   }
-  h2 em {
-    color: var(--ct-blue);
+  .supporters-intro {
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    line-height: 1.6;
+    margin: 20px 0 0;
+    max-width: 34ch;
   }
-  .supporters-banner {
-    display: block;
-    width: min(33%, 330px);
-    height: auto;
+  .thanks-mark {
+    --mark-size: clamp(72px, 11vw, 144px);
+    padding: 12px;
+    border-radius: 50%;
+    background: var(--ct-lemon);
+    color: var(--ct-blue);
   }
   .supporters-logos {
     list-style: none;
-    padding: 28px 0 0;
     margin: 0;
-    border-top: 1px solid #dedbe5;
+    padding: 0;
     display: grid;
-    grid-template-columns: 1fr 1.3fr 1.15fr 0.85fr 0.85fr 0.85fr;
-    gap: 24px;
-    align-items: center;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-block: 1px solid #dedbe5;
   }
-  li {
-    min-width: 0;
+  .supporters-logos li {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100px;
+    min-width: 0;
+    min-height: 166px;
+    padding: 28px 24px;
   }
-  .supporters-logos img {
+  .supporters-logos li + li {
+    border-left: 1px solid #dedbe5;
+  }
+  img {
     display: block;
     max-width: 100%;
     height: auto;
     object-fit: contain;
   }
+  .supporters-campaign {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 36px;
+    margin-top: 32px;
+  }
+  .campaign-signature .eyebrow {
+    margin-bottom: 8px;
+    font-size: 0.7rem;
+  }
+  .campaign-signature > p:last-child {
+    margin: 0;
+    max-width: 17ch;
+    font-size: 1.25rem;
+    line-height: 1.25;
+    letter-spacing: -0.03em;
+  }
+  .campaign-marks {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+  }
+  .campaign-marks li {
+    min-width: 0;
+  }
+  .supporters-banner {
+    width: min(100%, 330px);
+    justify-self: end;
+  }
   @media (max-width: 900px) {
     .supporters-logos {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      row-gap: 24px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .supporters-logos li {
+      min-height: 144px;
+    }
+    .supporters-logos li:nth-child(3) {
+      border-left: 0;
+    }
+    .supporters-logos li:nth-child(n + 3) {
+      border-top: 1px solid #dedbe5;
+    }
+    .supporters-campaign {
+      grid-template-columns: 1fr auto;
+      gap: 28px;
+    }
+    .supporters-banner {
+      grid-column: 1 / -1;
+      justify-self: start;
     }
   }
   @media (max-width: 650px) {
     .supporters-heading {
       align-items: flex-start;
-      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    h2 {
+      max-width: 5ch;
+    }
+    .thanks-mark {
+      --mark-size: 60px;
+      padding: 8px;
+      margin-top: 32px;
+    }
+    .supporters-logos li {
+      min-height: 134px;
+      padding: 24px 16px;
+    }
+    .supporters-campaign {
       gap: 20px;
-      padding-bottom: 24px;
+    }
+    .campaign-signature {
+      grid-column: 1 / -1;
+    }
+    .campaign-signature > p:last-child {
+      max-width: none;
+    }
+    .campaign-marks {
+      grid-column: 1 / -1;
+    }
+    .campaign-marks {
+      gap: 12px;
+    }
+    .campaign-marks img {
+      max-width: 64px;
     }
     .supporters-banner {
-      width: min(100%, 260px);
-    }
-    .supporters-logos {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px 24px;
-      padding-top: 24px;
-    }
-    li {
-      min-height: 86px;
+      width: min(100%, 280px);
     }
   }
 </style>

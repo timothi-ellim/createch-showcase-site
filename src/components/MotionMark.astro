@@ -1,0 +1,32 @@
+---
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<span class:list={['motion-mark', className]} data-ambient aria-hidden="true">
+  <svg viewBox="0 0 100 100" fill="none" focusable="false">
+    <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="1" />
+    <path
+      d="M50 17v66M17 50h66M27 27l46 46M27 73l46-46"
+      stroke="currentColor"
+      stroke-width="7"
+    />
+  </svg>
+</span>
+<style>
+  .motion-mark {
+    display: block;
+    flex: 0 0 auto;
+    width: var(--mark-size, 64px);
+    aspect-ratio: 1;
+    line-height: 0;
+    pointer-events: none;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>

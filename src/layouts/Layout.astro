@@ -1,5 +1,6 @@
 ---
 import ArrowIcon from '../components/ArrowIcon.astro';
+import { venueLinks } from '../data/event-links';
 import '../styles/global.css';
 import '../styles/redesign.css';
 import '../styles/exhibition.css';
@@ -170,6 +171,10 @@ const analyticsTag =
         <a href="/sharing/">Sharing pack</a>
         <a href="/participants/">Participant help</a>
         <a href="/visit/">Plan your visit</a>
+        <a href="/#news-social">News & social</a>
+        {venueLinks.map((link) => (
+          <a href={link.href}>{link.label}</a>
+        ))}
         {!privatePage && <a href="/privacy/">Privacy and cookies</a>}
         {analyticsChoice && (
           <button

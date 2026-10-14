@@ -3,6 +3,7 @@ import ArrowIcon from '../components/ArrowIcon.astro';
 import Layout from '../layouts/Layout.astro';
 import EventFacts from '../components/EventFacts.astro';
 import EventActions from '../components/EventActions.astro';
+import EventLinks from '../components/EventLinks.astro';
 import MapInvitation from '../components/MapInvitation.astro';
 import FacilitiesList from '../components/FacilitiesList.astro';
 import { event, directionsUrl } from '../data/catalogue';
@@ -41,6 +42,7 @@ import { event, directionsUrl } from '../data/catalogue';
         </span>
       </section>
     </div>
+    <EventLinks />
     <MapInvitation />
     <EventActions />
     <section class="visit-details">

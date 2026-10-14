@@ -1,4 +1,5 @@
 import { motionLevel } from './config';
+import { canMove } from './preferences';
 if (motionLevel !== 'off') {
   // Failure leaves the final HTML/CSS visible. Never block functional scripts.
   void import('./feedback').catch(() => {});
@@ -12,15 +13,19 @@ if (motionLevel !== 'off') {
     let started = false;
     let loading = false;
     const startWhenVisible = () => {
-      if (started || loading || document.hidden || preference.matches) return;
+      if (started || loading || !canMove()) return;
       loading = true;
       void import('./editorial')
         .then((module) => {
           // Visibility/preference may change while the chunk is in flight.
-          if (document.hidden || preference.matches) return;
+          if (!canMove()) return;
           module.startEditorial();
           started = true;
           document.removeEventListener('visibilitychange', startWhenVisible);
+          document.removeEventListener(
+            'createch:motion-policy',
+            startWhenVisible,
+          );
           preference.removeEventListener('change', startWhenVisible);
         })
         .catch(() => {})
@@ -29,6 +34,7 @@ if (motionLevel !== 'off') {
         });
     };
     document.addEventListener('visibilitychange', startWhenVisible);
+    document.addEventListener('createch:motion-policy', startWhenVisible);
     preference.addEventListener('change', startWhenVisible);
     startWhenVisible();
   }
