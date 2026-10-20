@@ -1,0 +1,15 @@
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  html[data-motion-level='full'] .public-header { view-transition-name: site-header; }
+  ::view-transition-group(*) { animation-duration: 360ms; animation-timing-function: cubic-bezier(.22,.8,.25,1); }
+  ::view-transition-old(root) { animation: journey-out 180ms ease-out both; }
+  ::view-transition-new(root) { animation: journey-in 380ms cubic-bezier(.16,1,.3,1) both; }
+  ::view-transition-old(site-header), ::view-transition-new(site-header) { animation:none;mix-blend-mode:normal; }
+  ::view-transition-group(project-artwork) { animation-duration:420ms; }
+  ::view-transition-old(project-artwork), ::view-transition-new(project-artwork) { height:100%;object-fit:contain; }
+  ::view-transition { pointer-events:none; }
+}
+@keyframes journey-out { to { opacity:0;transform:translateX(calc(-6px * var(--journey-direction,1))) scale(.996); } }
+@keyframes journey-in { from { opacity:.2;transform:translateX(calc(18px * var(--journey-direction,1))) translateY(8px) scale(.994); } 75% { opacity:1; } to { opacity:1;transform:none; } }
+@media(prefers-reduced-motion:reduce) { @view-transition {navigation:none;} }
+html[data-loop-motion='paused']::view-transition-group(*) { animation-duration:0s; }

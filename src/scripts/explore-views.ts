@@ -69,6 +69,11 @@ if (page && page.querySelector('[data-explore-mode="map"]')) {
     if (!link) return;
     event.preventDefault();
     const url = new URL(location.href);
+    history.replaceState(
+      { ...history.state, createchLocateReturn: link.dataset.locateProject },
+      '',
+      url,
+    );
     url.searchParams.set('mode', 'map');
     url.searchParams.set('project', link.dataset.locateProject!);
     url.searchParams.delete('landmark');
@@ -85,6 +90,8 @@ if (page && page.querySelector('[data-explore-mode="map"]')) {
       heading.tabIndex = -1;
       heading.focus({ preventScroll: true });
     }
+    // The map and focus are already settled before presentation starts.
+    document.dispatchEvent(new CustomEvent('createch:locate-feedback'));
   });
   function updateLocateLinks() {
     for (const link of page!.querySelectorAll<HTMLAnchorElement>(
@@ -116,6 +123,23 @@ if (page && page.querySelector('[data-explore-mode="map"]')) {
       target?.scrollIntoView({ block: 'start' });
     }
   });
-  window.addEventListener('popstate', fromUrl);
+  window.addEventListener('popstate', (event) => {
+    fromUrl();
+    if (
+      page.dataset.exploreView !== 'projects' ||
+      !event.state?.createchLocateReturn
+    )
+      return;
+    const origin = [
+      ...page.querySelectorAll<HTMLAnchorElement>('[data-locate-project]'),
+    ].find(
+      (link) => link.dataset.locateProject === event.state.createchLocateReturn,
+    );
+    if (origin?.getClientRects().length) origin.focus({ preventScroll: true });
+    else
+      page
+        .querySelector<HTMLElement>('#result-count')
+        ?.focus({ preventScroll: true });
+  });
   fromUrl();
 }

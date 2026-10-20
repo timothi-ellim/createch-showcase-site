@@ -194,12 +194,13 @@ if (root) {
     for (const pin of all<HTMLAnchorElement>(
       '[data-map-pin], [data-select-project]',
     )) {
-      if (
+      const matches =
         (pin.dataset.mapPin ?? pin.dataset.selectProject) ===
-        selected?.dataset.atlasProject
-      )
-        pin.setAttribute('aria-current', 'true');
+        selected?.dataset.atlasProject;
+      if (matches && !transient) pin.setAttribute('aria-current', 'true');
       else pin.removeAttribute('aria-current');
+      if (matches && transient) pin.dataset.previewed = 'true';
+      else delete pin.dataset.previewed;
     }
     const label =
       room === 'all'
@@ -218,8 +219,8 @@ if (root) {
         card !== selected;
       card.querySelector<HTMLElement>('[data-preview-state]')!.textContent =
         transient
-          ? 'A closer look · Click artwork to keep open'
-          : 'Selected work';
+          ? 'Preview · Select artwork to keep open'
+          : `Selected work · ${label}`;
     }
     for (const next of all<HTMLElement>('[data-work-next]'))
       next.hidden = !next.closest('.atlas-selected-project');
@@ -610,8 +611,17 @@ if (root) {
       updateSaved();
   });
   window.addEventListener('popstate', fromUrl);
+  function cancelPreviewTimers() {
+    clearTimeout(previewTimer);
+    clearTimeout(dismissTimer);
+  }
   document.addEventListener('createch:explore-view-changed', () => {
+    cancelPreviewTimers();
     if (!root.closest<HTMLElement>('[data-explore-panel]')?.hidden) fromUrl();
+  });
+  window.addEventListener('pagehide', cancelPreviewTimers);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelPreviewTimers();
   });
   window.addEventListener('pageshow', updateSaved);
   for (const img of all<HTMLImageElement>('.atlas-project-art img')) {

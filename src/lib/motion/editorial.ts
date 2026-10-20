@@ -1,6 +1,6 @@
 import { animate } from 'motion/mini';
 import { inView } from 'motion';
-import { canMove, track, settle } from './preferences';
+import { canMove, track } from './preferences';
 import {
   motionDuration as d,
   motionDistance as distance,
@@ -143,18 +143,4 @@ export function startEditorial() {
       window.addEventListener('pagehide', stopGroup, { once: true });
     }
   }
-  document.addEventListener('createch:filters-changed', ((
-    event: CustomEvent,
-  ) => {
-    settle();
-    if (!event.detail.animate || !canMove()) return;
-    const cards = document.querySelectorAll(
-      '#project-results [data-project-card]:not([hidden])',
-    );
-    cards.forEach((card, index) =>
-      reveal(card, Math.min(index, 2) * 35, d.micro, distance.register),
-    );
-    const count = document.querySelector('#result-count');
-    if (count) reveal(count, 0, d.micro, 0);
-  }) as EventListener);
 }

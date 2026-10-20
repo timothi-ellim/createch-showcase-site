@@ -225,6 +225,29 @@
 .atlas-pin[aria-current='true'] .atlas-pin-copy {
   background: #f7fa87;
 }
+.atlas-pin[data-previewed='true'] > .atlas-artwork {
+  outline: 2px dashed #5c3b8a;
+  outline-offset: 3px;
+  box-shadow: none;
+}
+.atlas-installation-list > a[data-previewed='true'] {
+  outline: 2px dashed currentColor;
+  outline-offset: -2px;
+}
+.atlas[data-preview-mode='hover'] .atlas-selected-project .atlas-preview-bar {
+  border: 1px dashed currentColor;
+}
+.atlas[data-preview-mode='pinned'] .atlas-selected-project .atlas-preview-bar {
+  border: 1px solid currentColor;
+  background: #f7fa87;
+  color: #302347;
+}
+.atlas-selected-project .atlas-preview-bar {
+  padding: 8px 10px;
+}
+.atlas[data-preview-mode='pinned'] [data-preview-state]::before {
+  content: '✓ ';
+}
 .atlas-preview-bar {
   display: flex;
   align-items: center;

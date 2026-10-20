@@ -45,6 +45,8 @@ const {
   description = pageDescription(event, Astro.url.pathname),
 } = Astro.props;
 const path = Astro.url.pathname;
+const livingIntro = !privatePage && path !== '/' && path !== '/explore/' &&
+  path !== '/programme/' && !path.startsWith('/projects/');
 const indexable = !isPreview && !privatePage && !noIndex;
 const canonicalUrl =
   !isPreview && !privatePage && event.publicSiteUrl
@@ -112,6 +114,12 @@ const analyticsTag =
     )}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/motion.css" />
+    {!privatePage && (
+      <>
+        <link rel="stylesheet" href="/journey.css" />
+        <script is:inline src="/page-transitions.js"></script>
+      </>
+    )}
   </head>
   <body
     data-synthetic={String(isSynthetic)}
@@ -141,7 +149,8 @@ const analyticsTag =
     )}
     <SiteHeader />
     {analyticsChoice && <AnalyticsChoice preview={isPreview} />}
-    <main id="main" tabindex="-1">
+    <main id="main" tabindex="-1" data-living-page={livingIntro || undefined}>
+
       <slot />
     </main>
     {!privatePage && showLogos && <LogoStrip />}

@@ -228,6 +228,7 @@ body[data-page='map'] main {
   overflow-wrap: anywhere;
 }
 .atlas-type-art {
+  overflow: clip;
   min-height: 160px;
   display: flex;
   gap: 20px;

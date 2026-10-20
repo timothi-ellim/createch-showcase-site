@@ -12,16 +12,56 @@ let notice = '';
 let undoSaved: Set<string> | null = null;
 let savedStateRendered = false;
 let timer: ReturnType<typeof setTimeout>;
+// One nearby, inspectable result per save surface. The live region below speaks
+// the outcome once; these descriptions remain available after it goes quiet.
+const saveNotices = new Map<HTMLButtonElement, HTMLElement>();
+buttons.forEach((button, index) => {
+  const actions = button.closest(
+    '.card-bottom, .atlas-project-actions, .viewer-actions, .detail-actions',
+  );
+  if (!actions) return;
+  const message = document.createElement('p');
+  message.id = `save-notice-${index}`;
+  message.className = 'save-notice';
+  message.dataset.saveNotice = '';
+  actions.after(message);
+  button.setAttribute(
+    'aria-describedby',
+    [button.getAttribute('aria-describedby'), message.id]
+      .filter(Boolean)
+      .join(' '),
+  );
+  saveNotices.set(button, message);
+});
+function clearSaveNotices() {
+  for (const message of saveNotices.values()) {
+    message.textContent = '';
+    delete message.dataset.error;
+  }
+}
+function showSaveNotice(
+  button: HTMLButtonElement,
+  message: string,
+  error = false,
+) {
+  const target = saveNotices.get(button);
+  if (!target) return;
+  target.textContent = message;
+  target.dataset.error = String(error);
+}
 
 function announce(message: string) {
   const status = document.querySelector<HTMLElement>('#status');
   if (!status) return;
   clearTimeout(timer);
-  status.textContent = message;
   const viewerStatus = document.querySelector<HTMLElement>(
     '[data-viewer-feedback]',
   );
-  if (viewerStatus) viewerStatus.textContent = message;
+  const inViewer = !!document.querySelector<HTMLDialogElement>(
+    '[data-artwork-viewer]',
+  )?.open;
+  status.textContent = inViewer ? '' : message;
+  if (viewerStatus) viewerStatus.textContent = inViewer ? message : '';
   timer = setTimeout(() => {
     status.textContent = '';
     if (viewerStatus) viewerStatus.textContent = '';
@@ -42,11 +82,22 @@ function renderSaved() {
       'aria-label',
       `${selected ? 'Remove' : 'Save'} ${button.dataset.title} ${selected ? 'from' : 'to'} my visit`,
     );
-    button.textContent = selected
-      ? '✓ Saved'
+    const symbol = document.createElement('span');
+    symbol.className = 'save-symbol';
+    symbol.setAttribute('aria-hidden', 'true');
+    symbol.textContent = selected
+      ? '✓'
       : button.classList.contains('save-button')
-        ? '＋ Save'
+        ? '＋'
+        : '';
+    const label = document.createElement('span');
+    label.className = 'save-label';
+    label.textContent = selected
+      ? 'Saved'
+      : button.classList.contains('save-button')
+        ? 'Save'
         : 'Save to my visit';
+    button.replaceChildren(symbol, document.createTextNode(' '), label);
   }
   document
     .querySelectorAll<HTMLElement>('[data-saved-count]')
@@ -154,6 +205,26 @@ for (const button of buttons)
         ? `Project removed from your shortlist.${shortlist ? ' Undo is available on this page.' : ''}`
         : 'Project saved on this device. This is not a booking.',
     );
+    // Clear descriptions for the same project on other surfaces so an earlier
+    // "saved" message cannot contradict a later remove (or the reverse).
+    if (changed) {
+      for (const [other, message] of saveNotices)
+        if (other.dataset.save === id) {
+          message.textContent = '';
+          delete message.dataset.error;
+        }
+    }
+    showSaveNotice(
+      button,
+      changed
+        ? removing
+          ? 'Removed from My visit.'
+          : 'Saved on this device.'
+        : removing
+          ? 'Could not remove. This project is still saved on this device. Browser storage is unavailable or full. Try again.'
+          : 'Not saved. Browser storage is unavailable or full. Try again, or keep browsing.',
+      !changed,
+    );
     document.dispatchEvent(
       new CustomEvent('createch:save-feedback', {
         detail: {
@@ -166,6 +237,16 @@ for (const button of buttons)
       undoSaved = previous;
       renderSaved();
       focusShortlist();
+    } else if (
+      changed &&
+      !button.getClientRects().length &&
+      !document.querySelector<HTMLDialogElement>('[data-artwork-viewer]')?.open
+    ) {
+      // Removing the last match in Saved-only view must not strand focus in a
+      // hidden card. The result count explains the new state.
+      document
+        .querySelector<HTMLElement>('#result-count')
+        ?.focus({ preventScroll: true });
     }
   });
 const clearDialog = document.querySelector<HTMLDialogElement>(
@@ -180,6 +261,7 @@ function clearSaved() {
     )
   ) {
     undoSaved = previous.size ? previous : null;
+    clearSaveNotices();
     renderSaved();
     focusShortlist();
   }
@@ -231,6 +313,7 @@ document.querySelector('[data-undo-saved]')?.addEventListener('click', () => {
     writeSaved(undoSaved, 'Your previous shortlist has been restored.')
   ) {
     undoSaved = null;
+    clearSaveNotices();
     renderSaved();
     focusShortlist();
   }
@@ -241,6 +324,7 @@ document
 window.addEventListener('storage', (event) => {
   if (event.key === KEY || event.key === null) {
     undoSaved = null;
+    clearSaveNotices();
     readStorage();
     renderSaved();
     const focusedCard = document.activeElement?.closest<HTMLElement>(
@@ -252,6 +336,7 @@ window.addEventListener('storage', (event) => {
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) {
     undoSaved = null;
+    clearSaveNotices();
     readStorage();
     renderSaved();
   }
@@ -306,6 +391,9 @@ if (filters) {
     '[data-clear-search]',
   )!;
   function applyFilters(animateChange = false) {
+    const previousThemeRect = filters!
+      .querySelector('[data-theme-filter][aria-pressed="true"]')
+      ?.getBoundingClientRect();
     let count = 0;
     const query = normalizeSearch(search.value);
     document
@@ -423,11 +511,13 @@ if (filters) {
       if (value && value !== 'all') url.searchParams.set(key, value);
       else url.searchParams.delete(key);
     }
-    history.replaceState(null, '', url);
+    // Filter URL updates must preserve the originating Locate control across
+    // repeated Back/Forward traversal.
+    history.replaceState(history.state, '', url);
     updateProjectLinks();
     document.dispatchEvent(
       new CustomEvent('createch:filters-changed', {
-        detail: { animate: animateChange },
+        detail: { animate: animateChange, previousThemeRect },
       }),
     );
   }

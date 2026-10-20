@@ -1,0 +1,94 @@
+/* A shared material response. All decoration is non-interactive. */
+body[data-physical-ready] {
+  isolation: isolate;
+}
+body[data-physical-ready] > main,
+body[data-physical-ready] > .site-footer {
+  position: relative;
+  z-index: 1;
+}
+.physical-field,
+.physical-waves {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+.physical-field {
+  z-index: 0;
+  opacity: 0;
+  background:
+    radial-gradient(
+      360px circle at var(--physical-x) var(--physical-y),
+      #a98cdc38,
+      transparent 80%
+    ),
+    linear-gradient(#5c3b8a22 1px, transparent 1px),
+    linear-gradient(90deg, #5c3b8a22 1px, transparent 1px);
+  background-size:
+    auto,
+    36px 36px,
+    36px 36px;
+  background-position:
+    0 0,
+    0 var(--physical-drift, 0px),
+    0 var(--physical-drift, 0px);
+  mask-image: radial-gradient(
+    340px circle at var(--physical-x) var(--physical-y),
+    black 10%,
+    transparent 90%
+  );
+  transition: opacity 180ms ease-out;
+}
+.physical-field[data-active] {
+  opacity: 1;
+}
+[data-physical-heading] {
+  position: relative;
+}
+.physical-section-rule {
+  position: absolute;
+  left: 0;
+  bottom: -9px;
+  width: 54px;
+  height: 3px;
+  background: currentColor;
+  opacity: 0.6;
+  pointer-events: none;
+  transform-origin: left;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-loop-motion='running'][data-motion-level='full'] {
+    [data-physical-hover] {
+      filter: drop-shadow(0 4px 0 #3d285342);
+    }
+    [data-physical-down],
+    body[data-physical-ready]
+      :is(
+        .button,
+        .save-button,
+        .filter-options button,
+        .sketch-controls button,
+        [data-home-surprise],
+        .site-header nav a
+      ):active:not(:disabled) {
+      filter: drop-shadow(0 1px 0 #3d285342);
+      box-shadow: inset 0 2px 3px #21132c44 !important;
+    }
+  }
+}
+html:not([data-loop-motion='running']) :is(.physical-field, .physical-waves) {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce), print {
+  .physical-field,
+  .physical-waves {
+    display: none;
+  }
+}
+@media print {
+  .physical-section-rule {
+    display: none;
+  }
+}

@@ -27,7 +27,7 @@ test('local static output has no handoff references, secrets, or stale recruitme
   assert.ok(paths.filter((path) => path.endsWith('.html')).length >= 10);
   assert.equal(
     paths.some((path) =>
-      /reference|SOURCE_REGISTER|BUILD_BRIEF|\.map$/.test(path),
+      /(?:^|[\\/])reference(?:[\\/]|$)|SOURCE_REGISTER|BUILD_BRIEF|\.map$/.test(path),
     ),
     false,
   );

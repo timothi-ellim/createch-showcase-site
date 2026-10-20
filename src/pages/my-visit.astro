@@ -48,7 +48,7 @@ import { projects } from '../data/catalogue';
         Print my visit
       </button>
     </div>
-    <div id="shortlist-empty" class="empty-state" hidden>
+    <div id="shortlist-empty" class="empty-state" data-living-region hidden>
       <span class="empty-icon" aria-hidden="true">
         ＋
       </span>
@@ -86,7 +86,7 @@ import { projects } from '../data/catalogue';
         <ProjectCard project={project} saved />
       ))}
     </div>
-    <div class="visit-note">
+    <div class="visit-note" data-living-region>
       <h2>Before you set off</h2>
       <EventFacts />
       <p>

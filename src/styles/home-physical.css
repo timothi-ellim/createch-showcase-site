@@ -1,0 +1,49 @@
+body[data-page='home'] {
+  .hero .backdrop-grid {
+    background-image: linear-gradient(#ffffff24 1px, transparent 1px),
+      linear-gradient(90deg, #ffffff24 1px, transparent 1px);
+  }
+  .backdrop-grid { opacity: 0.45; }
+  [data-home-surface], [data-home-section] { position: relative; }
+  .home-response-plate {
+    position: absolute;
+    inset: 0;
+    border: 2px solid currentColor;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 2;
+    color: var(--ct-lemon);
+  }
+  :is(.home-projects, .news-social) .home-response-plate { color: var(--ct-blue); }
+  .home-section-seam {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    pointer-events: none;
+    background: currentColor;
+    color: var(--ct-lemon);
+    opacity: 0.45;
+    transform-origin: left center;
+  }
+  :is(.home-map, .home-about, .news-social, .home-projects) > .home-section-seam {
+    color: var(--ct-blue);
+  }
+}
+/* Replace the older floating/tilting target response with a weighted frame.
+   Siblings can still recoil through the shared individual-translate animation. */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-loop-motion='running'][data-motion-level='full'] body[data-page='home'] {
+    [data-home-surface][data-motion-surface][data-motion-active]:not(:focus-within) {
+      transform: none;
+      /* Keep this distinct from transform through CSS minification. */
+      translate: var(--motion-rest-position, 0px 0px);
+    }
+    .news-links a[data-home-surface]:hover { translate: none; box-shadow: none; }
+  }
+}
+@media (prefers-reduced-motion: reduce), (forced-colors: active), print {
+  .home-response-plate, .home-section-seam { display: none; }
+}

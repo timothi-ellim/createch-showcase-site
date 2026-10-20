@@ -3,6 +3,13 @@ import { canMove } from './preferences';
 if (motionLevel !== 'off') {
   // Failure leaves the final HTML/CSS visible. Never block functional scripts.
   void import('./feedback').catch(() => {});
+  if (motionLevel === 'full' && document.body.dataset.page !== 'private') {
+    void import('./living-field').catch(() => {});
+    void import('./physical').catch(() => {});
+    if (document.body.dataset.page === 'home') {
+      void import('./home-physical').catch(() => {});
+    }
+  }
   if (
     motionLevel === 'full' &&
     (document.body.dataset.page === 'home' ||
