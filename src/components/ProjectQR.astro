@@ -5,8 +5,9 @@ interface Props {
   project: PublicProject;
   url: string;
   synthetic: boolean;
+  informationSheetPath?: string;
 }
-const { project, url, synthetic } = Astro.props;
+const { project, url, synthetic, informationSheetPath } = Astro.props;
 const paths = qrPaths(project.slug);
 ---
 
@@ -35,6 +36,7 @@ const paths = qrPaths(project.slug);
     alt={`QR code linking to ${project.title}. The same link is provided below.`}
   />
   <p>Scan to open this project profile.</p>
+  {informationSheetPath && <p><a class="button secondary" href={informationSheetPath} download>Download A4 information sheet</a></p>}
   <a class="qr-address" href={url}>
     {url}
   </a>

@@ -74,6 +74,8 @@ export default defineConfig({
             : freezeSnapshot({ schemaVersion: 2, publicationStatus: 'synthetic-local-only', event: JSON.parse(readFileSync('content/event.json', 'utf8')), themes: catalogue.themes, projects: catalogue.projects });
           const { generateSignage } = await import('./editorial/signage.ts');
           await generateSignage(fileURLToPath(dir), snapshot);
+          const { verifyArtistSheetFiles } = await import('./editorial/artist-sheets.ts');
+          await verifyArtistSheetFiles(fileURLToPath(dir));
           if (process.env.PUBLIC_REMINDERS_ENABLED === 'true') {
             const { buildReminderWorker } = await import('./scripts/reminder-build.mjs');
             await buildReminderWorker(fileURLToPath(dir), snapshot.revision);

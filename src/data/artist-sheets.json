@@ -1,0 +1,107 @@
+{
+  "edition": "2026-10-23",
+  "sourceRevision": "4b7c25ed1d09d4dc4b2da25af9cd8355db219702b3bf1f8f37fe42a186889084",
+  "sheets": [
+    {
+      "id": "an-unfinished-body",
+      "slug": "an-unfinished-body",
+      "approvedRevision": "74f236b63439e146ad75d8b019cb9628171bfb771d1a2256d1ea54b7696725b1",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-an-unfinished-body-A4.pdf",
+      "bytes": 77988,
+      "sha256": "510188d8dc516c312334affa9dffa93e7cfbe5915ed333d21c46801a8b277035"
+    },
+    {
+      "id": "eight-out-of-ten-comments",
+      "slug": "eight-out-of-ten-comments",
+      "approvedRevision": "034cfe14320efc14268d2fe065a443c895e09fbba851ddb72353d18b282cb276",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-eight-out-of-ten-comments-A4.pdf",
+      "bytes": 77657,
+      "sha256": "e2609788b4ca849315156187e33319e596149bccedef3e76af93910bec6a7417"
+    },
+    {
+      "id": "eyeballs",
+      "slug": "eyeballs",
+      "approvedRevision": "9ebfa51ccac4f2b562aa8ab89604ea5af440021cc62dfe94886a6acd18f9ff04",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-eyeballs-A4.pdf",
+      "bytes": 77578,
+      "sha256": "640cb3624d9b915d5f1e72d2e18fbb17314abf0b422909c7cbad96172ddc4001"
+    },
+    {
+      "id": "listen-scoundrels",
+      "slug": "listen-scoundrels",
+      "approvedRevision": "adb8bd1ca6fa3a2c08c40e4aa9ce44e181fad4102859d6680397dbefb4c25645",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-listen-scoundrels-A4.pdf",
+      "bytes": 77987,
+      "sha256": "d9fed96c3cccfd6bf853fd9074a2ea72c72d006b5ab2328079e890524d388362"
+    },
+    {
+      "id": "machinimation-curation-station",
+      "slug": "machinimation-curation-station",
+      "approvedRevision": "1829b8f03edc4bcb5e81d61b167581602fd971041e5574c6707551530437f494",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-machinimation-curation-station-A4.pdf",
+      "bytes": 78383,
+      "sha256": "8f601ade7a02e707269e51604704a3d7d25f75dcdbe38548ac260755ed52badc"
+    },
+    {
+      "id": "metaflower-the-kiri",
+      "slug": "metaflower-the-kiri",
+      "approvedRevision": "fe8042a5dcf8afd9a8c343d18359d93fef7e268262a40381ec9eb82cd9c2ef05",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-metaflower-the-kiri-A4.pdf",
+      "bytes": 552578,
+      "sha256": "db5dfb2cc3290a5b68e4ce9231a36244fbb9c5d2d4ddd0c7e3a7665d31ac3daa"
+    },
+    {
+      "id": "metaverse-experiences",
+      "slug": "metaverse-experiences",
+      "approvedRevision": "8ea48ef5e1b58d0ce2d3f6a0fc02bc0d190227122ae5546bf6b65b002467acb9",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-metaverse-experiences-A4.pdf",
+      "bytes": 4779750,
+      "sha256": "68ccf74c4ef143e28c4a3ad969648905c998f457f2538f4877f6cd3ce0cdbccc"
+    },
+    {
+      "id": "plenography",
+      "slug": "plenography",
+      "approvedRevision": "fe4b8554b8c910ee31fae5058a184301197b85e201c29cba8532f07abc728ca3",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-plenography-A4.pdf",
+      "bytes": 77206,
+      "sha256": "5869ec64bd7818d17829c85d2d14af30b529e2f10c4fc7aef9d77fdf3e316a7f"
+    },
+    {
+      "id": "resonant-wardrobes",
+      "slug": "resonant-wardrobes",
+      "approvedRevision": "dad5373389ec23e27d25591f57fea271b8b5f3f36894f6da3acea6e881a86183",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-resonant-wardrobes-A4.pdf",
+      "bytes": 147859,
+      "sha256": "f8833b0eedd40d892a19e6de96e17d785d38cca64cfea02a01a339dca8fdfa44"
+    },
+    {
+      "id": "social-xr",
+      "slug": "social-xr",
+      "approvedRevision": "ff5459b94981d950fda76238845edb79487b5c5e398782f540ed850d70ef9932",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-social-xr-A4.pdf",
+      "bytes": 77250,
+      "sha256": "f255b57feeb7f3f0dc5b8732611e84535ee3077aa6d6d1a4ff43ca5aee4042fa"
+    },
+    {
+      "id": "virtual-theatre",
+      "slug": "virtual-theatre",
+      "approvedRevision": "e46b904bc1efbff67db9a1e4ae103cd07ff7e7d4907eab52e1b5e5abeb174d01",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-virtual-theatre-A4.pdf",
+      "bytes": 386417,
+      "sha256": "1adc9b3ebcd4622f61b7a33f9da7977c69cf1ad017bad4835e77b76843e2f5c1"
+    },
+    {
+      "id": "where-a-tool-ends",
+      "slug": "where-a-tool-ends",
+      "approvedRevision": "e0588a7d2f032d05d5976b69ea34262a1a70f2bb1e356d1af454d5d66e2aa4b8",
+      "path": "/guides/artist-sheets/2026-10-23/CreaTech-where-a-tool-ends-A4.pdf",
+      "bytes": 78254,
+      "sha256": "16d608376bfa0e6239da652c48a6659ea06fe4fcb9ea74f716ea3f95743dbdfa"
+    }
+  ],
+  "combined": {
+    "path": "/guides/artist-sheets/2026-10-23/CreaTech-All-Artist-Information-Sheets-A4.pdf",
+    "bytes": 6481740,
+    "sha256": "95d9e186d2739de6a09137bb18b7f73470cf500f249591583d910040f9259fe2"
+  }
+}

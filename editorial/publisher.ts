@@ -10,6 +10,8 @@ import {
 import { join, resolve, relative } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { verifySignage } from './signage.ts';
+import { verifyArtistSheetFiles } from './artist-sheets.ts';
+import { hasCurrentArtistSheetEdition } from '../src/lib/artist-sheets.ts';
 import { spawn } from 'node:child_process';
 import {
   ContentError,
@@ -163,6 +165,7 @@ export async function verifyOutput(
   privateValues: string[] = [],
 ) {
   await verifySignage(directory, snapshot, privateValues);
+  if (hasCurrentArtistSheetEdition(snapshot)) await verifyArtistSheetFiles(directory);
   const manifest = (await readJson(
     join(directory, 'content-revision.json'),
   )) as { revision?: string; projectIds?: string[] };
